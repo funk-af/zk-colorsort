@@ -1,0 +1,636 @@
+#pragma version 11
+#pragma typetrack false
+
+// @algorandfoundation/algorand-typescript/arc4/index.d.ts::Contract.approvalProgram() -> uint64:
+main:
+    intcblock 1 0 2 32 26500
+    bytecblock "verifier" 0x151f7c75
+    // contracts/PuzzleScores.algo.ts:37
+    // export default class PuzzleScores extends Contract {
+    txn NumAppArgs
+    bz main___algots__.defaultCreate@16
+    pushbytes 0x46f76533 // method "updateApplication()void"
+    txna ApplicationArgs 0
+    match main_updateApplication_route@3
+
+main_switch_case_next@4:
+    // contracts/PuzzleScores.algo.ts:37
+    // export default class PuzzleScores extends Contract {
+    txn OnCompletion
+    !
+    assert // OnCompletion must be NoOp
+    txn ApplicationID
+    assert
+    pushbytess 0x5ef6fa35 0x7455c0a9 0x9167e7cb 0x74ca7617 0xebd63f82 0x7fb6aff7 0x600a115b // method "boxMbr()uint64", method "setVerifier(address)void", method "addScore(uint256[],(byte[64],byte[128],byte[64]),byte[],uint64,pay,pay)void", method "updateScore(uint256[],(byte[64],byte[128],byte[64]),byte[],uint64,pay)void", method "removeScore(byte[])void", method "getMyScore(byte[])(uint64,bool)", method "getScoreForUser(byte[],address)(uint64,bool)"
+    txna ApplicationArgs 0
+    match main_boxMbr_route@6 setVerifier addScore updateScore removeScore getMyScore getScoreForUser
+    err
+
+main_boxMbr_route@6:
+    // contracts/PuzzleScores.algo.ts:40-41
+    // @readonly
+    // public boxMbr(): uint64 {
+    pushbytes 0x151f7c750000000000006784
+    log
+    intc_0 // 1
+    return
+
+main_updateApplication_route@3:
+    // contracts/PuzzleScores.algo.ts:53
+    // public updateApplication(): void {
+    txn OnCompletion
+    pushint 4 // UpdateApplication
+    ==
+    txn ApplicationID
+    &&
+    assert // OnCompletion must be UpdateApplication && can only call when not creating
+    b updateApplication
+
+main___algots__.defaultCreate@16:
+    // contracts/PuzzleScores.algo.ts:37
+    // export default class PuzzleScores extends Contract {
+    txn OnCompletion
+    !
+    txn ApplicationID
+    !
+    &&
+    assert // OnCompletion must be NoOp && can only call when creating
+    intc_0 // 1
+    return
+
+
+// contracts/PuzzleScores.algo.ts::PuzzleScores.setVerifier[routing]() -> void:
+setVerifier:
+    // contracts/PuzzleScores.algo.ts:45
+    // public setVerifier(verifierAddress: Account): void {
+    txna ApplicationArgs 1
+    dup
+    len
+    intc_3 // 32
+    ==
+    assert // invalid number of bytes for arc4.static_array<arc4.uint8, 32>
+    // contracts/PuzzleScores.algo.ts:47
+    // Txn.sender === Global.creatorAddress,
+    txn Sender
+    global CreatorAddress
+    ==
+    // contracts/PuzzleScores.algo.ts:46-49
+    // assert(
+    //   Txn.sender === Global.creatorAddress,
+    //   "only the creator can set the verifier",
+    // );
+    assert // only the creator can set the verifier
+    // contracts/PuzzleScores.algo.ts:38
+    // verifier = GlobalState<Account>({ key: "verifier" });
+    bytec_0 // "verifier"
+    // contracts/PuzzleScores.algo.ts:50
+    // this.verifier.value = verifierAddress;
+    swap
+    app_global_put
+    // contracts/PuzzleScores.algo.ts:45
+    // public setVerifier(verifierAddress: Account): void {
+    intc_0 // 1
+    return
+
+
+// contracts/PuzzleScores.algo.ts::PuzzleScores.updateApplication[routing]() -> void:
+updateApplication:
+    // contracts/PuzzleScores.algo.ts:55
+    // Txn.sender === Global.creatorAddress,
+    txn Sender
+    global CreatorAddress
+    ==
+    // contracts/PuzzleScores.algo.ts:54-57
+    // assert(
+    //   Txn.sender === Global.creatorAddress,
+    //   "only the creator can update the app",
+    // );
+    assert // only the creator can update the app
+    // contracts/PuzzleScores.algo.ts:53
+    // public updateApplication(): void {
+    intc_0 // 1
+    return
+
+
+// contracts/PuzzleScores.algo.ts::PuzzleScores.addScore[routing]() -> void:
+addScore:
+    // contracts/PuzzleScores.algo.ts:60-67
+    // public addScore(
+    //   signals: PublicSignals,
+    //   proof: Groth16Bn254Proof,
+    //   puzzleCode: bytes,
+    //   score: uint64,
+    //   payMbr: gtxn.PaymentTxn,
+    //   verifierTxn: gtxn.PaymentTxn,
+    // ): void {
+    txna ApplicationArgs 1
+    dup
+    intc_1 // 0
+    extract_uint16 // on error: invalid array length header
+    intc_3 // 32
+    *
+    intc_2 // 2
+    +
+    dig 1
+    len
+    ==
+    assert // invalid number of bytes for arc4.dynamic_array<arc4.uint256>
+    txna ApplicationArgs 2
+    dup
+    len
+    pushint 256 // 256
+    ==
+    assert // invalid number of bytes for contracts/PuzzleScores.algo.ts::Groth16Bn254Proof
+    txna ApplicationArgs 3
+    dup
+    intc_1 // 0
+    extract_uint16 // on error: invalid array length header
+    intc_2 // 2
+    +
+    dig 1
+    len
+    ==
+    assert // invalid number of bytes for arc4.dynamic_array<arc4.uint8>
+    extract 2 0
+    txna ApplicationArgs 4
+    dup
+    len
+    pushint 8 // 8
+    ==
+    assert // invalid number of bytes for arc4.uint64
+    btoi
+    txn GroupIndex
+    intc_2 // 2
+    -
+    dup
+    gtxns TypeEnum
+    intc_0 // pay
+    ==
+    assert // transaction type is pay
+    txn GroupIndex
+    intc_0 // 1
+    -
+    dup
+    gtxns TypeEnum
+    intc_0 // pay
+    ==
+    assert // transaction type is pay
+    // contracts/PuzzleScores.algo.ts:140
+    // return puzzleCode.concat(user.bytes);
+    dig 3
+    // contracts/PuzzleScores.algo.ts:68
+    // const key = this.scoreKey(puzzleCode, Txn.sender);
+    txn Sender
+    // contracts/PuzzleScores.algo.ts:140
+    // return puzzleCode.concat(user.bytes);
+    concat
+    // contracts/PuzzleScores.algo.ts:69
+    // const [, exists] = BoxOp.get(key);
+    dup
+    box_len
+    bury 1
+    // contracts/PuzzleScores.algo.ts:70
+    // assert(!exists, "score already exists for puzzle");
+    !
+    assert // score already exists for puzzle
+    // contracts/PuzzleScores.algo.ts:72
+    // this.verifyVerifierTxn(verifierTxn, signals, proof, puzzleCode, score);
+    swap
+    uncover 6
+    uncover 6
+    uncover 6
+    dig 6
+    callsub verifyVerifierTxn
+    popn 2
+    // contracts/PuzzleScores.algo.ts:76
+    // Txn.sender.bytes
+    txn Sender
+    // contracts/PuzzleScores.algo.ts:76-77
+    // Txn.sender.bytes
+    //   .slice(0, Uint64(32))
+    substring 0 32
+    // contracts/PuzzleScores.algo.ts:78
+    // .equals(payMbr.sender.bytes.slice(0, Uint64(32))),
+    dig 2
+    gtxns Sender
+    substring 0 32
+    // contracts/PuzzleScores.algo.ts:76-78
+    // Txn.sender.bytes
+    //   .slice(0, Uint64(32))
+    //   .equals(payMbr.sender.bytes.slice(0, Uint64(32))),
+    ==
+    // contracts/PuzzleScores.algo.ts:75-80
+    // assert(
+    //   Txn.sender.bytes
+    //     .slice(0, Uint64(32))
+    //     .equals(payMbr.sender.bytes.slice(0, Uint64(32))),
+    //   "payment sender must match caller",
+    // );
+    assert // payment sender must match caller
+    // contracts/PuzzleScores.algo.ts:82
+    // Global.currentApplicationAddress.bytes
+    global CurrentApplicationAddress
+    // contracts/PuzzleScores.algo.ts:82-83
+    // Global.currentApplicationAddress.bytes
+    //   .slice(0, Uint64(32))
+    substring 0 32
+    // contracts/PuzzleScores.algo.ts:84
+    // .equals(payMbr.receiver.bytes.slice(0, Uint64(32))),
+    dig 2
+    gtxns Receiver
+    substring 0 32
+    // contracts/PuzzleScores.algo.ts:82-84
+    // Global.currentApplicationAddress.bytes
+    //   .slice(0, Uint64(32))
+    //   .equals(payMbr.receiver.bytes.slice(0, Uint64(32))),
+    ==
+    // contracts/PuzzleScores.algo.ts:81-86
+    // assert(
+    //   Global.currentApplicationAddress.bytes
+    //     .slice(0, Uint64(32))
+    //     .equals(payMbr.receiver.bytes.slice(0, Uint64(32))),
+    //   "payment receiver must be app account",
+    // );
+    assert // payment receiver must be app account
+    // contracts/PuzzleScores.algo.ts:87
+    // assert(payMbr.amount === requiredMbr, "payment must cover box MBR exactly");
+    swap
+    gtxns Amount
+    // contracts/PuzzleScores.algo.ts:144
+    // return BOX_BASE_MBR + BOX_BYTE_MBR * (SCORE_KEY_LENGTH + SCORE_LENGTH);
+    intc 4 // 26500
+    // contracts/PuzzleScores.algo.ts:87
+    // assert(payMbr.amount === requiredMbr, "payment must cover box MBR exactly");
+    ==
+    assert // payment must cover box MBR exactly
+    // contracts/PuzzleScores.algo.ts:89
+    // BoxOp.put(key, itob(score));
+    swap
+    itob
+    box_put
+    // contracts/PuzzleScores.algo.ts:60-67
+    // public addScore(
+    //   signals: PublicSignals,
+    //   proof: Groth16Bn254Proof,
+    //   puzzleCode: bytes,
+    //   score: uint64,
+    //   payMbr: gtxn.PaymentTxn,
+    //   verifierTxn: gtxn.PaymentTxn,
+    // ): void {
+    intc_0 // 1
+    return
+
+
+// contracts/PuzzleScores.algo.ts::PuzzleScores.updateScore[routing]() -> void:
+updateScore:
+    // contracts/PuzzleScores.algo.ts:92-98
+    // public updateScore(
+    //   signals: PublicSignals,
+    //   proof: Groth16Bn254Proof,
+    //   puzzleCode: bytes,
+    //   newScore: uint64,
+    //   verifierTxn: gtxn.PaymentTxn,
+    // ): void {
+    txna ApplicationArgs 1
+    dup
+    intc_1 // 0
+    extract_uint16 // on error: invalid array length header
+    intc_3 // 32
+    *
+    intc_2 // 2
+    +
+    dig 1
+    len
+    ==
+    assert // invalid number of bytes for arc4.dynamic_array<arc4.uint256>
+    txna ApplicationArgs 2
+    dup
+    len
+    pushint 256 // 256
+    ==
+    assert // invalid number of bytes for contracts/PuzzleScores.algo.ts::Groth16Bn254Proof
+    txna ApplicationArgs 3
+    dup
+    intc_1 // 0
+    extract_uint16 // on error: invalid array length header
+    intc_2 // 2
+    +
+    dig 1
+    len
+    ==
+    assert // invalid number of bytes for arc4.dynamic_array<arc4.uint8>
+    extract 2 0
+    txna ApplicationArgs 4
+    dup
+    len
+    pushint 8 // 8
+    ==
+    assert // invalid number of bytes for arc4.uint64
+    btoi
+    txn GroupIndex
+    intc_0 // 1
+    -
+    dup
+    gtxns TypeEnum
+    intc_0 // pay
+    ==
+    assert // transaction type is pay
+    // contracts/PuzzleScores.algo.ts:140
+    // return puzzleCode.concat(user.bytes);
+    dig 2
+    // contracts/PuzzleScores.algo.ts:99
+    // const key = this.scoreKey(puzzleCode, Txn.sender);
+    txn Sender
+    // contracts/PuzzleScores.algo.ts:140
+    // return puzzleCode.concat(user.bytes);
+    concat
+    // contracts/PuzzleScores.algo.ts:100
+    // const [scoreBytes, exists] = BoxOp.get(key);
+    dup
+    box_get
+    // contracts/PuzzleScores.algo.ts:101
+    // assert(exists, "score does not exist for puzzle");
+    assert // score does not exist for puzzle
+    // contracts/PuzzleScores.algo.ts:103
+    // this.verifyVerifierTxn(verifierTxn, signals, proof, puzzleCode, newScore);
+    uncover 2
+    uncover 6
+    uncover 6
+    uncover 6
+    dig 6
+    callsub verifyVerifierTxn
+    popn 2
+    // contracts/PuzzleScores.algo.ts:105
+    // assert(newScore < btoi(scoreBytes), "new score must be better");
+    btoi
+    dig 2
+    >
+    assert // new score must be better
+    // contracts/PuzzleScores.algo.ts:106
+    // BoxOp.put(key, itob(newScore));
+    swap
+    itob
+    box_put
+    // contracts/PuzzleScores.algo.ts:92-98
+    // public updateScore(
+    //   signals: PublicSignals,
+    //   proof: Groth16Bn254Proof,
+    //   puzzleCode: bytes,
+    //   newScore: uint64,
+    //   verifierTxn: gtxn.PaymentTxn,
+    // ): void {
+    intc_0 // 1
+    return
+
+
+// contracts/PuzzleScores.algo.ts::PuzzleScores.removeScore[routing]() -> void:
+removeScore:
+    // contracts/PuzzleScores.algo.ts:109
+    // public removeScore(puzzleCode: bytes): void {
+    txna ApplicationArgs 1
+    dup
+    intc_1 // 0
+    extract_uint16 // on error: invalid array length header
+    intc_2 // 2
+    +
+    dig 1
+    len
+    ==
+    assert // invalid number of bytes for arc4.dynamic_array<arc4.uint8>
+    extract 2 0
+    // contracts/PuzzleScores.algo.ts:110
+    // const key = this.scoreKey(puzzleCode, Txn.sender);
+    txn Sender
+    // contracts/PuzzleScores.algo.ts:140
+    // return puzzleCode.concat(user.bytes);
+    concat
+    // contracts/PuzzleScores.algo.ts:111
+    // const deleted = BoxOp.delete(key);
+    box_del
+    // contracts/PuzzleScores.algo.ts:112
+    // assert(deleted, "score does not exist for puzzle");
+    assert // score does not exist for puzzle
+    // contracts/PuzzleScores.algo.ts:114-120
+    // itxn
+    //   .payment({
+    //     receiver: Txn.sender,
+    //     amount: this.scoreBoxMbr(),
+    //     fee: 0,
+    //   })
+    //   .submit();
+    itxn_begin
+    // contracts/PuzzleScores.algo.ts:116
+    // receiver: Txn.sender,
+    txn Sender
+    // contracts/PuzzleScores.algo.ts:144
+    // return BOX_BASE_MBR + BOX_BYTE_MBR * (SCORE_KEY_LENGTH + SCORE_LENGTH);
+    intc 4 // 26500
+    itxn_field Amount
+    itxn_field Receiver
+    // contracts/PuzzleScores.algo.ts:114-119
+    // itxn
+    //   .payment({
+    //     receiver: Txn.sender,
+    //     amount: this.scoreBoxMbr(),
+    //     fee: 0,
+    //   })
+    intc_0 // 1
+    itxn_field TypeEnum
+    // contracts/PuzzleScores.algo.ts:118
+    // fee: 0,
+    intc_1 // 0
+    itxn_field Fee
+    // contracts/PuzzleScores.algo.ts:114-120
+    // itxn
+    //   .payment({
+    //     receiver: Txn.sender,
+    //     amount: this.scoreBoxMbr(),
+    //     fee: 0,
+    //   })
+    //   .submit();
+    itxn_submit
+    // contracts/PuzzleScores.algo.ts:109
+    // public removeScore(puzzleCode: bytes): void {
+    intc_0 // 1
+    return
+
+
+// contracts/PuzzleScores.algo.ts::PuzzleScores.getMyScore[routing]() -> void:
+getMyScore:
+    // contracts/PuzzleScores.algo.ts:123-124
+    // @readonly
+    // public getMyScore(puzzleCode: bytes): [uint64, boolean] {
+    txna ApplicationArgs 1
+    dup
+    intc_1 // 0
+    extract_uint16 // on error: invalid array length header
+    intc_2 // 2
+    +
+    dig 1
+    len
+    ==
+    assert // invalid number of bytes for arc4.dynamic_array<arc4.uint8>
+    extract 2 0
+    // contracts/PuzzleScores.algo.ts:125
+    // return this.getScoreForUser(puzzleCode, Txn.sender);
+    txn Sender
+    callsub contracts/PuzzleScores.algo.ts::PuzzleScores.getScoreForUser
+    // contracts/PuzzleScores.algo.ts:123-124
+    // @readonly
+    // public getMyScore(puzzleCode: bytes): [uint64, boolean] {
+    bytec_1 // 0x151f7c75
+    swap
+    concat
+    log
+    intc_0 // 1
+    return
+
+
+// contracts/PuzzleScores.algo.ts::PuzzleScores.getScoreForUser[routing]() -> void:
+getScoreForUser:
+    // contracts/PuzzleScores.algo.ts:128-129
+    // @readonly
+    // public getScoreForUser(puzzleCode: bytes, user: Account): [uint64, boolean] {
+    txna ApplicationArgs 1
+    dup
+    intc_1 // 0
+    extract_uint16 // on error: invalid array length header
+    intc_2 // 2
+    +
+    dig 1
+    len
+    ==
+    assert // invalid number of bytes for arc4.dynamic_array<arc4.uint8>
+    extract 2 0
+    txna ApplicationArgs 2
+    dup
+    len
+    intc_3 // 32
+    ==
+    assert // invalid number of bytes for arc4.static_array<arc4.uint8, 32>
+    callsub contracts/PuzzleScores.algo.ts::PuzzleScores.getScoreForUser
+    bytec_1 // 0x151f7c75
+    swap
+    concat
+    log
+    intc_0 // 1
+    return
+
+
+// contracts/PuzzleScores.algo.ts::PuzzleScores.getScoreForUser(puzzleCode: bytes, user: bytes) -> bytes:
+contracts/PuzzleScores.algo.ts::PuzzleScores.getScoreForUser:
+    // contracts/PuzzleScores.algo.ts:128-129
+    // @readonly
+    // public getScoreForUser(puzzleCode: bytes, user: Account): [uint64, boolean] {
+    proto 2 1
+    // contracts/PuzzleScores.algo.ts:140
+    // return puzzleCode.concat(user.bytes);
+    frame_dig -2
+    frame_dig -1
+    concat
+    // contracts/PuzzleScores.algo.ts:130
+    // const [scoreBytes, exists] = BoxOp.get(this.scoreKey(puzzleCode, user));
+    box_get
+    // contracts/PuzzleScores.algo.ts:132
+    // if (!exists) {
+    bnz contracts/PuzzleScores.algo.ts::PuzzleScores.getScoreForUser_after_if_else@2
+    // contracts/PuzzleScores.algo.ts:133
+    // return [Uint64(0), false];
+    pushbytes 0x000000000000000000
+    swap
+    retsub
+
+contracts/PuzzleScores.algo.ts::PuzzleScores.getScoreForUser_after_if_else@2:
+    // contracts/PuzzleScores.algo.ts:136
+    // return [btoi(scoreBytes), true];
+    frame_dig 0
+    btoi
+    itob
+    pushbytes 0x80
+    concat
+    swap
+    retsub
+
+
+// contracts/PuzzleScores.algo.ts::PuzzleScores.verifyVerifierTxn(verifierTxn: uint64, signals: bytes, _proof: bytes, _puzzleCode: bytes, score: uint64) -> bytes, bytes:
+verifyVerifierTxn:
+    // contracts/PuzzleScores.algo.ts:147-153
+    // private verifyVerifierTxn(
+    //   verifierTxn: gtxn.PaymentTxn,
+    //   signals: PublicSignals,
+    //   _proof: Groth16Bn254Proof,
+    //   _puzzleCode: bytes,
+    //   score: uint64,
+    // ): void {
+    proto 5 2
+    // contracts/PuzzleScores.algo.ts:154
+    // assert(this.verifier.hasValue, "verifier is not configured");
+    intc_1 // 0
+    // contracts/PuzzleScores.algo.ts:38
+    // verifier = GlobalState<Account>({ key: "verifier" });
+    bytec_0 // "verifier"
+    // contracts/PuzzleScores.algo.ts:154
+    // assert(this.verifier.hasValue, "verifier is not configured");
+    app_global_get_ex
+    assert // verifier is not configured
+    // contracts/PuzzleScores.algo.ts:156
+    // verifierTxn.sender === this.verifier.value,
+    frame_dig -5
+    gtxns Sender
+    ==
+    // contracts/PuzzleScores.algo.ts:155-158
+    // assert(
+    //   verifierTxn.sender === this.verifier.value,
+    //   "verifier txn must come from the verifier",
+    // );
+    assert // verifier txn must come from the verifier
+    // contracts/PuzzleScores.algo.ts:160
+    // Global.currentApplicationAddress === verifierTxn.receiver,
+    global CurrentApplicationAddress
+    frame_dig -5
+    gtxns Receiver
+    ==
+    // contracts/PuzzleScores.algo.ts:159-162
+    // assert(
+    //   Global.currentApplicationAddress === verifierTxn.receiver,
+    //   "verifier txn receiver must be app account",
+    // );
+    assert // verifier txn receiver must be app account
+    // contracts/PuzzleScores.algo.ts:165
+    // signals.length >= PUBLIC_SCORE_INDEX + Uint64(1),
+    frame_dig -4
+    intc_1 // 0
+    extract_uint16 // on error: invalid array length header
+    pushint 49 // 49
+    >=
+    // contracts/PuzzleScores.algo.ts:164-167
+    // assert(
+    //   signals.length >= PUBLIC_SCORE_INDEX + Uint64(1),
+    //   "public signals length is invalid",
+    // );
+    assert // public signals length is invalid
+    // contracts/PuzzleScores.algo.ts:169
+    // const expectedScore = BigUint(score);
+    frame_dig -1
+    itob
+    // contracts/PuzzleScores.algo.ts:171
+    // signals.at(PUBLIC_SCORE_INDEX)!.asBigUint() === expectedScore;
+    frame_dig -4
+    pushint 1538 // 1538
+    intc_3 // 32
+    extract3
+    dig 1
+    b==
+    // contracts/PuzzleScores.algo.ts:172
+    // const scoreAtStart = signals.at(Uint64(0))!.asBigUint() === expectedScore;
+    frame_dig -4
+    extract 2 32
+    uncover 2
+    b==
+    // contracts/PuzzleScores.algo.ts:174
+    // assert(scoreAtEnd || scoreAtStart, "public score must match");
+    ||
+    assert // public score must match
+    frame_dig -4
+    frame_dig -3
+    retsub

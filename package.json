@@ -1,0 +1,47 @@
+{
+  "name": "zk-colorsort",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc && vite build",
+    "preview": "vite preview",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:contracts": "vitest run --dir contracts",
+    "compile:contracts": "algokit compile ts contracts --out-dir artifacts",
+    "generate:client": "algokit generate client contracts/artifacts/PuzzleScores.arc56.json --language typescript --output contracts/clients/PuzzleScoresClient.ts",
+    "build:contracts": "pnpm run compile:contracts && pnpm run generate:client"
+  },
+  "dependencies": {
+    "@algorandfoundation/algokit-utils": "^9.2.0",
+    "@perawallet/connect": "^1.5.2",
+    "@txnlab/use-wallet-ui-vue": "^1.0.0",
+    "@txnlab/use-wallet-vue": "^4.6.0",
+    "algosdk": "^3.5.2",
+    "circomlib": "^2.0.5",
+    "lute-connect": "^1.7.0",
+    "pinia": "^2.1.0",
+    "snarkjs-algorand": "^0.13.0",
+    "vue": "^3.4.0",
+    "vue-router": "^4.3.0"
+  },
+  "devDependencies": {
+    "@algorandfoundation/algokit-utils-debug": "^1.0.4",
+    "@algorandfoundation/algorand-typescript": "^1.1.0",
+    "@algorandfoundation/algorand-typescript-testing": "^1.1.0",
+    "@algorandfoundation/puya-ts": "^1.1.0",
+    "@rollup/plugin-typescript": "^12.3.0",
+    "@types/snarkjs": "^0.7.9",
+    "@vitejs/plugin-vue": "^5.0.0",
+    "@vue/test-utils": "^2.4.0",
+    "snarkjs": "^0.7.6",
+    "typescript": "~6.0.2",
+    "vite": "^8.0.12",
+    "vite-plugin-node-polyfills": "^0.28.0",
+    "vitest": "^4.1.7",
+    "vue-tsc": "^3.3.3"
+  },
+  "packageManager": "pnpm@11.4.0+sha512.f0febc7e37552ab485494a914241b338e0b3580b93d54ce31f00933015880863129038a1b4ae4e414a0ee63ac35bf21197e990172c4a68256450b5636310968f"
+}

@@ -1,0 +1,31 @@
+[
+  {
+    "name": "MainNet",
+    "networkId": "mainnet",
+    "indexer": {
+      "url": "https://mainnet-idx.algonode.cloud",
+      "port": "",
+      "token": ""
+    }
+  },
+  {
+    "name": "TestNet",
+    "networkId": "testnet",
+    "puzzleScoresAppId": 764131198,
+    "indexer": {
+      "url": "https://testnet-idx.algonode.cloud",
+      "port": "",
+      "token": ""
+    }
+  },
+  {
+    "name": "LocalNet",
+    "networkId": "localnet",
+    "puzzleScoresAppId": 1001,
+    "indexer": {
+      "url": "http://localhost",
+      "port": "8980",
+      "token": ""
+    }
+  }
+]
