@@ -11,7 +11,7 @@
     "test:run": "vitest run",
     "test:contracts": "vitest run --dir contracts",
     "compile:contracts": "algokit compile ts contracts --out-dir artifacts",
-    "generate:client": "algokit generate client contracts/artifacts/PuzzleScores.arc56.json --language typescript --output contracts/clients/PuzzleScoresClient.ts",
+    "generate:client": "algokit generate client contracts/artifacts/PuzzleScores.arc56.json --language typescript --output src/algorand/PuzzleScoresClient.ts",
     "build:contracts": "pnpm run compile:contracts && pnpm run generate:client"
   },
   "dependencies": {
@@ -33,6 +33,7 @@
     "@algorandfoundation/algorand-typescript-testing": "^1.1.0",
     "@algorandfoundation/puya-ts": "^1.1.0",
     "@rollup/plugin-typescript": "^12.3.0",
+    "@types/node": "^25.9.3",
     "@types/snarkjs": "^0.7.9",
     "@vitejs/plugin-vue": "^5.0.0",
     "@vue/test-utils": "^2.4.0",

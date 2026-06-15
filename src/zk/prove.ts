@@ -9,8 +9,8 @@ const NMOVES = 120;
 
 // Vite static asset URLs — resolved at build time
 // Use ?url suffix so Vite exposes them as fetch-able URLs
-import wasmUrl from "../../zk/build/color_js/color.wasm?url";
-import zkeyUrl from "../../zk/build/color_final.zkey?url";
+import wasmUrl from "./build/color_js/color.wasm?url";
+import zkeyUrl from "./build/color_final.zkey?url";
 
 // Map hex color string → circuit integer (1..10). Empty slot → 0.
 const colorToInt = new Map<string, number>(

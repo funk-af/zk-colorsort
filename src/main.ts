@@ -13,7 +13,7 @@ app.use(createPinia());
 app.use(router);
 app.use(WalletManagerPlugin, {
   wallets: [WalletId.LUTE, WalletId.PERA],
-  defaultNetwork: NetworkId.TESTNET,
+  defaultNetwork: NetworkId.LOCALNET,
   options: { resetNetwork: true },
 });
 

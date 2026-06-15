@@ -1,7 +1,7 @@
 import { AlgorandClient, microAlgo } from "@algorandfoundation/algokit-utils";
 import algosdk from "algosdk";
 import { Groth16Bn254LsigVerifier } from "snarkjs-algorand";
-import { PuzzleScoresClient } from "../shims/PuzzleScoresClient";
+import { PuzzleScoresClient } from "./PuzzleScoresClient";
 import { encodePuzzle } from "../game/serialize";
 import type { Move, Puzzle } from "../game/types";
 import {
