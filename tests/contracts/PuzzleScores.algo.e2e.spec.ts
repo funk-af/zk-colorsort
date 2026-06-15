@@ -5,7 +5,6 @@ import {
 } from "@algorandfoundation/algokit-utils";
 import { algorandFixture } from "@algorandfoundation/algokit-utils/testing";
 import algosdk from "algosdk";
-import path from "node:path";
 import { Groth16Bn254LsigVerifier } from "snarkjs-algorand";
 import { beforeAll, beforeEach, describe, expect, test } from "vitest";
 import {
@@ -16,8 +15,8 @@ import { generatePuzzle } from "../../src/game/generator";
 import { solvePuzzle } from "../../src/game/solver";
 import { buildColorSortProofInput } from "../../src/zk/prove";
 
-const ZKEY_PATH = path.resolve("src/zk/build/color_final.zkey");
-const WASM_PATH = path.resolve("src/zk/build/color_js/color.wasm");
+const ZKEY_PATH = "src/zk/build/color_final.zkey";
+const WASM_PATH = "src/zk/build/color_js/color.wasm";
 const VERIFIER_APP_OFFSET = 1;
 const ADD_SCORE_TOTAL_LSIGS = 3;
 
@@ -25,6 +24,19 @@ const fixture = algorandFixture();
 
 const PUZZLE_SIGNAL_START = 1;
 const SENDER_SIGNAL_START = 4;
+const SHARED_USER = algosdk.generateAccount();
+const SHARED_USER_SIGNER =
+  algosdk.makeBasicAccountTransactionSigner(SHARED_USER);
+
+type ProofBundle = {
+  proof: Groth16Bn254Proof;
+  signals: bigint[];
+  puzzleCodeBytes: Uint8Array;
+  score: bigint;
+};
+
+let cachedVerifierAddress: string | undefined;
+let cachedProofBundle: ProofBundle | undefined;
 
 function buildScoreBoxName(puzzleCode: Uint8Array, sender: string): Uint8Array {
   const addressBytes = algosdk.decodeAddress(sender).publicKey;
@@ -50,6 +62,30 @@ function tamperProof(proof: Groth16Bn254Proof): Groth16Bn254Proof {
     piB: new Uint8Array(proof.piB),
     piC: new Uint8Array(proof.piC),
   };
+}
+
+function cloneProof(proof: Groth16Bn254Proof): Groth16Bn254Proof {
+  return {
+    piA: new Uint8Array(proof.piA),
+    piB: new Uint8Array(proof.piB),
+    piC: new Uint8Array(proof.piC),
+  };
+}
+
+function cloneProofBundle(bundle: ProofBundle): ProofBundle {
+  return {
+    proof: cloneProof(bundle.proof),
+    signals: [...bundle.signals],
+    puzzleCodeBytes: new Uint8Array(bundle.puzzleCodeBytes),
+    score: bundle.score,
+  };
+}
+
+function getCachedProofBundle(): ProofBundle {
+  if (!cachedProofBundle) {
+    throw new Error("cached proof bundle is not initialized");
+  }
+  return cloneProofBundle(cachedProofBundle);
 }
 
 async function generateProof(
@@ -126,8 +162,8 @@ describe("PuzzleScores on-chain verifier checks (real lsig)", () => {
   async function deployConfiguredApp() {
     const { algorand, testAccount } = fixture.context;
 
-    const user = algosdk.generateAccount();
-    const userSigner = algosdk.makeBasicAccountTransactionSigner(user);
+    const user = SHARED_USER;
+    const userSigner = SHARED_USER_SIGNER;
     algorand.setSigner(user.addr, userSigner);
 
     await algorand.send.payment({
@@ -137,8 +173,11 @@ describe("PuzzleScores on-chain verifier checks (real lsig)", () => {
     });
 
     const verifier = createVerifier(algorand);
-    const lsigAccount = await verifier.lsigAccount();
-    const verifierAddress = lsigAccount.addr.toString();
+    if (!cachedVerifierAddress) {
+      const lsigAccount = await verifier.lsigAccount();
+      cachedVerifierAddress = lsigAccount.addr.toString();
+    }
+    const verifierAddress = cachedVerifierAddress;
 
     const factory = new PuzzleScoresFactory({
       algorand,
@@ -162,6 +201,10 @@ describe("PuzzleScores on-chain verifier checks (real lsig)", () => {
       sender: testAccount,
       args: { verifierAddress },
     });
+
+    if (!cachedProofBundle) {
+      cachedProofBundle = await generateProof(user.addr.toString(), verifier);
+    }
 
     return { appClient, user, userSigner, verifier };
   }
@@ -247,10 +290,7 @@ describe("PuzzleScores on-chain verifier checks (real lsig)", () => {
   test("accepts valid addScore with real lsig path", async () => {
     const { appClient, user, userSigner, verifier } =
       await deployConfiguredApp();
-    const { proof, signals, puzzleCodeBytes, score } = await generateProof(
-      user.addr.toString(),
-      verifier,
-    );
+    const { proof, signals, puzzleCodeBytes, score } = getCachedProofBundle();
 
     const group = await buildAddScoreGroup({
       appClient,
@@ -276,10 +316,7 @@ describe("PuzzleScores on-chain verifier checks (real lsig)", () => {
   test("rejects addScore when public puzzle limbs do not match puzzleCode argument", async () => {
     const { appClient, user, userSigner, verifier } =
       await deployConfiguredApp();
-    const { proof, signals, puzzleCodeBytes, score } = await generateProof(
-      user.addr.toString(),
-      verifier,
-    );
+    const { proof, signals, puzzleCodeBytes, score } = getCachedProofBundle();
     const badSignals = [...signals];
     badSignals[PUZZLE_SIGNAL_START] += 1n;
 
@@ -302,10 +339,7 @@ describe("PuzzleScores on-chain verifier checks (real lsig)", () => {
   test("rejects addScore when public sender limbs do not match caller", async () => {
     const { appClient, user, userSigner, verifier } =
       await deployConfiguredApp();
-    const { proof, signals, puzzleCodeBytes, score } = await generateProof(
-      user.addr.toString(),
-      verifier,
-    );
+    const { proof, signals, puzzleCodeBytes, score } = getCachedProofBundle();
     const badSignals = [...signals];
     badSignals[SENDER_SIGNAL_START] += 1n;
 
@@ -328,10 +362,7 @@ describe("PuzzleScores on-chain verifier checks (real lsig)", () => {
   test("rejects addScore when proof is tampered (fraudulent proof)", async () => {
     const { appClient, user, userSigner, verifier } =
       await deployConfiguredApp();
-    const { proof, signals, puzzleCodeBytes, score } = await generateProof(
-      user.addr.toString(),
-      verifier,
-    );
+    const { proof, signals, puzzleCodeBytes, score } = getCachedProofBundle();
 
     const group = await buildAddScoreGroup({
       appClient,
@@ -357,10 +388,7 @@ describe("PuzzleScores on-chain verifier checks (real lsig)", () => {
   test("rejects addScore when score argument mismatches public score signal", async () => {
     const { appClient, user, userSigner, verifier } =
       await deployConfiguredApp();
-    const { proof, signals, puzzleCodeBytes, score } = await generateProof(
-      user.addr.toString(),
-      verifier,
-    );
+    const { proof, signals, puzzleCodeBytes, score } = getCachedProofBundle();
     const mismatchedScore = score + 1n;
 
     const group = await buildAddScoreGroup({
@@ -380,10 +408,7 @@ describe("PuzzleScores on-chain verifier checks (real lsig)", () => {
   test("rejects addScore when public score signal is tampered (proof/lsig failure path)", async () => {
     const { appClient, user, userSigner, verifier } =
       await deployConfiguredApp();
-    const { proof, signals, puzzleCodeBytes, score } = await generateProof(
-      user.addr.toString(),
-      verifier,
-    );
+    const { proof, signals, puzzleCodeBytes, score } = getCachedProofBundle();
 
     const tamperedSignals = [...signals];
     tamperedSignals[0] += 1n;
