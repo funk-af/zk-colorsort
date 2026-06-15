@@ -41,6 +41,17 @@ function createVerifier(algorand: AlgorandClient): Groth16Bn254LsigVerifier {
   });
 }
 
+function tamperProof(proof: Groth16Bn254Proof): Groth16Bn254Proof {
+  const piA = new Uint8Array(proof.piA);
+  piA[0] = piA[0] ^ 0x01;
+
+  return {
+    piA,
+    piB: new Uint8Array(proof.piB),
+    piC: new Uint8Array(proof.piC),
+  };
+}
+
 async function generateProof(
   sender: string,
   verifier: Groth16Bn254LsigVerifier,
@@ -312,5 +323,90 @@ describe("PuzzleScores on-chain verifier checks (real lsig)", () => {
     await expect(group.send()).rejects.toThrow(
       /public sender must match caller/i,
     );
+  }, 120_000);
+
+  test("rejects addScore when proof is tampered (fraudulent proof)", async () => {
+    const { appClient, user, userSigner, verifier } =
+      await deployConfiguredApp();
+    const { proof, signals, puzzleCodeBytes, score } = await generateProof(
+      user.addr.toString(),
+      verifier,
+    );
+
+    const group = await buildAddScoreGroup({
+      appClient,
+      user,
+      userSigner,
+      verifier,
+      proof: tamperProof(proof),
+      signals,
+      puzzleCodeBytes,
+      score,
+    });
+
+    await expect(group.send()).rejects.toThrow();
+
+    const [storedScore, exists] = await appClient.getScoreForUser({
+      sender: user.addr.toString(),
+      args: { puzzleCode: puzzleCodeBytes, user: user.addr.toString() },
+    });
+    expect(exists).toBe(false);
+    expect(storedScore).toBe(0n);
+  }, 120_000);
+
+  test("rejects addScore when score argument mismatches public score signal", async () => {
+    const { appClient, user, userSigner, verifier } =
+      await deployConfiguredApp();
+    const { proof, signals, puzzleCodeBytes, score } = await generateProof(
+      user.addr.toString(),
+      verifier,
+    );
+    const mismatchedScore = score + 1n;
+
+    const group = await buildAddScoreGroup({
+      appClient,
+      user,
+      userSigner,
+      verifier,
+      proof,
+      signals,
+      puzzleCodeBytes,
+      score: mismatchedScore,
+    });
+
+    await expect(group.send()).rejects.toThrow(/public score must match/i);
+  }, 120_000);
+
+  test("rejects addScore when public score signal is tampered (proof/lsig failure path)", async () => {
+    const { appClient, user, userSigner, verifier } =
+      await deployConfiguredApp();
+    const { proof, signals, puzzleCodeBytes, score } = await generateProof(
+      user.addr.toString(),
+      verifier,
+    );
+
+    const tamperedSignals = [...signals];
+    tamperedSignals[0] += 1n;
+    const tamperedScore = tamperedSignals[0];
+
+    const group = await buildAddScoreGroup({
+      appClient,
+      user,
+      userSigner,
+      verifier,
+      proof,
+      signals: tamperedSignals,
+      puzzleCodeBytes,
+      score: tamperedScore,
+    });
+
+    await expect(group.send()).rejects.toThrow();
+
+    const [storedScore, exists] = await appClient.getScoreForUser({
+      sender: user.addr.toString(),
+      args: { puzzleCode: puzzleCodeBytes, user: user.addr.toString() },
+    });
+    expect(exists).toBe(false);
+    expect(storedScore).toBe(0n);
   }, 120_000);
 });
