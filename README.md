@@ -183,7 +183,7 @@ flowchart LR
   - Frontend on-chain interaction and score upload orchestration
 - `contracts/PuzzleScores.algo.ts`
   - Algorand TypeScript smart contract
-- `contracts/PuzzleScores.algo.test.ts`
+- `tests/contracts/PuzzleScores.algo.unit.test.ts`
   - Contract tests
 
 ## Getting Started
@@ -243,6 +243,13 @@ Run contract tests only:
 
 ```bash
 pnpm test:contracts
+```
+
+Run on-chain contract e2e tests against LocalNet:
+
+```bash
+algokit localnet start
+pnpm test:contracts:e2e
 ```
 
 ## Network Configuration
