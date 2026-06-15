@@ -1,3 +1,4 @@
+import algosdk from "algosdk";
 import * as snarkjs from "snarkjs";
 import type { Move, Puzzle } from "../game/types";
 import { DEFAULT_COLORS } from "../game/types";
@@ -6,11 +7,12 @@ import { DEFAULT_COLORS } from "../game/types";
 const NTUBES = 12;
 const CAP = 4;
 const NMOVES = 120;
+const ADDRESS_BYTE_LENGTH = 32;
 
 // Vite static asset URLs — resolved at build time
 // Use ?url suffix so Vite exposes them as fetch-able URLs
-import wasmUrl from "../../zk/build/color_js/color.wasm?url";
-import zkeyUrl from "../../zk/build/color_final.zkey?url";
+import wasmUrl from "./build/color_js/color.wasm?url";
+import zkeyUrl from "./build/color_final.zkey?url";
 
 // Map hex color string → circuit integer (1..10). Empty slot → 0.
 const colorToInt = new Map<string, number>(
@@ -83,6 +85,17 @@ function encodeMoves(moves: Move[]): {
   return { srcs, dsts, active };
 }
 
+function encodeSenderPublicKey(sender: string): string[] {
+  const publicKey = algosdk.decodeAddress(sender).publicKey;
+  if (publicKey.length !== ADDRESS_BYTE_LENGTH) {
+    throw new Error(
+      `Expected ${ADDRESS_BYTE_LENGTH} sender bytes, got ${publicKey.length}`,
+    );
+  }
+
+  return Array.from(publicKey, (byte) => String(byte));
+}
+
 export interface ProveResult {
   proof: snarkjs.Groth16Proof;
   publicSignals: string[];
@@ -91,11 +104,42 @@ export interface ProveResult {
 }
 
 export interface ColorSortProofInput {
-  [key: string]: string[];
+  [key: string]: string[] | string;
   initial: string[];
+  sender: string[];
+  puzzlePacked: string;
+  senderHi: string;
+  senderLo: string;
   srcs: string[];
   dsts: string[];
   active: string[];
+}
+
+function packBytesBigEndian(bytes: number[]): string {
+  let packed = 0n;
+  for (const byte of bytes) {
+    packed = packed * 256n + BigInt(byte);
+  }
+  return packed.toString();
+}
+
+function packPuzzleFromInitial(initial: string[]): string {
+  if (initial.length !== NTUBES * CAP) {
+    throw new Error("Unexpected initial state length for packing");
+  }
+
+  const puzzleBytes: number[] = [];
+  for (let tubeIndex = 0; tubeIndex < 10; tubeIndex += 1) {
+    const slot0 = Number(initial[tubeIndex * CAP]);
+    const slot1 = Number(initial[tubeIndex * CAP + 1]);
+    const slot2 = Number(initial[tubeIndex * CAP + 2]);
+    const slot3 = Number(initial[tubeIndex * CAP + 3]);
+
+    puzzleBytes.push((slot0 << 4) | slot1);
+    puzzleBytes.push((slot2 << 4) | slot3);
+  }
+
+  return packBytesBigEndian(puzzleBytes);
 }
 
 export const colorSortWasmUrl = wasmUrl;
@@ -104,10 +148,25 @@ export const colorSortZkeyUrl = zkeyUrl;
 export function buildColorSortProofInput(
   puzzle: Puzzle,
   moves: Move[],
+  sender: string,
 ): ColorSortProofInput {
   const initial = encodeInitialState(puzzle);
+  const senderPublicKey = encodeSenderPublicKey(sender);
+  const senderPublicKeyNumbers = senderPublicKey.map((value) => Number(value));
+  const senderHi = packBytesBigEndian(senderPublicKeyNumbers.slice(0, 16));
+  const senderLo = packBytesBigEndian(senderPublicKeyNumbers.slice(16, 32));
+  const puzzlePacked = packPuzzleFromInitial(initial);
   const { srcs, dsts, active } = encodeMoves(moves);
-  return { initial, srcs, dsts, active };
+  return {
+    initial,
+    sender: senderPublicKey,
+    puzzlePacked,
+    senderHi,
+    senderLo,
+    srcs,
+    dsts,
+    active,
+  };
 }
 
 /**
@@ -119,8 +178,9 @@ export function buildColorSortProofInput(
 export async function proveColorSort(
   puzzle: Puzzle,
   moves: Move[],
+  sender: string,
 ): Promise<ProveResult> {
-  const input = buildColorSortProofInput(puzzle, moves);
+  const input = buildColorSortProofInput(puzzle, moves, sender);
 
   const { proof, publicSignals } = await snarkjs.groth16.fullProve(
     input,

@@ -9,20 +9,34 @@ import { TestExecutionContext } from "@algorandfoundation/algorand-typescript-te
 import { afterEach, describe, expect, test, vi } from "vitest";
 import PuzzleScores from "./PuzzleScores.algo";
 
-function buildSignalsForPuzzle(puzzleCode: Uint8Array, score: bigint | number) {
+function buildSignalsForSubmission(
+  puzzleCode: Uint8Array,
+  senderBytes: Uint8Array,
+  score: bigint | number,
+) {
   const signals = [] as Uint256[];
 
   const baseAt = signals.at.bind(signals);
   (
     signals as Uint256[] & { at(index: number | bigint): Uint256 | undefined }
   ).at = (index: number | bigint) => {
+    const unknownIndex = index as unknown;
+    const valueFromObject =
+      unknownIndex && typeof unknownIndex === "object"
+        ? (unknownIndex as { valueOf?: () => unknown }).valueOf?.()
+        : undefined;
+
+    const primitiveIndex = valueFromObject ?? unknownIndex;
+
     let normalizedIndex: number;
-    try {
-      normalizedIndex = Number(
-        BigInt(index as unknown as bigint | number | string),
-      );
-    } catch {
-      normalizedIndex = Number(index as unknown as number);
+    if (typeof primitiveIndex === "bigint") {
+      normalizedIndex = Number(primitiveIndex);
+    } else if (typeof primitiveIndex === "number") {
+      normalizedIndex = primitiveIndex;
+    } else if (typeof primitiveIndex === "string") {
+      normalizedIndex = Number(primitiveIndex);
+    } else {
+      normalizedIndex = Number(unknownIndex as number);
     }
 
     return baseAt(normalizedIndex);
@@ -45,16 +59,22 @@ function buildSignalsForPuzzle(puzzleCode: Uint8Array, score: bigint | number) {
       asBigUint: () => toBigInt(value),
     }) as unknown as Uint256;
 
-  for (const byte of puzzleCode) {
-    signals.push(toSignal((byte >> 4) & 0x0f));
-    signals.push(toSignal(byte & 0x0f));
-  }
+  const packBigEndian = (bytes: Uint8Array): bigint => {
+    let packed = 0n;
+    for (const byte of bytes) {
+      packed = packed * 256n + BigInt(byte);
+    }
+    return packed;
+  };
 
-  for (let index = 0; index < 8; index += 1) {
-    signals.push(toSignal(0));
-  }
+  const senderHi = senderBytes.slice(0, 16);
+  const senderLo = senderBytes.slice(16, 32);
 
+  // Output-first signal ordering: score, packed puzzle, sender high-half, sender low-half.
   signals.push(toSignal(score));
+  signals.push(toSignal(packBigEndian(puzzleCode)));
+  signals.push(toSignal(packBigEndian(senderHi)));
+  signals.push(toSignal(packBigEndian(senderLo)));
   return signals;
 }
 
@@ -132,6 +152,14 @@ function withLinkedVerifierReceiver<T>(
 
 describe("PuzzleScores contract", () => {
   const ctx = new TestExecutionContext();
+  const makeSignal = (value: bigint | number): Uint256 =>
+    ({
+      asBigUint: () => BigInt(value),
+    }) as unknown as Uint256;
+  type TestAccount = {
+    raw: Uint8Array;
+    value: ReturnType<typeof ctx.any.account>;
+  };
 
   const buildProof = () => ({
     piA: ctx.any.bytes(64) as bytes<64>,
@@ -139,43 +167,58 @@ describe("PuzzleScores contract", () => {
     piC: ctx.any.bytes(64) as bytes<64>,
   });
 
+  const createAccount = (offset = 0): TestAccount => {
+    const raw = Uint8Array.from(
+      { length: 32 },
+      (_, index) => (offset + index) % 256,
+    );
+    const hex = Array.from(raw, (byte) =>
+      byte.toString(16).padStart(2, "0"),
+    ).join("");
+
+    return {
+      raw,
+      value: ctx.any.account({ address: Bytes.fromHex(hex) as bytes<32> }),
+    };
+  };
+
   afterEach(() => {
     ctx.reset();
   });
 
   const addScoreAs = (
     contract: PuzzleScores,
-    verifier: ReturnType<typeof ctx.any.account>,
-    sender: ReturnType<typeof ctx.any.account>,
+    verifier: TestAccount,
+    sender: TestAccount,
     puzzleCode: { raw: Uint8Array; value: bytes<20> },
     score: ReturnType<typeof Uint64>,
   ) => {
-    ctx.defaultSender = sender;
+    ctx.defaultSender = sender.value;
     const app = ctx.ledger.getApplicationForContract(contract);
     const appAccount = (
       app as unknown as { address: ReturnType<typeof ctx.any.account> }
     ).address;
     const mbr = contract.boxMbr();
     const appCall = ctx.any.txn.applicationCall({
-      sender,
+      sender: sender.value,
       appId: app,
     });
 
     ctx.txn.createScope([appCall], 0).execute(() => {
       const verifierTxn = ctx.any.txn.payment({
-        sender: verifier,
+        sender: verifier.value,
         receiver: appAccount,
         amount: Uint64(0),
         fee: Uint64(0),
       });
       withLinkedVerifierReceiver(verifierTxn, () => {
         const pay = ctx.any.txn.payment({
-          sender,
+          sender: sender.value,
           receiver: appAccount,
           amount: mbr,
         });
         contract.addScore(
-          buildSignalsForPuzzle(puzzleCode.raw, score),
+          buildSignalsForSubmission(puzzleCode.raw, sender.raw, score),
           buildProof(),
           puzzleCode.value,
           score,
@@ -189,31 +232,31 @@ describe("PuzzleScores contract", () => {
 
   const updateScoreAs = (
     contract: PuzzleScores,
-    verifier: ReturnType<typeof ctx.any.account>,
-    sender: ReturnType<typeof ctx.any.account>,
+    verifier: TestAccount,
+    sender: TestAccount,
     puzzleCode: { raw: Uint8Array; value: bytes<20> },
     score: ReturnType<typeof Uint64>,
   ) => {
-    ctx.defaultSender = sender;
+    ctx.defaultSender = sender.value;
     const app = ctx.ledger.getApplicationForContract(contract);
     const appAccount = (
       app as unknown as { address: ReturnType<typeof ctx.any.account> }
     ).address;
     const appCall = ctx.any.txn.applicationCall({
-      sender,
+      sender: sender.value,
       appId: app,
     });
 
     ctx.txn.createScope([appCall], 0).execute(() => {
       const verifierTxn = ctx.any.txn.payment({
-        sender: verifier,
+        sender: verifier.value,
         receiver: appAccount,
         amount: Uint64(0),
         fee: Uint64(0),
       });
       withLinkedVerifierReceiver(verifierTxn, () => {
         contract.updateScore(
-          buildSignalsForPuzzle(puzzleCode.raw, score),
+          buildSignalsForSubmission(puzzleCode.raw, sender.raw, score),
           buildProof(),
           puzzleCode.value,
           score,
@@ -225,13 +268,13 @@ describe("PuzzleScores contract", () => {
 
   const removeScoreAs = (
     contract: PuzzleScores,
-    sender: ReturnType<typeof ctx.any.account>,
+    sender: TestAccount,
     puzzleCode: { raw: Uint8Array; value: bytes<20> },
   ) => {
-    ctx.defaultSender = sender;
+    ctx.defaultSender = sender.value;
     const app = ctx.ledger.getApplicationForContract(contract);
     const appCall = ctx.any.txn.applicationCall({
-      sender,
+      sender: sender.value,
       appId: app,
     });
 
@@ -242,42 +285,42 @@ describe("PuzzleScores contract", () => {
 
   const getScoreForUserAs = (
     contract: PuzzleScores,
-    sender: ReturnType<typeof ctx.any.account>,
+    sender: TestAccount,
     puzzleCode: { raw: Uint8Array; value: bytes<20> },
-    user: ReturnType<typeof ctx.any.account>,
+    user: TestAccount,
   ) => {
-    ctx.defaultSender = sender;
+    ctx.defaultSender = sender.value;
     const app = ctx.ledger.getApplicationForContract(contract);
     const appCall = ctx.any.txn.applicationCall({
-      sender,
+      sender: sender.value,
       appId: app,
     });
 
     return ctx.txn.createScope([appCall], 0).execute(() => {
-      return contract.getScoreForUser(puzzleCode.value, user);
+      return contract.getScoreForUser(puzzleCode.value, user.value);
     });
   };
 
   test("two users can add and manage scores on the same puzzle independently", () => {
-    const creator = ctx.any.account();
-    ctx.defaultSender = creator;
+    const creator = createAccount(0);
+    ctx.defaultSender = creator.value;
     const contract = ctx.contract.create(PuzzleScores);
     vi.spyOn(
       contract as unknown as { verifyVerifierTxn: () => void },
       "verifyVerifierTxn",
     ).mockImplementation(() => {});
-    const userA = ctx.any.account();
-    const userB = ctx.any.account();
+    const userA = createAccount(32);
+    const userB = createAccount(64);
     const verifier = creator;
     const puzzleCode = createPuzzleCode(0);
 
-    ctx.defaultSender = creator;
+    ctx.defaultSender = creator.value;
     const verifierAppCall = ctx.any.txn.applicationCall({
-      sender: creator,
+      sender: creator.value,
       appId: ctx.ledger.getApplicationForContract(contract),
     });
     ctx.txn.createScope([verifierAppCall], 0).execute(() => {
-      contract.setVerifier(verifier);
+      contract.setVerifier(verifier.value);
     });
 
     const mbrA = addScoreAs(contract, verifier, userA, puzzleCode, Uint64(22));
@@ -307,7 +350,7 @@ describe("PuzzleScores contract", () => {
     removeScoreAs(contract, userA, puzzleCode);
 
     const refund = ctx.txn.lastGroup.lastItxnGroup().getPaymentInnerTxn();
-    expect(refund.receiver).toEqual(userA);
+    expect(refund.receiver).toEqual(userA.value);
     expect(refund.amount).toEqual(mbrA);
 
     expect(getScoreForUserAs(contract, userB, puzzleCode, userA)).toEqual([
@@ -321,23 +364,23 @@ describe("PuzzleScores contract", () => {
   });
 
   test("same user cannot add duplicate score for the same puzzle", () => {
-    const creator = ctx.any.account();
-    ctx.defaultSender = creator;
+    const creator = createAccount(1);
+    ctx.defaultSender = creator.value;
     const contract = ctx.contract.create(PuzzleScores);
     vi.spyOn(
       contract as unknown as { verifyVerifierTxn: () => void },
       "verifyVerifierTxn",
     ).mockImplementation(() => {});
-    const user = ctx.any.account();
+    const user = createAccount(48);
     const verifier = creator;
     const puzzleCode = createPuzzleCode(1);
 
     const verifierAppCall = ctx.any.txn.applicationCall({
-      sender: creator,
+      sender: creator.value,
       appId: ctx.ledger.getApplicationForContract(contract),
     });
     ctx.txn.createScope([verifierAppCall], 0).execute(() => {
-      contract.setVerifier(verifier);
+      contract.setVerifier(verifier.value);
     });
 
     const mbr = addScoreAs(contract, verifier, user, puzzleCode, Uint64(9));
@@ -349,24 +392,24 @@ describe("PuzzleScores contract", () => {
   });
 
   test("user cannot update another user's score", () => {
-    const creator = ctx.any.account();
-    ctx.defaultSender = creator;
+    const creator = createAccount(2);
+    ctx.defaultSender = creator.value;
     const contract = ctx.contract.create(PuzzleScores);
     vi.spyOn(
       contract as unknown as { verifyVerifierTxn: () => void },
       "verifyVerifierTxn",
     ).mockImplementation(() => {});
-    const userA = ctx.any.account();
-    const userB = ctx.any.account();
+    const userA = createAccount(80);
+    const userB = createAccount(112);
     const verifier = creator;
     const puzzleCode = createPuzzleCode(2);
 
     const verifierAppCall = ctx.any.txn.applicationCall({
-      sender: creator,
+      sender: creator.value,
       appId: ctx.ledger.getApplicationForContract(contract),
     });
     ctx.txn.createScope([verifierAppCall], 0).execute(() => {
-      contract.setVerifier(verifier);
+      contract.setVerifier(verifier.value);
     });
 
     addScoreAs(contract, verifier, userA, puzzleCode, Uint64(12));
@@ -382,30 +425,25 @@ describe("PuzzleScores contract", () => {
   });
 
   test("score upload rejects mismatched public puzzle signals", () => {
-    const creator = ctx.any.account();
-    ctx.defaultSender = creator;
+    const creator = createAccount(3);
+    ctx.defaultSender = creator.value;
     const contract = ctx.contract.create(PuzzleScores);
-    vi.spyOn(
-      contract as unknown as { verifyVerifierTxn: () => void },
-      "verifyVerifierTxn",
-    ).mockImplementation(() => {
-      throw new Error("public puzzle code must match");
-    });
-    const user = ctx.any.account();
+    const user = createAccount(144);
     const verifier = creator;
-    const puzzleCode = createPuzzleCode(3);
+    const puzzleCodeA = createPuzzleCode(3);
+    const puzzleCodeB = createPuzzleCode(5);
 
     const verifierAppCall = ctx.any.txn.applicationCall({
-      sender: creator,
+      sender: creator.value,
       appId: ctx.ledger.getApplicationForContract(contract),
     });
     ctx.txn.createScope([verifierAppCall], 0).execute(() => {
-      contract.setVerifier(verifier);
+      contract.setVerifier(verifier.value);
     });
 
-    ctx.defaultSender = user;
+    ctx.defaultSender = user.value;
     const appCall = ctx.any.txn.applicationCall({
-      sender: user,
+      sender: user.value,
       appId: ctx.ledger.getApplicationForContract(contract),
     });
     const appAccount = (
@@ -416,17 +454,18 @@ describe("PuzzleScores contract", () => {
 
     expect(() =>
       ctx.txn.createScope([appCall], 0).execute(() => {
-        const wrongSignals = buildSignalsForPuzzle(
-          new Uint8Array(20),
-          Uint64(9),
+        const wrongSignals = buildSignalsForSubmission(
+          puzzleCodeA.raw,
+          user.raw,
+          9,
         );
         const pay = ctx.any.txn.payment({
-          sender: user,
+          sender: user.value,
           receiver: appAccount,
           amount: contract.boxMbr(),
         });
         const verifierTxn = ctx.any.txn.payment({
-          sender: verifier,
+          sender: verifier.value,
           receiver: appAccount,
           amount: Uint64(0),
           fee: Uint64(0),
@@ -435,7 +474,7 @@ describe("PuzzleScores contract", () => {
           contract.addScore(
             wrongSignals,
             buildProof(),
-            puzzleCode.value,
+            puzzleCodeB.value,
             Uint64(9),
             pay,
             verifierTxn,
@@ -443,5 +482,180 @@ describe("PuzzleScores contract", () => {
         });
       }),
     ).toThrow("public puzzle code must match");
+  });
+
+  test("score upload rejects tampered packed sender signals", () => {
+    const creator = createAccount(4);
+    ctx.defaultSender = creator.value;
+    const contract = ctx.contract.create(PuzzleScores);
+    const user = createAccount(176);
+    const verifier = creator;
+    const puzzleCode = createPuzzleCode(4);
+
+    const verifierAppCall = ctx.any.txn.applicationCall({
+      sender: creator.value,
+      appId: ctx.ledger.getApplicationForContract(contract),
+    });
+    ctx.txn.createScope([verifierAppCall], 0).execute(() => {
+      contract.setVerifier(verifier.value);
+    });
+
+    ctx.defaultSender = user.value;
+    const appCall = ctx.any.txn.applicationCall({
+      sender: user.value,
+      appId: ctx.ledger.getApplicationForContract(contract),
+    });
+    const appAccount = (
+      ctx.ledger.getApplicationForContract(contract) as unknown as {
+        address: ReturnType<typeof ctx.any.account>;
+      }
+    ).address;
+
+    expect(() =>
+      ctx.txn.createScope([appCall], 0).execute(() => {
+        const signals = buildSignalsForSubmission(puzzleCode.raw, user.raw, 9);
+        signals[2] = makeSignal(1);
+        const pay = ctx.any.txn.payment({
+          sender: user.value,
+          receiver: appAccount,
+          amount: contract.boxMbr(),
+        });
+        const verifierTxn = ctx.any.txn.payment({
+          sender: verifier.value,
+          receiver: appAccount,
+          amount: Uint64(0),
+          fee: Uint64(0),
+        });
+        withLinkedVerifierReceiver(verifierTxn, () => {
+          contract.addScore(
+            signals,
+            buildProof(),
+            puzzleCode.value,
+            Uint64(9),
+            pay,
+            verifierTxn,
+          );
+        });
+      }),
+    ).toThrow();
+  });
+
+  test("score upload rejects score mismatch", () => {
+    const creator = createAccount(5);
+    ctx.defaultSender = creator.value;
+    const contract = ctx.contract.create(PuzzleScores);
+    const user = createAccount(96);
+    const verifier = creator;
+    const puzzleCode = createPuzzleCode(6);
+
+    const verifierAppCall = ctx.any.txn.applicationCall({
+      sender: creator.value,
+      appId: ctx.ledger.getApplicationForContract(contract),
+    });
+    ctx.txn.createScope([verifierAppCall], 0).execute(() => {
+      contract.setVerifier(verifier.value);
+    });
+
+    ctx.defaultSender = user.value;
+    const appCall = ctx.any.txn.applicationCall({
+      sender: user.value,
+      appId: ctx.ledger.getApplicationForContract(contract),
+    });
+    const appAccount = (
+      ctx.ledger.getApplicationForContract(contract) as unknown as {
+        address: ReturnType<typeof ctx.any.account>;
+      }
+    ).address;
+
+    expect(() =>
+      ctx.txn.createScope([appCall], 0).execute(() => {
+        const wrongScoreSignals = buildSignalsForSubmission(
+          puzzleCode.raw,
+          user.raw,
+          8,
+        );
+        const pay = ctx.any.txn.payment({
+          sender: user.value,
+          receiver: appAccount,
+          amount: contract.boxMbr(),
+        });
+        const verifierTxn = ctx.any.txn.payment({
+          sender: verifier.value,
+          receiver: appAccount,
+          amount: Uint64(0),
+          fee: Uint64(0),
+        });
+        withLinkedVerifierReceiver(verifierTxn, () => {
+          contract.addScore(
+            wrongScoreSignals,
+            buildProof(),
+            puzzleCode.value,
+            Uint64(9),
+            pay,
+            verifierTxn,
+          );
+        });
+      }),
+    ).toThrow("public score must match");
+  });
+
+  test("score upload rejects replayed proof from another sender", () => {
+    const creator = createAccount(6);
+    ctx.defaultSender = creator.value;
+    const contract = ctx.contract.create(PuzzleScores);
+    const userA = createAccount(16);
+    const userB = createAccount(48);
+    const verifier = creator;
+    const puzzleCode = createPuzzleCode(7);
+
+    const verifierAppCall = ctx.any.txn.applicationCall({
+      sender: creator.value,
+      appId: ctx.ledger.getApplicationForContract(contract),
+    });
+    ctx.txn.createScope([verifierAppCall], 0).execute(() => {
+      contract.setVerifier(verifier.value);
+    });
+
+    ctx.defaultSender = userB.value;
+    const appCall = ctx.any.txn.applicationCall({
+      sender: userB.value,
+      appId: ctx.ledger.getApplicationForContract(contract),
+    });
+    const appAccount = (
+      ctx.ledger.getApplicationForContract(contract) as unknown as {
+        address: ReturnType<typeof ctx.any.account>;
+      }
+    ).address;
+
+    expect(() =>
+      ctx.txn.createScope([appCall], 0).execute(() => {
+        const replayedSignals = buildSignalsForSubmission(
+          puzzleCode.raw,
+          userA.raw,
+          9,
+        );
+        const pay = ctx.any.txn.payment({
+          sender: userB.value,
+          receiver: appAccount,
+          amount: contract.boxMbr(),
+        });
+        const verifierTxn = ctx.any.txn.payment({
+          sender: verifier.value,
+          receiver: appAccount,
+          amount: Uint64(0),
+          fee: Uint64(0),
+        });
+        withLinkedVerifierReceiver(verifierTxn, () => {
+          contract.addScore(
+            replayedSignals,
+            buildProof(),
+            puzzleCode.value,
+            Uint64(9),
+            pay,
+            verifierTxn,
+          );
+        });
+      }),
+    ).toThrow(/public sender (high|low) bytes must match caller/);
   });
 });

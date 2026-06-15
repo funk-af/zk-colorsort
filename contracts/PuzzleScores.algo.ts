@@ -5,12 +5,15 @@ import type {
   uint64,
 } from "@algorandfoundation/algorand-typescript";
 import {
+  abimethod,
   assert,
   BigUint,
   Contract,
+  ensureBudget,
   Global,
   GlobalState,
   itxn,
+  OpUpFeeSource,
   readonly,
   Txn,
   Uint64,
@@ -19,14 +22,24 @@ import { Uint256 } from "@algorandfoundation/algorand-typescript/arc4";
 import {
   Box as BoxOp,
   btoi,
+  getByte,
   itob,
 } from "@algorandfoundation/algorand-typescript/op";
 
 const BOX_BASE_MBR = Uint64(2_500);
 const BOX_BYTE_MBR = Uint64(400);
-const PUBLIC_SCORE_INDEX = Uint64(48);
+const PUZZLE_CODE_LENGTH = Uint64(20);
+const PUBLIC_SIGNALS_LENGTH = Uint64(4);
+const PUBLIC_SCORE_INDEX = Uint64(0);
+const PUBLIC_PUZZLE_INDEX = Uint64(1);
+const PUBLIC_SENDER_HI_INDEX = Uint64(2);
+const PUBLIC_SENDER_LO_INDEX = Uint64(3);
+const PUBLIC_SENDER_HALF_LENGTH = Uint64(16);
+const PACKED_BYTE_BASE = BigUint(Uint64(256));
+const ZERO_BIGUINT = BigUint(Uint64(0));
 const SCORE_LENGTH = Uint64(8);
 const SCORE_KEY_LENGTH = Uint64(52);
+const VERIFY_OPCODE_BUDGET = Uint64(4900);
 type PublicSignals = Uint256[];
 type Groth16Bn254Proof = {
   piA: bytes<64>;
@@ -148,9 +161,12 @@ export default class PuzzleScores extends Contract {
     verifierTxn: gtxn.PaymentTxn,
     signals: PublicSignals,
     _proof: Groth16Bn254Proof,
-    _puzzleCode: bytes,
+    puzzleCode: bytes,
     score: uint64,
   ): void {
+    // Ensure enough budget for bigint packing/comparison checks in this routine.
+    ensureBudget(VERIFY_OPCODE_BUDGET, OpUpFeeSource.GroupCredit);
+
     assert(this.verifier.hasValue, "verifier is not configured");
     assert(
       verifierTxn.sender === this.verifier.value,
@@ -162,15 +178,66 @@ export default class PuzzleScores extends Contract {
     );
 
     assert(
-      signals.length >= PUBLIC_SCORE_INDEX + Uint64(1),
+      signals.length >= PUBLIC_SIGNALS_LENGTH &&
+        signals.length <= PUBLIC_SIGNALS_LENGTH,
       "public signals length is invalid",
+    );
+    assert(
+      puzzleCode.length >= PUZZLE_CODE_LENGTH &&
+        puzzleCode.length <= PUZZLE_CODE_LENGTH,
+      "puzzle code length is invalid",
+    );
+
+    const packedPuzzle = this.packBytesToBigUint(
+      puzzleCode,
+      Uint64(0),
+      PUZZLE_CODE_LENGTH,
+    );
+    assert(
+      signals.at(PUBLIC_PUZZLE_INDEX)!.asBigUint() === packedPuzzle,
+      "public puzzle code must match",
+    );
+
+    const packedSenderHi = this.packBytesToBigUint(
+      Txn.sender.bytes,
+      Uint64(0),
+      PUBLIC_SENDER_HALF_LENGTH,
+    );
+    const packedSenderLo = this.packBytesToBigUint(
+      Txn.sender.bytes,
+      PUBLIC_SENDER_HALF_LENGTH,
+      PUBLIC_SENDER_HALF_LENGTH,
+    );
+
+    assert(
+      signals.at(PUBLIC_SENDER_HI_INDEX)!.asBigUint() === packedSenderHi,
+      "public sender high bytes must match caller",
+    );
+    assert(
+      signals.at(PUBLIC_SENDER_LO_INDEX)!.asBigUint() === packedSenderLo,
+      "public sender low bytes must match caller",
     );
 
     const expectedScore = BigUint(score);
-    const scoreAtEnd =
-      signals.at(PUBLIC_SCORE_INDEX)!.asBigUint() === expectedScore;
-    const scoreAtStart = signals.at(Uint64(0))!.asBigUint() === expectedScore;
+    assert(
+      signals.at(PUBLIC_SCORE_INDEX)!.asBigUint() === expectedScore,
+      "public score must match",
+    );
+  }
 
-    assert(scoreAtEnd || scoreAtStart, "public score must match");
+  private packBytesToBigUint(source: bytes, start: uint64, length: uint64) {
+    let packedValue = ZERO_BIGUINT;
+
+    for (
+      let byteIndex = Uint64(0);
+      byteIndex < length;
+      byteIndex = byteIndex + Uint64(1)
+    ) {
+      packedValue =
+        packedValue * PACKED_BYTE_BASE +
+        BigUint(getByte(source, start + byteIndex));
+    }
+
+    return packedValue;
   }
 }

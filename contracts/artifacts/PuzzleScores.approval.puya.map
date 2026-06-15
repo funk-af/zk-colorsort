@@ -3,7 +3,7 @@
   "sources": [
     "../PuzzleScores.algo.ts"
   ],
-  "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;;;AAoCA;;AAAA;;;AAAA;;;;;;AAAA;;;AAAA;;;;AAAA;;AAAA;AAAA;AAAA;;AAAA;AAAA;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;AAAA;;;AAAA;;;;;;;;;;;;;;;;AAAA;AAGE;;;;;;;;;;;;;;AAAA;AAAA;AAAA;AAaA;;AAAA;;AAAA;AAAA;;AAAA;AAAA;AAAA;;;AAhBF;;AAAA;AAAA;;AAAA;AAAA;AAAA;AAAA;AAAA;AAQE;;;AAAA;AAAA;AAAA;AAAA;AAAA;AAEI;;AAAe;;AAAf;AADF;AARS;AAYT;AAAA;AALF;AAAA;AAUI;;AAAe;;AAAf;AADF;AADF;AAAA;AAOA;;;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;;AAAA;AAAA;AAAA;AAAA;;;AAAA;AAAA;AAAA;;;AAAA;AAAA;AAAA;;;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;;AAAA;AAAA;AAAA;AAAA;;;AAAA;;;AAAA;AAAA;AAAA;;AAAA;AAAA;AAAA;AAAA;;AAAA;AAAA;AAAA;AAAA;;AAAA;AAAA;AAAA;AAAA;;AAAA;AAAA;AAAA;AAAA;;AAAA;AAAA;AAAA;AAgFS;;AAxE+B;;AAwE/B;AAvEY;AAAA;AAAA;;AACZ;AAAP;AAEA;AAAA;;AAAA;;AAAA;;AAAA;;AAAA;;;AAAA;;AAIE;;AAAA;;;AAEU;;AAAA;;AAAA;;;AAFV;AADF;AAOE;;AAAA;;;AAEU;;AAAA;;AAAA;;;AAFV;AADF;AAMO;AAAA;;AAyDA;;AAzDA;AAAP;AAEe;AAAA;AAAf;AA7BF;AAAA;AAgCA;;;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;;AAAA;AAAA;AAAA;AAAA;;;AAAA;AAAA;AAAA;;;AAAA;AAAA;AAAA;;;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;;AAAA;AAAA;AAAA;AAAA;;;AAAA;;;AAAA;AAAA;AAAA;;AAAA;AAAA;AAAA;AAAA;;AAAA;AAAA;AAAA;AAAA;;AAAA;AAAA;AAAA;AAgDS;;AAzC+B;;AAyC/B;AAxCsB;AAAA;AAC7B;AAEA;;AAAA;;AAAA;;AAAA;;AAAA;;AAAA;;;AAAA;;AAEkB;AAAX;;AAAA;AAAP;AACe;AAAA;AAAf;AAdF;AAAA;AAiBA;;;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;;AAAA;AAAA;AAAA;AAAA;;;AACwC;;AA8B/B;AA7BS;AAChB;AAEA;AAEc;;AA4BP;;;;;;AA9BP;;;AAIS;;;AAJT;AALF;AAAA;AAcA;;;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;;AAAA;AAAA;AAAA;AAAA;;;AAE0C;;AAAjC;;;AAFT;AAAA;AAAA;AAAA;AAAA;AAAA;AAKA;;;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;;AAAA;AAAA;AAAA;AAAA;;;AAAA;;;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;;;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;;;AAYS;;AAAA;;AAAA;AAVsB;AAEzB;;;AACK;;;;;;;;;;;AAAP;AAAA;AAGM;;AAAA;AAAD;AAAA;;;AAAA;AAAP;AAAA;AAWF;;;AAOS;AApHE;AAoHF;AAAP;AAEE;;AAAA;;AAAA;AADF;AAKE;;AAAqC;;AAAA;;AAArC;AADF;AAME;;AAAA;AAAA;AAAkB;;AAAlB;AADF;AAKsB;;AAAA;AAEpB;;;;;;AAAA;AAAA;;AAAA;AACmB;;AAAA;;;AAAA;;AAAA;AAEd;AAAP;;;;;",
+  "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;AAiDA;;AAAA;;;AAAA;;;;;;AAAA;;;AAAA;;;;AAAA;;AAAA;AAAA;AAAA;;AAAA;AAAA;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;AAAA;;;AAAA;;;;;;;;;;;;;;;;AAAA;AAGE;;;;;;;;;;;;;;AAAA;AAAA;AAAA;AAaA;;AAAA;;AAAA;AAAA;;AAAA;AAAA;AAAA;;;AAhBF;;AAAA;AAAA;;AAAA;AAAA;AAAA;AAAA;AAAA;AAQE;;;AAAA;AAAA;AAAA;AAAA;AAAA;AAEI;;AAAe;;AAAf;AADF;AARS;AAYT;AAAA;AALF;AAAA;AAUI;;AAAe;;AAAf;AADF;AADF;AAAA;AAOA;;;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;;AAAA;AAAA;AAAA;AAAA;;;AAAA;AAAA;AAAA;;;AAAA;AAAA;AAAA;;;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;;AAAA;AAAA;AAAA;AAAA;;;AAAA;;;AAAA;AAAA;AAAA;;AAAA;AAAA;AAAA;AAAA;;AAAA;AAAA;AAAA;AAAA;;AAAA;AAAA;AAAA;AAAA;;AAAA;AAAA;AAAA;AAAA;;AAAA;AAAA;AAAA;AAgFS;;AAxE+B;;AAwE/B;AAvEY;AAAA;AAAA;;AACZ;AAAP;AAEA;AAAA;;AAAA;;AAAA;;AAAA;;AAAA;;;AAAA;;AAIE;;AAAA;;;AAEU;;AAAA;;AAAA;;;AAFV;AADF;AAOE;;AAAA;;;AAEU;;AAAA;;AAAA;;;AAFV;AADF;AAMO;AAAA;;AAyDA;;AAzDA;AAAP;AAEe;AAAA;AAAf;AA7BF;AAAA;AAgCA;;;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;;AAAA;AAAA;AAAA;AAAA;;;AAAA;AAAA;AAAA;;;AAAA;AAAA;AAAA;;;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;;AAAA;AAAA;AAAA;AAAA;;;AAAA;;;AAAA;AAAA;AAAA;;AAAA;AAAA;AAAA;AAAA;;AAAA;AAAA;AAAA;AAAA;;AAAA;AAAA;AAAA;AAgDS;;AAzC+B;;AAyC/B;AAxCsB;AAAA;AAC7B;AAEA;;AAAA;;AAAA;;AAAA;;AAAA;;AAAA;;;AAAA;;AAEkB;AAAX;;AAAA;AAAP;AACe;AAAA;AAAf;AAdF;AAAA;AAiBA;;;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;;AAAA;AAAA;AAAA;AAAA;;;AACwC;;AA8B/B;AA7BS;AAChB;AAEA;AAEc;;AA4BP;;;;;;AA9BP;;;AAIS;;;AAJT;AALF;AAAA;AAcA;;;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;;AAAA;AAAA;AAAA;AAAA;;;AAE0C;;AAAjC;;;AAFT;AAAA;AAAA;AAAA;AAAA;AAAA;AAKA;;;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;;AAAA;AAAA;AAAA;AAAA;;;AAAA;;;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;;;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;;;AAYS;;AAAA;;AAAA;AAVsB;AAEzB;;;AACK;;;;;;;;;;;AAAP;AAAA;AAGM;;AAAA;AAAD;AAAA;;;AAAA;AAAP;AAAA;AAWF;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;AAUS;AAvHE;AAuHF;AAAP;AAEE;;AAAA;;AAAA;AADF;AAKE;;AAAqC;;AAAA;;AAArC;AADF;AAME;;AAAA;AAAA;AAAA;AAAA;;AAAkB;;AAAlB;AAAA;;;AACE;;AAAkB;;AAAlB;AADF;;;;AADF;AAME;;AAAA;AAAA;AAAA;;AAAqB;;AAArB;AAAA;;;AACE;;AAAqB;;AAArB;AADF;;;;AADF;AAMqB;;AAEZ;AACP;;AAHmB;;;AAMnB;;AAAA;;;AAAA;AADF;AAME;;AACO;AACP;;AAHqB;;;AAMrB;;AACA;;AACA;AAHqB;;;AAOrB;;AAAA;;;AAAA;;AAAA;AADF;AAKE;;AAAA;;;AAAA;AADF;AAKsB;;AAAA;AAEpB;;AAAA;;;AAAA;AADF;;;;;;;;;;;;;;;;;;AAMF;;;AACoB;AAGO;AACvB;;AAAA;;AAAA;AAFF;;;AAMI;;AAAc;;;;AAAd;AACwB;;AAAA;;AAAA;AAAA;;AAAA;AAAhB;;AAAA;AAAA;AAAR;AADA;AAAA;;AAH6B;AAAnB;AAAA;;;;;AAOd",
   "op_pc_offset": 0,
   "pc_events": {
     "1": {
@@ -14,9 +14,9 @@
       "op": "intcblock 1 0 2 32 26500"
     },
     "10": {
-      "op": "bytecblock \"verifier\" 0x151f7c75"
+      "op": "bytecblock \"verifier\" 0x151f7c75 0x 0x068101"
     },
-    "26": {
+    "31": {
       "op": "txn NumAppArgs",
       "defined_out": [
         "tmp%0#1"
@@ -25,11 +25,11 @@
         "tmp%0#1"
       ]
     },
-    "28": {
+    "33": {
       "op": "bz main___algots__.defaultCreate@16",
       "stack_out": []
     },
-    "31": {
+    "36": {
       "op": "pushbytes 0x46f76533 // method \"updateApplication()void\"",
       "defined_out": [
         "Method(updateApplication()void)"
@@ -38,7 +38,7 @@
         "Method(updateApplication()void)"
       ]
     },
-    "37": {
+    "42": {
       "op": "txna ApplicationArgs 0",
       "defined_out": [
         "Method(updateApplication()void)",
@@ -49,11 +49,11 @@
         "tmp%2#0"
       ]
     },
-    "40": {
+    "45": {
       "op": "match main_updateApplication_route@3",
       "stack_out": []
     },
-    "44": {
+    "49": {
       "block": "main_switch_case_next@4",
       "stack_in": [],
       "op": "txn OnCompletion",
@@ -64,7 +64,7 @@
         "tmp%8#0"
       ]
     },
-    "46": {
+    "51": {
       "op": "!",
       "defined_out": [
         "tmp%9#0"
@@ -73,12 +73,12 @@
         "tmp%9#0"
       ]
     },
-    "47": {
+    "52": {
       "error": "OnCompletion must be NoOp",
       "op": "assert // OnCompletion must be NoOp",
       "stack_out": []
     },
-    "48": {
+    "53": {
       "op": "txn ApplicationID",
       "defined_out": [
         "tmp%10#0"
@@ -87,11 +87,11 @@
         "tmp%10#0"
       ]
     },
-    "50": {
+    "55": {
       "op": "assert",
       "stack_out": []
     },
-    "51": {
+    "56": {
       "op": "pushbytess 0x5ef6fa35 0x7455c0a9 0x9167e7cb 0x74ca7617 0xebd63f82 0x7fb6aff7 0x600a115b // method \"boxMbr()uint64\", method \"setVerifier(address)void\", method \"addScore(uint256[],(byte[64],byte[128],byte[64]),byte[],uint64,pay,pay)void\", method \"updateScore(uint256[],(byte[64],byte[128],byte[64]),byte[],uint64,pay)void\", method \"removeScore(byte[])void\", method \"getMyScore(byte[])(uint64,bool)\", method \"getScoreForUser(byte[],address)(uint64,bool)\"",
       "defined_out": [
         "Method(addScore(uint256[],(byte[64],byte[128],byte[64]),byte[],uint64,pay,pay)void)",
@@ -112,7 +112,7 @@
         "Method(getScoreForUser(byte[],address)(uint64,bool))"
       ]
     },
-    "88": {
+    "93": {
       "op": "txna ApplicationArgs 0",
       "defined_out": [
         "Method(addScore(uint256[],(byte[64],byte[128],byte[64]),byte[],uint64,pay,pay)void)",
@@ -135,14 +135,14 @@
         "tmp%12#0"
       ]
     },
-    "91": {
+    "96": {
       "op": "match main_boxMbr_route@6 setVerifier addScore updateScore removeScore getMyScore getScoreForUser",
       "stack_out": []
     },
-    "107": {
+    "112": {
       "op": "err"
     },
-    "108": {
+    "113": {
       "block": "main_boxMbr_route@6",
       "stack_in": [],
       "op": "pushbytes 0x151f7c750000000000006784",
@@ -153,11 +153,11 @@
         "0x151f7c750000000000006784"
       ]
     },
-    "122": {
+    "127": {
       "op": "log",
       "stack_out": []
     },
-    "123": {
+    "128": {
       "op": "intc_0 // 1",
       "defined_out": [
         "1"
@@ -166,11 +166,11 @@
         "1"
       ]
     },
-    "124": {
+    "129": {
       "op": "return",
       "stack_out": []
     },
-    "125": {
+    "130": {
       "block": "main_updateApplication_route@3",
       "stack_in": [],
       "op": "txn OnCompletion",
@@ -181,7 +181,7 @@
         "tmp%3#0"
       ]
     },
-    "127": {
+    "132": {
       "op": "pushint 4 // UpdateApplication",
       "defined_out": [
         "UpdateApplication",
@@ -192,7 +192,7 @@
         "UpdateApplication"
       ]
     },
-    "129": {
+    "134": {
       "op": "==",
       "defined_out": [
         "tmp%4#0"
@@ -201,7 +201,7 @@
         "tmp%4#0"
       ]
     },
-    "130": {
+    "135": {
       "op": "txn ApplicationID",
       "defined_out": [
         "tmp%4#0",
@@ -212,7 +212,7 @@
         "tmp%5#0"
       ]
     },
-    "132": {
+    "137": {
       "op": "&&",
       "defined_out": [
         "tmp%7#0"
@@ -221,15 +221,15 @@
         "tmp%7#0"
       ]
     },
-    "133": {
+    "138": {
       "error": "OnCompletion must be UpdateApplication && can only call when not creating",
       "op": "assert // OnCompletion must be UpdateApplication && can only call when not creating",
       "stack_out": []
     },
-    "134": {
+    "139": {
       "op": "b updateApplication"
     },
-    "137": {
+    "142": {
       "block": "main___algots__.defaultCreate@16",
       "stack_in": [],
       "op": "txn OnCompletion",
@@ -240,7 +240,7 @@
         "tmp%13#0"
       ]
     },
-    "139": {
+    "144": {
       "op": "!",
       "defined_out": [
         "tmp%14#0"
@@ -249,7 +249,7 @@
         "tmp%14#0"
       ]
     },
-    "140": {
+    "145": {
       "op": "txn ApplicationID",
       "defined_out": [
         "tmp%14#0",
@@ -260,7 +260,7 @@
         "tmp%15#0"
       ]
     },
-    "142": {
+    "147": {
       "op": "!",
       "defined_out": [
         "tmp%14#0",
@@ -271,7 +271,7 @@
         "tmp%16#0"
       ]
     },
-    "143": {
+    "148": {
       "op": "&&",
       "defined_out": [
         "tmp%17#0"
@@ -280,12 +280,12 @@
         "tmp%17#0"
       ]
     },
-    "144": {
+    "149": {
       "error": "OnCompletion must be NoOp && can only call when creating",
       "op": "assert // OnCompletion must be NoOp && can only call when creating",
       "stack_out": []
     },
-    "145": {
+    "150": {
       "op": "intc_0 // 1",
       "defined_out": [
         "1"
@@ -294,11 +294,11 @@
         "1"
       ]
     },
-    "146": {
+    "151": {
       "op": "return",
       "stack_out": []
     },
-    "147": {
+    "152": {
       "subroutine": "contracts/PuzzleScores.algo.ts::PuzzleScores.setVerifier[routing]",
       "params": {},
       "block": "setVerifier",
@@ -311,7 +311,7 @@
         "verifierAddress#0"
       ]
     },
-    "150": {
+    "155": {
       "op": "dup",
       "defined_out": [
         "verifierAddress#0",
@@ -322,7 +322,7 @@
         "verifierAddress#0 (copy)"
       ]
     },
-    "151": {
+    "156": {
       "op": "len",
       "defined_out": [
         "len%0#0",
@@ -333,7 +333,7 @@
         "len%0#0"
       ]
     },
-    "152": {
+    "157": {
       "op": "intc_3 // 32",
       "defined_out": [
         "32",
@@ -346,7 +346,7 @@
         "32"
       ]
     },
-    "153": {
+    "158": {
       "op": "==",
       "defined_out": [
         "eq%0#0",
@@ -357,14 +357,14 @@
         "eq%0#0"
       ]
     },
-    "154": {
+    "159": {
       "error": "invalid number of bytes for arc4.static_array<arc4.uint8, 32>",
       "op": "assert // invalid number of bytes for arc4.static_array<arc4.uint8, 32>",
       "stack_out": [
         "verifierAddress#0"
       ]
     },
-    "155": {
+    "160": {
       "op": "txn Sender",
       "defined_out": [
         "tmp%0#1",
@@ -375,7 +375,7 @@
         "tmp%0#1"
       ]
     },
-    "157": {
+    "162": {
       "op": "global CreatorAddress",
       "defined_out": [
         "tmp%0#1",
@@ -388,7 +388,7 @@
         "tmp%1#1"
       ]
     },
-    "159": {
+    "164": {
       "op": "==",
       "defined_out": [
         "tmp%2#0",
@@ -399,14 +399,14 @@
         "tmp%2#0"
       ]
     },
-    "160": {
+    "165": {
       "error": "only the creator can set the verifier",
       "op": "assert // only the creator can set the verifier",
       "stack_out": [
         "verifierAddress#0"
       ]
     },
-    "161": {
+    "166": {
       "op": "bytec_0 // \"verifier\"",
       "defined_out": [
         "\"verifier\"",
@@ -417,18 +417,18 @@
         "\"verifier\""
       ]
     },
-    "162": {
+    "167": {
       "op": "swap",
       "stack_out": [
         "\"verifier\"",
         "verifierAddress#0"
       ]
     },
-    "163": {
+    "168": {
       "op": "app_global_put",
       "stack_out": []
     },
-    "164": {
+    "169": {
       "op": "intc_0 // 1",
       "defined_out": [
         "1"
@@ -437,11 +437,11 @@
         "1"
       ]
     },
-    "165": {
+    "170": {
       "op": "return",
       "stack_out": []
     },
-    "166": {
+    "171": {
       "subroutine": "contracts/PuzzleScores.algo.ts::PuzzleScores.updateApplication[routing]",
       "params": {},
       "block": "updateApplication",
@@ -454,7 +454,7 @@
         "tmp%0#0"
       ]
     },
-    "168": {
+    "173": {
       "op": "global CreatorAddress",
       "defined_out": [
         "tmp%0#0",
@@ -465,7 +465,7 @@
         "tmp%1#0"
       ]
     },
-    "170": {
+    "175": {
       "op": "==",
       "defined_out": [
         "tmp%2#0"
@@ -474,12 +474,12 @@
         "tmp%2#0"
       ]
     },
-    "171": {
+    "176": {
       "error": "only the creator can update the app",
       "op": "assert // only the creator can update the app",
       "stack_out": []
     },
-    "172": {
+    "177": {
       "op": "intc_0 // 1",
       "defined_out": [
         "1"
@@ -488,11 +488,11 @@
         "1"
       ]
     },
-    "173": {
+    "178": {
       "op": "return",
       "stack_out": []
     },
-    "174": {
+    "179": {
       "subroutine": "contracts/PuzzleScores.algo.ts::PuzzleScores.addScore[routing]",
       "params": {},
       "block": "addScore",
@@ -505,7 +505,7 @@
         "signals#0"
       ]
     },
-    "177": {
+    "182": {
       "op": "dup",
       "defined_out": [
         "signals#0",
@@ -516,7 +516,7 @@
         "signals#0 (copy)"
       ]
     },
-    "178": {
+    "183": {
       "op": "intc_1 // 0",
       "defined_out": [
         "0",
@@ -529,7 +529,7 @@
         "0"
       ]
     },
-    "179": {
+    "184": {
       "error": "invalid array length header",
       "op": "extract_uint16 // on error: invalid array length header",
       "defined_out": [
@@ -541,7 +541,7 @@
         "aggregate%array_length%0#0"
       ]
     },
-    "180": {
+    "185": {
       "op": "intc_3 // 32",
       "defined_out": [
         "32",
@@ -554,7 +554,7 @@
         "32"
       ]
     },
-    "181": {
+    "186": {
       "op": "*",
       "defined_out": [
         "mul%0#0",
@@ -565,7 +565,7 @@
         "mul%0#0"
       ]
     },
-    "182": {
+    "187": {
       "op": "intc_2 // 2",
       "defined_out": [
         "2",
@@ -578,7 +578,7 @@
         "2"
       ]
     },
-    "183": {
+    "188": {
       "op": "+",
       "defined_out": [
         "add%0#0",
@@ -589,7 +589,7 @@
         "add%0#0"
       ]
     },
-    "184": {
+    "189": {
       "op": "dig 1",
       "stack_out": [
         "signals#0",
@@ -597,7 +597,7 @@
         "signals#0 (copy)"
       ]
     },
-    "186": {
+    "191": {
       "op": "len",
       "defined_out": [
         "add%0#0",
@@ -610,7 +610,7 @@
         "len%0#0"
       ]
     },
-    "187": {
+    "192": {
       "op": "==",
       "defined_out": [
         "eq%0#0",
@@ -621,14 +621,14 @@
         "eq%0#0"
       ]
     },
-    "188": {
+    "193": {
       "error": "invalid number of bytes for arc4.dynamic_array<arc4.uint256>",
       "op": "assert // invalid number of bytes for arc4.dynamic_array<arc4.uint256>",
       "stack_out": [
         "signals#0"
       ]
     },
-    "189": {
+    "194": {
       "op": "txna ApplicationArgs 2",
       "defined_out": [
         "proof#0",
@@ -639,7 +639,7 @@
         "proof#0"
       ]
     },
-    "192": {
+    "197": {
       "op": "dup",
       "defined_out": [
         "proof#0",
@@ -652,7 +652,7 @@
         "proof#0 (copy)"
       ]
     },
-    "193": {
+    "198": {
       "op": "len",
       "defined_out": [
         "len%1#0",
@@ -665,7 +665,7 @@
         "len%1#0"
       ]
     },
-    "194": {
+    "199": {
       "op": "pushint 256 // 256",
       "defined_out": [
         "256",
@@ -680,7 +680,7 @@
         "256"
       ]
     },
-    "197": {
+    "202": {
       "op": "==",
       "defined_out": [
         "eq%1#0",
@@ -693,7 +693,7 @@
         "eq%1#0"
       ]
     },
-    "198": {
+    "203": {
       "error": "invalid number of bytes for contracts/PuzzleScores.algo.ts::Groth16Bn254Proof",
       "op": "assert // invalid number of bytes for contracts/PuzzleScores.algo.ts::Groth16Bn254Proof",
       "stack_out": [
@@ -701,7 +701,7 @@
         "proof#0"
       ]
     },
-    "199": {
+    "204": {
       "op": "txna ApplicationArgs 3",
       "defined_out": [
         "proof#0",
@@ -714,7 +714,7 @@
         "tmp%2#0"
       ]
     },
-    "202": {
+    "207": {
       "op": "dup",
       "defined_out": [
         "proof#0",
@@ -729,7 +729,7 @@
         "tmp%2#0 (copy)"
       ]
     },
-    "203": {
+    "208": {
       "op": "intc_1 // 0",
       "stack_out": [
         "signals#0",
@@ -739,7 +739,7 @@
         "0"
       ]
     },
-    "204": {
+    "209": {
       "error": "invalid array length header",
       "op": "extract_uint16 // on error: invalid array length header",
       "defined_out": [
@@ -755,7 +755,7 @@
         "aggregate%array_length%1#0"
       ]
     },
-    "205": {
+    "210": {
       "op": "intc_2 // 2",
       "stack_out": [
         "signals#0",
@@ -765,7 +765,7 @@
         "2"
       ]
     },
-    "206": {
+    "211": {
       "op": "+",
       "defined_out": [
         "add%1#0",
@@ -780,7 +780,7 @@
         "add%1#0"
       ]
     },
-    "207": {
+    "212": {
       "op": "dig 1",
       "stack_out": [
         "signals#0",
@@ -790,7 +790,7 @@
         "tmp%2#0 (copy)"
       ]
     },
-    "209": {
+    "214": {
       "op": "len",
       "defined_out": [
         "add%1#0",
@@ -807,7 +807,7 @@
         "len%2#0"
       ]
     },
-    "210": {
+    "215": {
       "op": "==",
       "defined_out": [
         "eq%2#0",
@@ -822,7 +822,7 @@
         "eq%2#0"
       ]
     },
-    "211": {
+    "216": {
       "error": "invalid number of bytes for arc4.dynamic_array<arc4.uint8>",
       "op": "assert // invalid number of bytes for arc4.dynamic_array<arc4.uint8>",
       "stack_out": [
@@ -831,7 +831,7 @@
         "tmp%2#0"
       ]
     },
-    "212": {
+    "217": {
       "op": "extract 2 0",
       "defined_out": [
         "proof#0",
@@ -844,7 +844,7 @@
         "puzzleCode#0"
       ]
     },
-    "215": {
+    "220": {
       "op": "txna ApplicationArgs 4",
       "defined_out": [
         "proof#0",
@@ -859,7 +859,7 @@
         "tmp%4#0"
       ]
     },
-    "218": {
+    "223": {
       "op": "dup",
       "defined_out": [
         "proof#0",
@@ -876,7 +876,7 @@
         "tmp%4#0 (copy)"
       ]
     },
-    "219": {
+    "224": {
       "op": "len",
       "defined_out": [
         "len%3#0",
@@ -893,7 +893,7 @@
         "len%3#0"
       ]
     },
-    "220": {
+    "225": {
       "op": "pushint 8 // 8",
       "defined_out": [
         "8",
@@ -912,7 +912,7 @@
         "8"
       ]
     },
-    "222": {
+    "227": {
       "op": "==",
       "defined_out": [
         "eq%3#0",
@@ -929,7 +929,7 @@
         "eq%3#0"
       ]
     },
-    "223": {
+    "228": {
       "error": "invalid number of bytes for arc4.uint64",
       "op": "assert // invalid number of bytes for arc4.uint64",
       "stack_out": [
@@ -939,7 +939,7 @@
         "tmp%4#0"
       ]
     },
-    "224": {
+    "229": {
       "op": "btoi",
       "defined_out": [
         "proof#0",
@@ -954,7 +954,7 @@
         "score#0"
       ]
     },
-    "225": {
+    "230": {
       "op": "txn GroupIndex",
       "defined_out": [
         "proof#0",
@@ -971,7 +971,7 @@
         "tmp%6#0"
       ]
     },
-    "227": {
+    "232": {
       "op": "intc_2 // 2",
       "stack_out": [
         "signals#0",
@@ -982,7 +982,7 @@
         "2"
       ]
     },
-    "228": {
+    "233": {
       "op": "-",
       "defined_out": [
         "payMbr#0",
@@ -999,7 +999,7 @@
         "payMbr#0"
       ]
     },
-    "229": {
+    "234": {
       "op": "dup",
       "defined_out": [
         "payMbr#0",
@@ -1018,7 +1018,7 @@
         "payMbr#0 (copy)"
       ]
     },
-    "230": {
+    "235": {
       "op": "gtxns TypeEnum",
       "defined_out": [
         "gtxn_type%0#0",
@@ -1037,7 +1037,7 @@
         "gtxn_type%0#0"
       ]
     },
-    "232": {
+    "237": {
       "op": "intc_0 // pay",
       "defined_out": [
         "gtxn_type%0#0",
@@ -1058,7 +1058,7 @@
         "pay"
       ]
     },
-    "233": {
+    "238": {
       "op": "==",
       "defined_out": [
         "gtxn_type_matches%0#0",
@@ -1077,7 +1077,7 @@
         "gtxn_type_matches%0#0"
       ]
     },
-    "234": {
+    "239": {
       "error": "transaction type is pay",
       "op": "assert // transaction type is pay",
       "stack_out": [
@@ -1088,7 +1088,7 @@
         "payMbr#0"
       ]
     },
-    "235": {
+    "240": {
       "op": "txn GroupIndex",
       "defined_out": [
         "payMbr#0",
@@ -1107,7 +1107,7 @@
         "tmp%7#0"
       ]
     },
-    "237": {
+    "242": {
       "op": "intc_0 // 1",
       "defined_out": [
         "1",
@@ -1128,7 +1128,7 @@
         "1"
       ]
     },
-    "238": {
+    "243": {
       "op": "-",
       "defined_out": [
         "payMbr#0",
@@ -1147,7 +1147,7 @@
         "verifierTxn#0"
       ]
     },
-    "239": {
+    "244": {
       "op": "dup",
       "defined_out": [
         "payMbr#0",
@@ -1168,7 +1168,7 @@
         "verifierTxn#0 (copy)"
       ]
     },
-    "240": {
+    "245": {
       "op": "gtxns TypeEnum",
       "defined_out": [
         "gtxn_type%1#0",
@@ -1189,7 +1189,7 @@
         "gtxn_type%1#0"
       ]
     },
-    "242": {
+    "247": {
       "op": "intc_0 // pay",
       "stack_out": [
         "signals#0",
@@ -1202,7 +1202,7 @@
         "pay"
       ]
     },
-    "243": {
+    "248": {
       "op": "==",
       "defined_out": [
         "gtxn_type_matches%1#0",
@@ -1223,7 +1223,7 @@
         "gtxn_type_matches%1#0"
       ]
     },
-    "244": {
+    "249": {
       "error": "transaction type is pay",
       "op": "assert // transaction type is pay",
       "stack_out": [
@@ -1235,7 +1235,7 @@
         "verifierTxn#0"
       ]
     },
-    "245": {
+    "250": {
       "op": "dig 3",
       "defined_out": [
         "payMbr#0",
@@ -1256,7 +1256,7 @@
         "puzzleCode#0 (copy)"
       ]
     },
-    "247": {
+    "252": {
       "op": "txn Sender",
       "defined_out": [
         "payMbr#0",
@@ -1279,7 +1279,7 @@
         "user#0"
       ]
     },
-    "249": {
+    "254": {
       "op": "concat",
       "defined_out": [
         "key#0",
@@ -1300,7 +1300,7 @@
         "key#0"
       ]
     },
-    "250": {
+    "255": {
       "op": "dup",
       "defined_out": [
         "key#0",
@@ -1323,7 +1323,7 @@
         "key#0 (copy)"
       ]
     },
-    "251": {
+    "256": {
       "op": "box_len",
       "defined_out": [
         "awst_tmp%0#0",
@@ -1348,7 +1348,7 @@
         "exists#0"
       ]
     },
-    "252": {
+    "257": {
       "op": "bury 1",
       "stack_out": [
         "signals#0",
@@ -1361,7 +1361,7 @@
         "exists#0"
       ]
     },
-    "254": {
+    "259": {
       "op": "!",
       "defined_out": [
         "key#0",
@@ -1384,7 +1384,7 @@
         "tmp%2#1"
       ]
     },
-    "255": {
+    "260": {
       "error": "score already exists for puzzle",
       "op": "assert // score already exists for puzzle",
       "stack_out": [
@@ -1397,7 +1397,7 @@
         "key#0"
       ]
     },
-    "256": {
+    "261": {
       "op": "swap",
       "stack_out": [
         "signals#0",
@@ -1409,7 +1409,7 @@
         "verifierTxn#0"
       ]
     },
-    "257": {
+    "262": {
       "op": "uncover 6",
       "stack_out": [
         "proof#0",
@@ -1421,7 +1421,7 @@
         "signals#0"
       ]
     },
-    "259": {
+    "264": {
       "op": "uncover 6",
       "stack_out": [
         "puzzleCode#0",
@@ -1433,7 +1433,7 @@
         "proof#0"
       ]
     },
-    "261": {
+    "266": {
       "op": "uncover 6",
       "stack_out": [
         "score#0",
@@ -1445,7 +1445,7 @@
         "puzzleCode#0"
       ]
     },
-    "263": {
+    "268": {
       "op": "dig 6",
       "defined_out": [
         "key#0",
@@ -1468,7 +1468,7 @@
         "score#0 (copy)"
       ]
     },
-    "265": {
+    "270": {
       "callsub": "contracts/PuzzleScores.algo.ts::PuzzleScores.verifyVerifierTxn",
       "op": "callsub verifyVerifierTxn",
       "stack_out": [
@@ -1479,7 +1479,7 @@
         "proof#0"
       ]
     },
-    "268": {
+    "273": {
       "op": "popn 2",
       "stack_out": [
         "score#0",
@@ -1487,7 +1487,7 @@
         "key#0"
       ]
     },
-    "270": {
+    "275": {
       "op": "txn Sender",
       "defined_out": [
         "key#0",
@@ -1502,7 +1502,7 @@
         "reinterpret_bytes[32]%0#0"
       ]
     },
-    "272": {
+    "277": {
       "op": "substring 0 32",
       "stack_out": [
         "score#0",
@@ -1511,7 +1511,7 @@
         "tmp%4#0"
       ]
     },
-    "275": {
+    "280": {
       "op": "dig 2",
       "stack_out": [
         "score#0",
@@ -1521,7 +1521,7 @@
         "payMbr#0 (copy)"
       ]
     },
-    "277": {
+    "282": {
       "op": "gtxns Sender",
       "defined_out": [
         "key#0",
@@ -1538,7 +1538,7 @@
         "reinterpret_bytes[32]%1#0"
       ]
     },
-    "279": {
+    "284": {
       "op": "substring 0 32",
       "defined_out": [
         "key#0",
@@ -1555,7 +1555,7 @@
         "tmp%5#1"
       ]
     },
-    "282": {
+    "287": {
       "op": "==",
       "defined_out": [
         "key#0",
@@ -1570,7 +1570,7 @@
         "tmp%6#1"
       ]
     },
-    "283": {
+    "288": {
       "error": "payment sender must match caller",
       "op": "assert // payment sender must match caller",
       "stack_out": [
@@ -1579,7 +1579,7 @@
         "key#0"
       ]
     },
-    "284": {
+    "289": {
       "op": "global CurrentApplicationAddress",
       "defined_out": [
         "key#0",
@@ -1594,7 +1594,7 @@
         "reinterpret_bytes[32]%2#0"
       ]
     },
-    "286": {
+    "291": {
       "op": "substring 0 32",
       "defined_out": [
         "key#0",
@@ -1609,7 +1609,7 @@
         "tmp%7#1"
       ]
     },
-    "289": {
+    "294": {
       "op": "dig 2",
       "stack_out": [
         "score#0",
@@ -1619,7 +1619,7 @@
         "payMbr#0 (copy)"
       ]
     },
-    "291": {
+    "296": {
       "op": "gtxns Receiver",
       "defined_out": [
         "key#0",
@@ -1636,7 +1636,7 @@
         "reinterpret_bytes[32]%3#0"
       ]
     },
-    "293": {
+    "298": {
       "op": "substring 0 32",
       "defined_out": [
         "key#0",
@@ -1653,7 +1653,7 @@
         "tmp%8#0"
       ]
     },
-    "296": {
+    "301": {
       "op": "==",
       "defined_out": [
         "key#0",
@@ -1668,7 +1668,7 @@
         "tmp%9#0"
       ]
     },
-    "297": {
+    "302": {
       "error": "payment receiver must be app account",
       "op": "assert // payment receiver must be app account",
       "stack_out": [
@@ -1677,7 +1677,7 @@
         "key#0"
       ]
     },
-    "298": {
+    "303": {
       "op": "swap",
       "stack_out": [
         "score#0",
@@ -1685,7 +1685,7 @@
         "payMbr#0"
       ]
     },
-    "299": {
+    "304": {
       "op": "gtxns Amount",
       "defined_out": [
         "key#0",
@@ -1698,7 +1698,7 @@
         "tmp%10#0"
       ]
     },
-    "301": {
+    "306": {
       "op": "intc 4 // 26500",
       "defined_out": [
         "26500",
@@ -1713,7 +1713,7 @@
         "26500"
       ]
     },
-    "303": {
+    "308": {
       "op": "==",
       "defined_out": [
         "key#0",
@@ -1726,7 +1726,7 @@
         "tmp%11#0"
       ]
     },
-    "304": {
+    "309": {
       "error": "payment must cover box MBR exactly",
       "op": "assert // payment must cover box MBR exactly",
       "stack_out": [
@@ -1734,14 +1734,14 @@
         "key#0"
       ]
     },
-    "305": {
+    "310": {
       "op": "swap",
       "stack_out": [
         "key#0",
         "score#0"
       ]
     },
-    "306": {
+    "311": {
       "op": "itob",
       "defined_out": [
         "key#0",
@@ -1752,21 +1752,21 @@
         "tmp%12#0"
       ]
     },
-    "307": {
+    "312": {
       "op": "box_put",
       "stack_out": []
     },
-    "308": {
+    "313": {
       "op": "intc_0 // 1",
       "stack_out": [
         "1"
       ]
     },
-    "309": {
+    "314": {
       "op": "return",
       "stack_out": []
     },
-    "310": {
+    "315": {
       "subroutine": "contracts/PuzzleScores.algo.ts::PuzzleScores.updateScore[routing]",
       "params": {},
       "block": "updateScore",
@@ -1779,7 +1779,7 @@
         "signals#0"
       ]
     },
-    "313": {
+    "318": {
       "op": "dup",
       "defined_out": [
         "signals#0",
@@ -1790,7 +1790,7 @@
         "signals#0 (copy)"
       ]
     },
-    "314": {
+    "319": {
       "op": "intc_1 // 0",
       "defined_out": [
         "0",
@@ -1803,7 +1803,7 @@
         "0"
       ]
     },
-    "315": {
+    "320": {
       "error": "invalid array length header",
       "op": "extract_uint16 // on error: invalid array length header",
       "defined_out": [
@@ -1815,7 +1815,7 @@
         "aggregate%array_length%0#0"
       ]
     },
-    "316": {
+    "321": {
       "op": "intc_3 // 32",
       "defined_out": [
         "32",
@@ -1828,7 +1828,7 @@
         "32"
       ]
     },
-    "317": {
+    "322": {
       "op": "*",
       "defined_out": [
         "mul%0#0",
@@ -1839,7 +1839,7 @@
         "mul%0#0"
       ]
     },
-    "318": {
+    "323": {
       "op": "intc_2 // 2",
       "defined_out": [
         "2",
@@ -1852,7 +1852,7 @@
         "2"
       ]
     },
-    "319": {
+    "324": {
       "op": "+",
       "defined_out": [
         "add%0#0",
@@ -1863,7 +1863,7 @@
         "add%0#0"
       ]
     },
-    "320": {
+    "325": {
       "op": "dig 1",
       "stack_out": [
         "signals#0",
@@ -1871,7 +1871,7 @@
         "signals#0 (copy)"
       ]
     },
-    "322": {
+    "327": {
       "op": "len",
       "defined_out": [
         "add%0#0",
@@ -1884,7 +1884,7 @@
         "len%0#0"
       ]
     },
-    "323": {
+    "328": {
       "op": "==",
       "defined_out": [
         "eq%0#0",
@@ -1895,14 +1895,14 @@
         "eq%0#0"
       ]
     },
-    "324": {
+    "329": {
       "error": "invalid number of bytes for arc4.dynamic_array<arc4.uint256>",
       "op": "assert // invalid number of bytes for arc4.dynamic_array<arc4.uint256>",
       "stack_out": [
         "signals#0"
       ]
     },
-    "325": {
+    "330": {
       "op": "txna ApplicationArgs 2",
       "defined_out": [
         "proof#0",
@@ -1913,7 +1913,7 @@
         "proof#0"
       ]
     },
-    "328": {
+    "333": {
       "op": "dup",
       "defined_out": [
         "proof#0",
@@ -1926,7 +1926,7 @@
         "proof#0 (copy)"
       ]
     },
-    "329": {
+    "334": {
       "op": "len",
       "defined_out": [
         "len%1#0",
@@ -1939,7 +1939,7 @@
         "len%1#0"
       ]
     },
-    "330": {
+    "335": {
       "op": "pushint 256 // 256",
       "defined_out": [
         "256",
@@ -1954,7 +1954,7 @@
         "256"
       ]
     },
-    "333": {
+    "338": {
       "op": "==",
       "defined_out": [
         "eq%1#0",
@@ -1967,7 +1967,7 @@
         "eq%1#0"
       ]
     },
-    "334": {
+    "339": {
       "error": "invalid number of bytes for contracts/PuzzleScores.algo.ts::Groth16Bn254Proof",
       "op": "assert // invalid number of bytes for contracts/PuzzleScores.algo.ts::Groth16Bn254Proof",
       "stack_out": [
@@ -1975,7 +1975,7 @@
         "proof#0"
       ]
     },
-    "335": {
+    "340": {
       "op": "txna ApplicationArgs 3",
       "defined_out": [
         "proof#0",
@@ -1988,7 +1988,7 @@
         "tmp%2#0"
       ]
     },
-    "338": {
+    "343": {
       "op": "dup",
       "defined_out": [
         "proof#0",
@@ -2003,7 +2003,7 @@
         "tmp%2#0 (copy)"
       ]
     },
-    "339": {
+    "344": {
       "op": "intc_1 // 0",
       "stack_out": [
         "signals#0",
@@ -2013,7 +2013,7 @@
         "0"
       ]
     },
-    "340": {
+    "345": {
       "error": "invalid array length header",
       "op": "extract_uint16 // on error: invalid array length header",
       "defined_out": [
@@ -2029,7 +2029,7 @@
         "aggregate%array_length%1#0"
       ]
     },
-    "341": {
+    "346": {
       "op": "intc_2 // 2",
       "stack_out": [
         "signals#0",
@@ -2039,7 +2039,7 @@
         "2"
       ]
     },
-    "342": {
+    "347": {
       "op": "+",
       "defined_out": [
         "add%1#0",
@@ -2054,7 +2054,7 @@
         "add%1#0"
       ]
     },
-    "343": {
+    "348": {
       "op": "dig 1",
       "stack_out": [
         "signals#0",
@@ -2064,7 +2064,7 @@
         "tmp%2#0 (copy)"
       ]
     },
-    "345": {
+    "350": {
       "op": "len",
       "defined_out": [
         "add%1#0",
@@ -2081,7 +2081,7 @@
         "len%2#0"
       ]
     },
-    "346": {
+    "351": {
       "op": "==",
       "defined_out": [
         "eq%2#0",
@@ -2096,7 +2096,7 @@
         "eq%2#0"
       ]
     },
-    "347": {
+    "352": {
       "error": "invalid number of bytes for arc4.dynamic_array<arc4.uint8>",
       "op": "assert // invalid number of bytes for arc4.dynamic_array<arc4.uint8>",
       "stack_out": [
@@ -2105,7 +2105,7 @@
         "tmp%2#0"
       ]
     },
-    "348": {
+    "353": {
       "op": "extract 2 0",
       "defined_out": [
         "proof#0",
@@ -2118,7 +2118,7 @@
         "puzzleCode#0"
       ]
     },
-    "351": {
+    "356": {
       "op": "txna ApplicationArgs 4",
       "defined_out": [
         "proof#0",
@@ -2133,7 +2133,7 @@
         "tmp%4#0"
       ]
     },
-    "354": {
+    "359": {
       "op": "dup",
       "defined_out": [
         "proof#0",
@@ -2150,7 +2150,7 @@
         "tmp%4#0 (copy)"
       ]
     },
-    "355": {
+    "360": {
       "op": "len",
       "defined_out": [
         "len%3#0",
@@ -2167,7 +2167,7 @@
         "len%3#0"
       ]
     },
-    "356": {
+    "361": {
       "op": "pushint 8 // 8",
       "defined_out": [
         "8",
@@ -2186,7 +2186,7 @@
         "8"
       ]
     },
-    "358": {
+    "363": {
       "op": "==",
       "defined_out": [
         "eq%3#0",
@@ -2203,7 +2203,7 @@
         "eq%3#0"
       ]
     },
-    "359": {
+    "364": {
       "error": "invalid number of bytes for arc4.uint64",
       "op": "assert // invalid number of bytes for arc4.uint64",
       "stack_out": [
@@ -2213,7 +2213,7 @@
         "tmp%4#0"
       ]
     },
-    "360": {
+    "365": {
       "op": "btoi",
       "defined_out": [
         "newScore#0",
@@ -2228,7 +2228,7 @@
         "newScore#0"
       ]
     },
-    "361": {
+    "366": {
       "op": "txn GroupIndex",
       "defined_out": [
         "newScore#0",
@@ -2245,7 +2245,7 @@
         "tmp%6#0"
       ]
     },
-    "363": {
+    "368": {
       "op": "intc_0 // 1",
       "defined_out": [
         "1",
@@ -2264,7 +2264,7 @@
         "1"
       ]
     },
-    "364": {
+    "369": {
       "op": "-",
       "defined_out": [
         "newScore#0",
@@ -2281,7 +2281,7 @@
         "verifierTxn#0"
       ]
     },
-    "365": {
+    "370": {
       "op": "dup",
       "defined_out": [
         "newScore#0",
@@ -2300,7 +2300,7 @@
         "verifierTxn#0 (copy)"
       ]
     },
-    "366": {
+    "371": {
       "op": "gtxns TypeEnum",
       "defined_out": [
         "gtxn_type%0#0",
@@ -2319,7 +2319,7 @@
         "gtxn_type%0#0"
       ]
     },
-    "368": {
+    "373": {
       "op": "intc_0 // pay",
       "defined_out": [
         "gtxn_type%0#0",
@@ -2340,7 +2340,7 @@
         "pay"
       ]
     },
-    "369": {
+    "374": {
       "op": "==",
       "defined_out": [
         "gtxn_type_matches%0#0",
@@ -2359,7 +2359,7 @@
         "gtxn_type_matches%0#0"
       ]
     },
-    "370": {
+    "375": {
       "error": "transaction type is pay",
       "op": "assert // transaction type is pay",
       "stack_out": [
@@ -2370,7 +2370,7 @@
         "verifierTxn#0"
       ]
     },
-    "371": {
+    "376": {
       "op": "dig 2",
       "defined_out": [
         "newScore#0",
@@ -2389,7 +2389,7 @@
         "puzzleCode#0 (copy)"
       ]
     },
-    "373": {
+    "378": {
       "op": "txn Sender",
       "defined_out": [
         "newScore#0",
@@ -2410,7 +2410,7 @@
         "user#0"
       ]
     },
-    "375": {
+    "380": {
       "op": "concat",
       "defined_out": [
         "key#0",
@@ -2429,7 +2429,7 @@
         "key#0"
       ]
     },
-    "376": {
+    "381": {
       "op": "dup",
       "defined_out": [
         "key#0",
@@ -2450,7 +2450,7 @@
         "key#0 (copy)"
       ]
     },
-    "377": {
+    "382": {
       "op": "box_get",
       "defined_out": [
         "exists#0",
@@ -2473,7 +2473,7 @@
         "exists#0"
       ]
     },
-    "378": {
+    "383": {
       "error": "score does not exist for puzzle",
       "op": "assert // score does not exist for puzzle",
       "stack_out": [
@@ -2486,7 +2486,7 @@
         "scoreBytes#0"
       ]
     },
-    "379": {
+    "384": {
       "op": "uncover 2",
       "stack_out": [
         "signals#0",
@@ -2498,7 +2498,7 @@
         "verifierTxn#0"
       ]
     },
-    "381": {
+    "386": {
       "op": "uncover 6",
       "stack_out": [
         "proof#0",
@@ -2510,7 +2510,7 @@
         "signals#0"
       ]
     },
-    "383": {
+    "388": {
       "op": "uncover 6",
       "stack_out": [
         "puzzleCode#0",
@@ -2522,7 +2522,7 @@
         "proof#0"
       ]
     },
-    "385": {
+    "390": {
       "op": "uncover 6",
       "stack_out": [
         "newScore#0",
@@ -2534,7 +2534,7 @@
         "puzzleCode#0"
       ]
     },
-    "387": {
+    "392": {
       "op": "dig 6",
       "defined_out": [
         "key#0",
@@ -2557,7 +2557,7 @@
         "newScore#0 (copy)"
       ]
     },
-    "389": {
+    "394": {
       "callsub": "contracts/PuzzleScores.algo.ts::PuzzleScores.verifyVerifierTxn",
       "op": "callsub verifyVerifierTxn",
       "stack_out": [
@@ -2568,7 +2568,7 @@
         "proof#0"
       ]
     },
-    "392": {
+    "397": {
       "op": "popn 2",
       "stack_out": [
         "newScore#0",
@@ -2576,7 +2576,7 @@
         "scoreBytes#0"
       ]
     },
-    "394": {
+    "399": {
       "op": "btoi",
       "defined_out": [
         "key#0",
@@ -2589,7 +2589,7 @@
         "tmp%2#1"
       ]
     },
-    "395": {
+    "400": {
       "op": "dig 2",
       "stack_out": [
         "newScore#0",
@@ -2598,7 +2598,7 @@
         "newScore#0 (copy)"
       ]
     },
-    "397": {
+    "402": {
       "op": ">",
       "defined_out": [
         "key#0",
@@ -2611,7 +2611,7 @@
         "tmp%3#1"
       ]
     },
-    "398": {
+    "403": {
       "error": "new score must be better",
       "op": "assert // new score must be better",
       "stack_out": [
@@ -2619,35 +2619,35 @@
         "key#0"
       ]
     },
-    "399": {
+    "404": {
       "op": "swap",
       "stack_out": [
         "key#0",
         "newScore#0"
       ]
     },
-    "400": {
+    "405": {
       "op": "itob",
       "stack_out": [
         "key#0",
         "tmp%4#0"
       ]
     },
-    "401": {
+    "406": {
       "op": "box_put",
       "stack_out": []
     },
-    "402": {
+    "407": {
       "op": "intc_0 // 1",
       "stack_out": [
         "1"
       ]
     },
-    "403": {
+    "408": {
       "op": "return",
       "stack_out": []
     },
-    "404": {
+    "409": {
       "subroutine": "contracts/PuzzleScores.algo.ts::PuzzleScores.removeScore[routing]",
       "params": {},
       "block": "removeScore",
@@ -2660,7 +2660,7 @@
         "tmp%0#0"
       ]
     },
-    "407": {
+    "412": {
       "op": "dup",
       "defined_out": [
         "tmp%0#0",
@@ -2671,7 +2671,7 @@
         "tmp%0#0 (copy)"
       ]
     },
-    "408": {
+    "413": {
       "op": "intc_1 // 0",
       "defined_out": [
         "0",
@@ -2684,7 +2684,7 @@
         "0"
       ]
     },
-    "409": {
+    "414": {
       "error": "invalid array length header",
       "op": "extract_uint16 // on error: invalid array length header",
       "defined_out": [
@@ -2696,7 +2696,7 @@
         "aggregate%array_length%0#0"
       ]
     },
-    "410": {
+    "415": {
       "op": "intc_2 // 2",
       "defined_out": [
         "2",
@@ -2709,7 +2709,7 @@
         "2"
       ]
     },
-    "411": {
+    "416": {
       "op": "+",
       "defined_out": [
         "add%0#0",
@@ -2720,7 +2720,7 @@
         "add%0#0"
       ]
     },
-    "412": {
+    "417": {
       "op": "dig 1",
       "stack_out": [
         "tmp%0#0",
@@ -2728,7 +2728,7 @@
         "tmp%0#0 (copy)"
       ]
     },
-    "414": {
+    "419": {
       "op": "len",
       "defined_out": [
         "add%0#0",
@@ -2741,7 +2741,7 @@
         "len%0#0"
       ]
     },
-    "415": {
+    "420": {
       "op": "==",
       "defined_out": [
         "eq%0#0",
@@ -2752,14 +2752,14 @@
         "eq%0#0"
       ]
     },
-    "416": {
+    "421": {
       "error": "invalid number of bytes for arc4.dynamic_array<arc4.uint8>",
       "op": "assert // invalid number of bytes for arc4.dynamic_array<arc4.uint8>",
       "stack_out": [
         "tmp%0#0"
       ]
     },
-    "417": {
+    "422": {
       "op": "extract 2 0",
       "defined_out": [
         "puzzleCode#0"
@@ -2768,7 +2768,7 @@
         "puzzleCode#0"
       ]
     },
-    "420": {
+    "425": {
       "op": "txn Sender",
       "defined_out": [
         "puzzleCode#0",
@@ -2779,7 +2779,7 @@
         "user#0"
       ]
     },
-    "422": {
+    "427": {
       "op": "concat",
       "defined_out": [
         "key#0"
@@ -2788,7 +2788,7 @@
         "key#0"
       ]
     },
-    "423": {
+    "428": {
       "op": "box_del",
       "defined_out": [
         "deleted#0"
@@ -2797,15 +2797,15 @@
         "deleted#0"
       ]
     },
-    "424": {
+    "429": {
       "error": "score does not exist for puzzle",
       "op": "assert // score does not exist for puzzle",
       "stack_out": []
     },
-    "425": {
+    "430": {
       "op": "itxn_begin"
     },
-    "426": {
+    "431": {
       "op": "txn Sender",
       "defined_out": [
         "inner_txn_params%0%%param_Receiver_idx_0#0"
@@ -2814,7 +2814,7 @@
         "inner_txn_params%0%%param_Receiver_idx_0#0"
       ]
     },
-    "428": {
+    "433": {
       "op": "intc 4 // 26500",
       "defined_out": [
         "26500",
@@ -2825,17 +2825,17 @@
         "26500"
       ]
     },
-    "430": {
+    "435": {
       "op": "itxn_field Amount",
       "stack_out": [
         "inner_txn_params%0%%param_Receiver_idx_0#0"
       ]
     },
-    "432": {
+    "437": {
       "op": "itxn_field Receiver",
       "stack_out": []
     },
-    "434": {
+    "439": {
       "op": "intc_0 // 1",
       "defined_out": [
         "1"
@@ -2844,34 +2844,34 @@
         "1"
       ]
     },
-    "435": {
+    "440": {
       "op": "itxn_field TypeEnum",
       "stack_out": []
     },
-    "437": {
+    "442": {
       "op": "intc_1 // 0",
       "stack_out": [
         "0"
       ]
     },
-    "438": {
+    "443": {
       "op": "itxn_field Fee",
       "stack_out": []
     },
-    "440": {
+    "445": {
       "op": "itxn_submit"
     },
-    "441": {
+    "446": {
       "op": "intc_0 // 1",
       "stack_out": [
         "1"
       ]
     },
-    "442": {
+    "447": {
       "op": "return",
       "stack_out": []
     },
-    "443": {
+    "448": {
       "subroutine": "contracts/PuzzleScores.algo.ts::PuzzleScores.getMyScore[routing]",
       "params": {},
       "block": "getMyScore",
@@ -2884,7 +2884,7 @@
         "tmp%0#0"
       ]
     },
-    "446": {
+    "451": {
       "op": "dup",
       "defined_out": [
         "tmp%0#0",
@@ -2895,7 +2895,7 @@
         "tmp%0#0 (copy)"
       ]
     },
-    "447": {
+    "452": {
       "op": "intc_1 // 0",
       "defined_out": [
         "0",
@@ -2908,7 +2908,7 @@
         "0"
       ]
     },
-    "448": {
+    "453": {
       "error": "invalid array length header",
       "op": "extract_uint16 // on error: invalid array length header",
       "defined_out": [
@@ -2920,7 +2920,7 @@
         "aggregate%array_length%0#0"
       ]
     },
-    "449": {
+    "454": {
       "op": "intc_2 // 2",
       "defined_out": [
         "2",
@@ -2933,7 +2933,7 @@
         "2"
       ]
     },
-    "450": {
+    "455": {
       "op": "+",
       "defined_out": [
         "add%0#0",
@@ -2944,7 +2944,7 @@
         "add%0#0"
       ]
     },
-    "451": {
+    "456": {
       "op": "dig 1",
       "stack_out": [
         "tmp%0#0",
@@ -2952,7 +2952,7 @@
         "tmp%0#0 (copy)"
       ]
     },
-    "453": {
+    "458": {
       "op": "len",
       "defined_out": [
         "add%0#0",
@@ -2965,7 +2965,7 @@
         "len%0#0"
       ]
     },
-    "454": {
+    "459": {
       "op": "==",
       "defined_out": [
         "eq%0#0",
@@ -2976,14 +2976,14 @@
         "eq%0#0"
       ]
     },
-    "455": {
+    "460": {
       "error": "invalid number of bytes for arc4.dynamic_array<arc4.uint8>",
       "op": "assert // invalid number of bytes for arc4.dynamic_array<arc4.uint8>",
       "stack_out": [
         "tmp%0#0"
       ]
     },
-    "456": {
+    "461": {
       "op": "extract 2 0",
       "defined_out": [
         "puzzleCode#0"
@@ -2992,7 +2992,7 @@
         "puzzleCode#0"
       ]
     },
-    "459": {
+    "464": {
       "op": "txn Sender",
       "defined_out": [
         "puzzleCode#0",
@@ -3003,7 +3003,7 @@
         "tmp%0#1"
       ]
     },
-    "461": {
+    "466": {
       "callsub": "contracts/PuzzleScores.algo.ts::PuzzleScores.getScoreForUser",
       "op": "callsub contracts/PuzzleScores.algo.ts::PuzzleScores.getScoreForUser",
       "defined_out": [
@@ -3013,7 +3013,7 @@
         "tmp%1#1"
       ]
     },
-    "464": {
+    "469": {
       "op": "bytec_1 // 0x151f7c75",
       "defined_out": [
         "0x151f7c75",
@@ -3024,14 +3024,14 @@
         "0x151f7c75"
       ]
     },
-    "465": {
+    "470": {
       "op": "swap",
       "stack_out": [
         "0x151f7c75",
         "tmp%1#1"
       ]
     },
-    "466": {
+    "471": {
       "op": "concat",
       "defined_out": [
         "tmp%3#0"
@@ -3040,11 +3040,11 @@
         "tmp%3#0"
       ]
     },
-    "467": {
+    "472": {
       "op": "log",
       "stack_out": []
     },
-    "468": {
+    "473": {
       "op": "intc_0 // 1",
       "defined_out": [
         "1"
@@ -3053,11 +3053,11 @@
         "1"
       ]
     },
-    "469": {
+    "474": {
       "op": "return",
       "stack_out": []
     },
-    "470": {
+    "475": {
       "subroutine": "contracts/PuzzleScores.algo.ts::PuzzleScores.getScoreForUser[routing]",
       "params": {},
       "block": "getScoreForUser",
@@ -3070,7 +3070,7 @@
         "tmp%0#0"
       ]
     },
-    "473": {
+    "478": {
       "op": "dup",
       "defined_out": [
         "tmp%0#0",
@@ -3081,7 +3081,7 @@
         "tmp%0#0 (copy)"
       ]
     },
-    "474": {
+    "479": {
       "op": "intc_1 // 0",
       "defined_out": [
         "0",
@@ -3094,7 +3094,7 @@
         "0"
       ]
     },
-    "475": {
+    "480": {
       "error": "invalid array length header",
       "op": "extract_uint16 // on error: invalid array length header",
       "defined_out": [
@@ -3106,7 +3106,7 @@
         "aggregate%array_length%0#0"
       ]
     },
-    "476": {
+    "481": {
       "op": "intc_2 // 2",
       "defined_out": [
         "2",
@@ -3119,7 +3119,7 @@
         "2"
       ]
     },
-    "477": {
+    "482": {
       "op": "+",
       "defined_out": [
         "add%0#0",
@@ -3130,7 +3130,7 @@
         "add%0#0"
       ]
     },
-    "478": {
+    "483": {
       "op": "dig 1",
       "stack_out": [
         "tmp%0#0",
@@ -3138,7 +3138,7 @@
         "tmp%0#0 (copy)"
       ]
     },
-    "480": {
+    "485": {
       "op": "len",
       "defined_out": [
         "add%0#0",
@@ -3151,7 +3151,7 @@
         "len%0#0"
       ]
     },
-    "481": {
+    "486": {
       "op": "==",
       "defined_out": [
         "eq%0#0",
@@ -3162,14 +3162,14 @@
         "eq%0#0"
       ]
     },
-    "482": {
+    "487": {
       "error": "invalid number of bytes for arc4.dynamic_array<arc4.uint8>",
       "op": "assert // invalid number of bytes for arc4.dynamic_array<arc4.uint8>",
       "stack_out": [
         "tmp%0#0"
       ]
     },
-    "483": {
+    "488": {
       "op": "extract 2 0",
       "defined_out": [
         "tmp%1#0"
@@ -3178,7 +3178,7 @@
         "tmp%1#0"
       ]
     },
-    "486": {
+    "491": {
       "op": "txna ApplicationArgs 2",
       "defined_out": [
         "tmp%1#0",
@@ -3189,7 +3189,7 @@
         "tmp%2#0"
       ]
     },
-    "489": {
+    "494": {
       "op": "dup",
       "defined_out": [
         "tmp%1#0",
@@ -3202,7 +3202,7 @@
         "tmp%2#0 (copy)"
       ]
     },
-    "490": {
+    "495": {
       "op": "len",
       "defined_out": [
         "len%1#0",
@@ -3215,7 +3215,7 @@
         "len%1#0"
       ]
     },
-    "491": {
+    "496": {
       "op": "intc_3 // 32",
       "defined_out": [
         "32",
@@ -3230,7 +3230,7 @@
         "32"
       ]
     },
-    "492": {
+    "497": {
       "op": "==",
       "defined_out": [
         "eq%1#0",
@@ -3243,7 +3243,7 @@
         "eq%1#0"
       ]
     },
-    "493": {
+    "498": {
       "error": "invalid number of bytes for arc4.static_array<arc4.uint8, 32>",
       "op": "assert // invalid number of bytes for arc4.static_array<arc4.uint8, 32>",
       "stack_out": [
@@ -3251,7 +3251,7 @@
         "tmp%2#0"
       ]
     },
-    "494": {
+    "499": {
       "callsub": "contracts/PuzzleScores.algo.ts::PuzzleScores.getScoreForUser",
       "op": "callsub contracts/PuzzleScores.algo.ts::PuzzleScores.getScoreForUser",
       "defined_out": [
@@ -3261,7 +3261,7 @@
         "tmp%4#0"
       ]
     },
-    "497": {
+    "502": {
       "op": "bytec_1 // 0x151f7c75",
       "defined_out": [
         "0x151f7c75",
@@ -3272,14 +3272,14 @@
         "0x151f7c75"
       ]
     },
-    "498": {
+    "503": {
       "op": "swap",
       "stack_out": [
         "0x151f7c75",
         "tmp%4#0"
       ]
     },
-    "499": {
+    "504": {
       "op": "concat",
       "defined_out": [
         "tmp%5#0"
@@ -3288,11 +3288,11 @@
         "tmp%5#0"
       ]
     },
-    "500": {
+    "505": {
       "op": "log",
       "stack_out": []
     },
-    "501": {
+    "506": {
       "op": "intc_0 // 1",
       "defined_out": [
         "1"
@@ -3301,11 +3301,11 @@
         "1"
       ]
     },
-    "502": {
+    "507": {
       "op": "return",
       "stack_out": []
     },
-    "503": {
+    "508": {
       "subroutine": "contracts/PuzzleScores.algo.ts::PuzzleScores.getScoreForUser",
       "params": {
         "puzzleCode#0": "bytes",
@@ -3315,7 +3315,7 @@
       "stack_in": [],
       "op": "proto 2 1"
     },
-    "506": {
+    "511": {
       "op": "frame_dig -2",
       "defined_out": [
         "puzzleCode#0 (copy)"
@@ -3324,7 +3324,7 @@
         "puzzleCode#0 (copy)"
       ]
     },
-    "508": {
+    "513": {
       "op": "frame_dig -1",
       "defined_out": [
         "puzzleCode#0 (copy)",
@@ -3335,7 +3335,7 @@
         "user#0 (copy)"
       ]
     },
-    "510": {
+    "515": {
       "op": "concat",
       "defined_out": [
         "tmp%0#1"
@@ -3344,7 +3344,7 @@
         "tmp%0#1"
       ]
     },
-    "511": {
+    "516": {
       "op": "box_get",
       "defined_out": [
         "exists#0",
@@ -3355,13 +3355,13 @@
         "exists#0"
       ]
     },
-    "512": {
+    "517": {
       "op": "bnz contracts/PuzzleScores.algo.ts::PuzzleScores.getScoreForUser_after_if_else@2",
       "stack_out": [
         "scoreBytes#0"
       ]
     },
-    "515": {
+    "520": {
       "op": "pushbytes 0x000000000000000000",
       "defined_out": [
         "0x000000000000000000",
@@ -3372,14 +3372,14 @@
         "0x000000000000000000"
       ]
     },
-    "526": {
+    "531": {
       "op": "swap"
     },
-    "527": {
+    "532": {
       "retsub": true,
       "op": "retsub"
     },
-    "528": {
+    "533": {
       "block": "contracts/PuzzleScores.algo.ts::PuzzleScores.getScoreForUser_after_if_else@2",
       "stack_in": [
         "scoreBytes#0"
@@ -3393,7 +3393,7 @@
         "scoreBytes#0"
       ]
     },
-    "530": {
+    "535": {
       "op": "btoi",
       "defined_out": [
         "scoreBytes#0",
@@ -3404,7 +3404,7 @@
         "tmp%2#0"
       ]
     },
-    "531": {
+    "536": {
       "op": "itob",
       "defined_out": [
         "aggregate%val_as_bytes%1#0",
@@ -3415,7 +3415,7 @@
         "aggregate%val_as_bytes%1#0"
       ]
     },
-    "532": {
+    "537": {
       "op": "pushbytes 0x80",
       "defined_out": [
         "0x80",
@@ -3428,7 +3428,7 @@
         "0x80"
       ]
     },
-    "535": {
+    "540": {
       "op": "concat",
       "defined_out": [
         "aggregate%head%3#0",
@@ -3439,354 +3439,1351 @@
         "aggregate%head%3#0"
       ]
     },
-    "536": {
+    "541": {
       "op": "swap"
     },
-    "537": {
+    "542": {
       "retsub": true,
       "op": "retsub"
     },
-    "538": {
+    "543": {
       "subroutine": "contracts/PuzzleScores.algo.ts::PuzzleScores.verifyVerifierTxn",
       "params": {
         "verifierTxn#0": "uint64",
         "signals#0": "bytes",
         "_proof#0": "bytes",
-        "_puzzleCode#0": "bytes",
+        "puzzleCode#0": "bytes",
         "score#0": "uint64"
       },
       "block": "verifyVerifierTxn",
       "stack_in": [],
       "op": "proto 5 2"
     },
-    "541": {
+    "546": {
+      "op": "bytec_2 // \"\"",
+      "stack_out": [
+        "aggregate%array_length%0#0"
+      ]
+    },
+    "547": {
+      "op": "dup",
+      "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0"
+      ]
+    },
+    "548": {
+      "block": "verifyVerifierTxn_while_top@10",
+      "stack_in": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0"
+      ],
+      "op": "pushint 4910 // 4910",
+      "defined_out": [
+        "4910"
+      ],
+      "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
+        "4910"
+      ]
+    },
+    "551": {
+      "op": "global OpcodeBudget",
+      "defined_out": [
+        "4910",
+        "tmp%1#1"
+      ],
+      "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
+        "4910",
+        "tmp%1#1"
+      ]
+    },
+    "553": {
+      "op": ">",
+      "defined_out": [
+        "tmp%2#1"
+      ],
+      "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
+        "tmp%2#1"
+      ]
+    },
+    "554": {
+      "op": "bz verifyVerifierTxn_after_while@15",
+      "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0"
+      ]
+    },
+    "557": {
+      "op": "itxn_begin"
+    },
+    "558": {
+      "op": "pushint 6 // appl",
+      "defined_out": [
+        "appl"
+      ],
+      "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
+        "appl"
+      ]
+    },
+    "560": {
+      "op": "itxn_field TypeEnum",
+      "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0"
+      ]
+    },
+    "562": {
+      "op": "pushint 5 // DeleteApplication",
+      "defined_out": [
+        "DeleteApplication"
+      ],
+      "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
+        "DeleteApplication"
+      ]
+    },
+    "564": {
+      "op": "itxn_field OnCompletion",
+      "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0"
+      ]
+    },
+    "566": {
+      "op": "bytec_3 // 0x068101",
+      "defined_out": [
+        "0x068101"
+      ],
+      "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
+        "0x068101"
+      ]
+    },
+    "567": {
+      "op": "itxn_field ApprovalProgram",
+      "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0"
+      ]
+    },
+    "569": {
+      "op": "bytec_3 // 0x068101",
+      "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
+        "0x068101"
+      ]
+    },
+    "570": {
+      "op": "itxn_field ClearStateProgram",
+      "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0"
+      ]
+    },
+    "572": {
       "op": "intc_1 // 0",
       "defined_out": [
         "0"
       ],
       "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
         "0"
       ]
     },
-    "542": {
+    "573": {
+      "op": "itxn_field Fee",
+      "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0"
+      ]
+    },
+    "575": {
+      "op": "itxn_submit"
+    },
+    "576": {
+      "op": "b verifyVerifierTxn_while_top@10"
+    },
+    "579": {
+      "block": "verifyVerifierTxn_after_while@15",
+      "stack_in": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0"
+      ],
+      "op": "intc_1 // 0",
+      "defined_out": [
+        "0"
+      ],
+      "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
+        "0"
+      ]
+    },
+    "580": {
       "op": "bytec_0 // \"verifier\"",
       "defined_out": [
         "\"verifier\"",
         "0"
       ],
       "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
         "0",
         "\"verifier\""
       ]
     },
-    "543": {
+    "581": {
       "op": "app_global_get_ex",
       "defined_out": [
         "_%0#0",
         "maybe_exists%0#0"
       ],
       "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
         "_%0#0",
         "maybe_exists%0#0"
       ]
     },
-    "544": {
+    "582": {
       "error": "verifier is not configured",
       "op": "assert // verifier is not configured",
       "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
         "_%0#0"
       ]
     },
-    "545": {
+    "583": {
       "op": "frame_dig -5",
       "defined_out": [
         "_%0#0",
         "verifierTxn#0 (copy)"
       ],
       "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
         "_%0#0",
         "verifierTxn#0 (copy)"
       ]
     },
-    "547": {
+    "585": {
       "op": "gtxns Sender",
       "defined_out": [
         "_%0#0",
         "tmp%0#0"
       ],
       "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
         "_%0#0",
         "tmp%0#0"
       ]
     },
-    "549": {
+    "587": {
       "op": "==",
       "defined_out": [
         "tmp%1#0"
       ],
       "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
         "tmp%1#0"
       ]
     },
-    "550": {
+    "588": {
       "error": "verifier txn must come from the verifier",
       "op": "assert // verifier txn must come from the verifier",
-      "stack_out": []
+      "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0"
+      ]
     },
-    "551": {
+    "589": {
       "op": "global CurrentApplicationAddress",
       "defined_out": [
         "tmp%2#0"
       ],
       "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
         "tmp%2#0"
       ]
     },
-    "553": {
+    "591": {
       "op": "frame_dig -5",
       "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
         "tmp%2#0",
         "verifierTxn#0 (copy)"
       ]
     },
-    "555": {
+    "593": {
       "op": "gtxns Receiver",
       "defined_out": [
         "tmp%2#0",
         "tmp%3#0"
       ],
       "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
         "tmp%2#0",
         "tmp%3#0"
       ]
     },
-    "557": {
+    "595": {
       "op": "==",
       "defined_out": [
         "tmp%4#0"
       ],
       "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
         "tmp%4#0"
       ]
     },
-    "558": {
+    "596": {
       "error": "verifier txn receiver must be app account",
       "op": "assert // verifier txn receiver must be app account",
-      "stack_out": []
+      "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0"
+      ]
     },
-    "559": {
+    "597": {
       "op": "frame_dig -4",
       "defined_out": [
         "signals#0 (copy)"
       ],
       "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
         "signals#0 (copy)"
       ]
     },
-    "561": {
+    "599": {
       "op": "intc_1 // 0",
       "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
         "signals#0 (copy)",
         "0"
       ]
     },
-    "562": {
+    "600": {
       "error": "invalid array length header",
       "op": "extract_uint16 // on error: invalid array length header",
       "defined_out": [
         "aggregate%array_length%0#0"
       ],
       "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
         "aggregate%array_length%0#0"
       ]
     },
-    "563": {
-      "op": "pushint 49 // 49",
+    "601": {
+      "op": "dup",
+      "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
+        "aggregate%array_length%0#0",
+        "aggregate%array_length%0#0"
+      ]
+    },
+    "602": {
+      "op": "frame_bury 0",
       "defined_out": [
-        "49",
         "aggregate%array_length%0#0"
       ],
       "stack_out": [
         "aggregate%array_length%0#0",
-        "49"
+        "tmp%9#0",
+        "aggregate%array_length%0#0"
       ]
     },
-    "565": {
+    "604": {
+      "op": "pushint 4 // 4",
+      "defined_out": [
+        "4",
+        "aggregate%array_length%0#0"
+      ],
+      "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
+        "aggregate%array_length%0#0",
+        "4"
+      ]
+    },
+    "606": {
       "op": ">=",
       "defined_out": [
+        "aggregate%array_length%0#0",
         "tmp%6#0"
       ],
       "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
         "tmp%6#0"
       ]
     },
-    "566": {
-      "error": "public signals length is invalid",
-      "op": "assert // public signals length is invalid",
-      "stack_out": []
+    "607": {
+      "op": "bz verifyVerifierTxn_bool_false@3",
+      "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0"
+      ]
     },
-    "567": {
+    "610": {
+      "op": "frame_dig 0",
+      "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
+        "aggregate%array_length%0#0"
+      ]
+    },
+    "612": {
+      "op": "pushint 4 // 4",
+      "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
+        "aggregate%array_length%0#0",
+        "4"
+      ]
+    },
+    "614": {
+      "op": "<=",
+      "defined_out": [
+        "aggregate%array_length%0#0",
+        "tmp%8#0"
+      ],
+      "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
+        "tmp%8#0"
+      ]
+    },
+    "615": {
+      "op": "bz verifyVerifierTxn_bool_false@3",
+      "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0"
+      ]
+    },
+    "618": {
+      "op": "intc_0 // 1",
+      "defined_out": [
+        "aggregate%array_length%0#0",
+        "and_result%0#0"
+      ],
+      "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
+        "and_result%0#0"
+      ]
+    },
+    "619": {
+      "error": "public signals length is invalid",
+      "block": "verifyVerifierTxn_bool_merge@4",
+      "stack_in": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
+        "and_result%0#0"
+      ],
+      "op": "assert // public signals length is invalid",
+      "defined_out": [],
+      "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0"
+      ]
+    },
+    "620": {
+      "op": "frame_dig -2",
+      "defined_out": [
+        "puzzleCode#0 (copy)"
+      ],
+      "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
+        "puzzleCode#0 (copy)"
+      ]
+    },
+    "622": {
+      "op": "len",
+      "defined_out": [
+        "tmp%9#0"
+      ],
+      "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
+        "tmp%9#0"
+      ]
+    },
+    "623": {
+      "op": "dup",
+      "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
+        "tmp%9#0",
+        "tmp%9#0"
+      ]
+    },
+    "624": {
+      "op": "frame_bury 1",
+      "defined_out": [
+        "tmp%9#0"
+      ],
+      "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
+        "tmp%9#0"
+      ]
+    },
+    "626": {
+      "op": "pushint 20 // 20",
+      "defined_out": [
+        "20",
+        "tmp%9#0"
+      ],
+      "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
+        "tmp%9#0",
+        "20"
+      ]
+    },
+    "628": {
+      "op": ">=",
+      "defined_out": [
+        "tmp%10#0",
+        "tmp%9#0"
+      ],
+      "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
+        "tmp%10#0"
+      ]
+    },
+    "629": {
+      "op": "bz verifyVerifierTxn_bool_false@7",
+      "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0"
+      ]
+    },
+    "632": {
+      "op": "frame_dig 1",
+      "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
+        "tmp%9#0"
+      ]
+    },
+    "634": {
+      "op": "pushint 20 // 20",
+      "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
+        "tmp%9#0",
+        "20"
+      ]
+    },
+    "636": {
+      "op": "<=",
+      "defined_out": [
+        "tmp%12#0",
+        "tmp%9#0"
+      ],
+      "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
+        "tmp%12#0"
+      ]
+    },
+    "637": {
+      "op": "bz verifyVerifierTxn_bool_false@7",
+      "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0"
+      ]
+    },
+    "640": {
+      "op": "intc_0 // 1",
+      "defined_out": [
+        "and_result%1#0",
+        "tmp%9#0"
+      ],
+      "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
+        "and_result%1#0"
+      ]
+    },
+    "641": {
+      "error": "puzzle code length is invalid",
+      "block": "verifyVerifierTxn_bool_merge@8",
+      "stack_in": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
+        "and_result%1#0"
+      ],
+      "op": "assert // puzzle code length is invalid",
+      "defined_out": [],
+      "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0"
+      ]
+    },
+    "642": {
+      "op": "frame_dig -2",
+      "defined_out": [
+        "puzzleCode#0 (copy)"
+      ],
+      "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
+        "puzzleCode#0 (copy)"
+      ]
+    },
+    "644": {
+      "op": "intc_1 // 0",
+      "defined_out": [
+        "0",
+        "puzzleCode#0 (copy)"
+      ],
+      "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
+        "puzzleCode#0 (copy)",
+        "0"
+      ]
+    },
+    "645": {
+      "op": "pushint 20 // 20",
+      "defined_out": [
+        "0",
+        "20",
+        "puzzleCode#0 (copy)"
+      ],
+      "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
+        "puzzleCode#0 (copy)",
+        "0",
+        "20"
+      ]
+    },
+    "647": {
+      "callsub": "contracts/PuzzleScores.algo.ts::PuzzleScores.packBytesToBigUint",
+      "op": "callsub packBytesToBigUint",
+      "defined_out": [
+        "packedPuzzle#0"
+      ],
+      "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
+        "packedPuzzle#0"
+      ]
+    },
+    "650": {
+      "op": "frame_dig -4",
+      "defined_out": [
+        "packedPuzzle#0",
+        "signals#0 (copy)"
+      ],
+      "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
+        "packedPuzzle#0",
+        "signals#0 (copy)"
+      ]
+    },
+    "652": {
+      "op": "extract 34 32",
+      "defined_out": [
+        "aggregate%encoded_element%0#0",
+        "packedPuzzle#0"
+      ],
+      "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
+        "packedPuzzle#0",
+        "aggregate%encoded_element%0#0"
+      ]
+    },
+    "655": {
+      "op": "b==",
+      "defined_out": [
+        "tmp%15#0"
+      ],
+      "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
+        "tmp%15#0"
+      ]
+    },
+    "656": {
+      "error": "public puzzle code must match",
+      "op": "assert // public puzzle code must match",
+      "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0"
+      ]
+    },
+    "657": {
+      "op": "txn Sender",
+      "defined_out": [
+        "reinterpret_bytes[32]%0#0"
+      ],
+      "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
+        "reinterpret_bytes[32]%0#0"
+      ]
+    },
+    "659": {
+      "op": "intc_1 // 0",
+      "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
+        "reinterpret_bytes[32]%0#0",
+        "0"
+      ]
+    },
+    "660": {
+      "op": "pushint 16 // 16",
+      "defined_out": [
+        "0",
+        "16",
+        "reinterpret_bytes[32]%0#0"
+      ],
+      "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
+        "reinterpret_bytes[32]%0#0",
+        "0",
+        "16"
+      ]
+    },
+    "662": {
+      "callsub": "contracts/PuzzleScores.algo.ts::PuzzleScores.packBytesToBigUint",
+      "op": "callsub packBytesToBigUint",
+      "defined_out": [
+        "packedSenderHi#0"
+      ],
+      "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
+        "packedSenderHi#0"
+      ]
+    },
+    "665": {
+      "op": "txn Sender",
+      "defined_out": [
+        "packedSenderHi#0",
+        "reinterpret_bytes[32]%1#0"
+      ],
+      "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
+        "packedSenderHi#0",
+        "reinterpret_bytes[32]%1#0"
+      ]
+    },
+    "667": {
+      "op": "pushint 16 // 16",
+      "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
+        "packedSenderHi#0",
+        "reinterpret_bytes[32]%1#0",
+        "16"
+      ]
+    },
+    "669": {
+      "op": "dup",
+      "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
+        "packedSenderHi#0",
+        "reinterpret_bytes[32]%1#0",
+        "16",
+        "16"
+      ]
+    },
+    "670": {
+      "callsub": "contracts/PuzzleScores.algo.ts::PuzzleScores.packBytesToBigUint",
+      "op": "callsub packBytesToBigUint",
+      "defined_out": [
+        "packedSenderHi#0",
+        "packedSenderLo#0"
+      ],
+      "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
+        "packedSenderHi#0",
+        "packedSenderLo#0"
+      ]
+    },
+    "673": {
+      "op": "frame_dig -4",
+      "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
+        "packedSenderHi#0",
+        "packedSenderLo#0",
+        "signals#0 (copy)"
+      ]
+    },
+    "675": {
+      "op": "extract 66 32",
+      "defined_out": [
+        "aggregate%encoded_element%1#0",
+        "packedSenderHi#0",
+        "packedSenderLo#0"
+      ],
+      "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
+        "packedSenderHi#0",
+        "packedSenderLo#0",
+        "aggregate%encoded_element%1#0"
+      ]
+    },
+    "678": {
+      "op": "uncover 2",
+      "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
+        "packedSenderLo#0",
+        "aggregate%encoded_element%1#0",
+        "packedSenderHi#0"
+      ]
+    },
+    "680": {
+      "op": "b==",
+      "defined_out": [
+        "packedSenderLo#0",
+        "tmp%19#0"
+      ],
+      "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
+        "packedSenderLo#0",
+        "tmp%19#0"
+      ]
+    },
+    "681": {
+      "error": "public sender high bytes must match caller",
+      "op": "assert // public sender high bytes must match caller",
+      "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
+        "packedSenderLo#0"
+      ]
+    },
+    "682": {
+      "op": "frame_dig -4",
+      "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
+        "packedSenderLo#0",
+        "signals#0 (copy)"
+      ]
+    },
+    "684": {
+      "op": "extract 98 32",
+      "defined_out": [
+        "aggregate%encoded_element%2#0",
+        "packedSenderLo#0"
+      ],
+      "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
+        "packedSenderLo#0",
+        "aggregate%encoded_element%2#0"
+      ]
+    },
+    "687": {
+      "op": "b==",
+      "defined_out": [
+        "tmp%21#0"
+      ],
+      "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
+        "tmp%21#0"
+      ]
+    },
+    "688": {
+      "error": "public sender low bytes must match caller",
+      "op": "assert // public sender low bytes must match caller",
+      "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0"
+      ]
+    },
+    "689": {
       "op": "frame_dig -1",
       "defined_out": [
         "score#0 (copy)"
       ],
       "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
         "score#0 (copy)"
       ]
     },
-    "569": {
+    "691": {
       "op": "itob",
       "defined_out": [
         "expectedScore#0"
       ],
       "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
         "expectedScore#0"
       ]
     },
-    "570": {
+    "692": {
       "op": "frame_dig -4",
       "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
         "expectedScore#0",
         "signals#0 (copy)"
       ]
     },
-    "572": {
-      "op": "pushint 1538 // 1538",
-      "defined_out": [
-        "1538",
-        "expectedScore#0",
-        "signals#0 (copy)"
-      ],
-      "stack_out": [
-        "expectedScore#0",
-        "signals#0 (copy)",
-        "1538"
-      ]
-    },
-    "575": {
-      "op": "intc_3 // 32",
-      "defined_out": [
-        "1538",
-        "32",
-        "expectedScore#0",
-        "signals#0 (copy)"
-      ],
-      "stack_out": [
-        "expectedScore#0",
-        "signals#0 (copy)",
-        "1538",
-        "32"
-      ]
-    },
-    "576": {
-      "op": "extract3",
-      "defined_out": [
-        "aggregate%encoded_element%0#0",
-        "expectedScore#0"
-      ],
-      "stack_out": [
-        "expectedScore#0",
-        "aggregate%encoded_element%0#0"
-      ]
-    },
-    "577": {
-      "op": "dig 1",
-      "defined_out": [
-        "aggregate%encoded_element%0#0",
-        "expectedScore#0",
-        "expectedScore#0 (copy)"
-      ],
-      "stack_out": [
-        "expectedScore#0",
-        "aggregate%encoded_element%0#0",
-        "expectedScore#0 (copy)"
-      ]
-    },
-    "579": {
-      "op": "b==",
-      "defined_out": [
-        "expectedScore#0",
-        "scoreAtEnd#0"
-      ],
-      "stack_out": [
-        "expectedScore#0",
-        "scoreAtEnd#0"
-      ]
-    },
-    "580": {
-      "op": "frame_dig -4",
-      "stack_out": [
-        "expectedScore#0",
-        "scoreAtEnd#0",
-        "signals#0 (copy)"
-      ]
-    },
-    "582": {
+    "694": {
       "op": "extract 2 32",
       "defined_out": [
-        "aggregate%encoded_element%1#0",
-        "expectedScore#0",
-        "scoreAtEnd#0"
+        "aggregate%encoded_element%3#0",
+        "expectedScore#0"
       ],
       "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
         "expectedScore#0",
-        "scoreAtEnd#0",
-        "aggregate%encoded_element%1#0"
+        "aggregate%encoded_element%3#0"
       ]
     },
-    "585": {
-      "op": "uncover 2",
-      "stack_out": [
-        "scoreAtEnd#0",
-        "aggregate%encoded_element%1#0",
-        "expectedScore#0"
-      ]
-    },
-    "587": {
+    "697": {
       "op": "b==",
       "defined_out": [
-        "scoreAtEnd#0",
-        "scoreAtStart#0"
+        "tmp%23#0"
       ],
       "stack_out": [
-        "scoreAtEnd#0",
-        "scoreAtStart#0"
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
+        "tmp%23#0"
       ]
     },
-    "588": {
-      "op": "||",
-      "defined_out": [
-        "tmp%11#0"
-      ],
-      "stack_out": [
-        "tmp%11#0"
-      ]
-    },
-    "589": {
+    "698": {
       "error": "public score must match",
       "op": "assert // public score must match",
-      "stack_out": []
+      "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0"
+      ]
     },
-    "590": {
+    "699": {
       "op": "frame_dig -4",
       "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
         "signals#0 (copy)"
       ]
     },
-    "592": {
+    "701": {
       "op": "frame_dig -3",
       "defined_out": [
         "_proof#0 (copy)",
         "signals#0 (copy)"
       ],
       "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
         "signals#0 (copy)",
         "_proof#0 (copy)"
       ]
     },
-    "594": {
+    "703": {
+      "op": "uncover 3"
+    },
+    "705": {
+      "op": "uncover 3"
+    },
+    "707": {
       "retsub": true,
       "op": "retsub"
+    },
+    "708": {
+      "block": "verifyVerifierTxn_bool_false@7",
+      "stack_in": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0"
+      ],
+      "op": "intc_1 // 0",
+      "defined_out": [
+        "and_result%1#0"
+      ],
+      "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
+        "and_result%1#0"
+      ]
+    },
+    "709": {
+      "op": "b verifyVerifierTxn_bool_merge@8"
+    },
+    "712": {
+      "block": "verifyVerifierTxn_bool_false@3",
+      "stack_in": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0"
+      ],
+      "op": "intc_1 // 0",
+      "defined_out": [
+        "and_result%0#0"
+      ],
+      "stack_out": [
+        "aggregate%array_length%0#0",
+        "tmp%9#0",
+        "and_result%0#0"
+      ]
+    },
+    "713": {
+      "op": "b verifyVerifierTxn_bool_merge@4"
+    },
+    "716": {
+      "subroutine": "contracts/PuzzleScores.algo.ts::PuzzleScores.packBytesToBigUint",
+      "params": {
+        "source#0": "bytes",
+        "start#0": "uint64",
+        "length#0": "uint64"
+      },
+      "block": "packBytesToBigUint",
+      "stack_in": [],
+      "op": "proto 3 1"
+    },
+    "719": {
+      "op": "bytec_2 // 0x"
+    },
+    "720": {
+      "op": "intc_1 // 0",
+      "defined_out": [
+        "byteIndex#0",
+        "packedValue#0"
+      ],
+      "stack_out": [
+        "packedValue#0",
+        "byteIndex#0"
+      ]
+    },
+    "721": {
+      "block": "packBytesToBigUint_while_top@1",
+      "stack_in": [
+        "packedValue#0",
+        "byteIndex#0"
+      ],
+      "op": "frame_dig 1",
+      "defined_out": [
+        "byteIndex#0"
+      ],
+      "stack_out": [
+        "packedValue#0",
+        "byteIndex#0",
+        "byteIndex#0"
+      ]
+    },
+    "723": {
+      "op": "frame_dig -1",
+      "defined_out": [
+        "byteIndex#0",
+        "length#0 (copy)"
+      ],
+      "stack_out": [
+        "packedValue#0",
+        "byteIndex#0",
+        "byteIndex#0",
+        "length#0 (copy)"
+      ]
+    },
+    "725": {
+      "op": "<",
+      "defined_out": [
+        "byteIndex#0",
+        "tmp%0#0"
+      ],
+      "stack_out": [
+        "packedValue#0",
+        "byteIndex#0",
+        "tmp%0#0"
+      ]
+    },
+    "726": {
+      "op": "bz packBytesToBigUint_after_while@3",
+      "stack_out": [
+        "packedValue#0",
+        "byteIndex#0"
+      ]
+    },
+    "729": {
+      "op": "frame_dig 0",
+      "defined_out": [
+        "byteIndex#0",
+        "packedValue#0"
+      ],
+      "stack_out": [
+        "packedValue#0",
+        "byteIndex#0",
+        "packedValue#0"
+      ]
+    },
+    "731": {
+      "op": "pushbytes 0x0100",
+      "defined_out": [
+        "0x0100",
+        "byteIndex#0",
+        "packedValue#0"
+      ],
+      "stack_out": [
+        "packedValue#0",
+        "byteIndex#0",
+        "packedValue#0",
+        "0x0100"
+      ]
+    },
+    "735": {
+      "op": "b*",
+      "defined_out": [
+        "byteIndex#0",
+        "packedValue#0",
+        "tmp%1#0"
+      ],
+      "stack_out": [
+        "packedValue#0",
+        "byteIndex#0",
+        "tmp%1#0"
+      ]
+    },
+    "736": {
+      "op": "frame_dig -2",
+      "defined_out": [
+        "byteIndex#0",
+        "packedValue#0",
+        "start#0 (copy)",
+        "tmp%1#0"
+      ],
+      "stack_out": [
+        "packedValue#0",
+        "byteIndex#0",
+        "tmp%1#0",
+        "start#0 (copy)"
+      ]
+    },
+    "738": {
+      "op": "frame_dig 1",
+      "stack_out": [
+        "packedValue#0",
+        "byteIndex#0",
+        "tmp%1#0",
+        "start#0 (copy)",
+        "byteIndex#0"
+      ]
+    },
+    "740": {
+      "op": "dup",
+      "defined_out": [
+        "byteIndex#0",
+        "byteIndex#0 (copy)",
+        "packedValue#0",
+        "start#0 (copy)",
+        "tmp%1#0"
+      ],
+      "stack_out": [
+        "packedValue#0",
+        "byteIndex#0",
+        "tmp%1#0",
+        "start#0 (copy)",
+        "byteIndex#0 (copy)",
+        "byteIndex#0 (copy)"
+      ]
+    },
+    "741": {
+      "op": "cover 3",
+      "stack_out": [
+        "packedValue#0",
+        "byteIndex#0",
+        "byteIndex#0",
+        "tmp%1#0",
+        "start#0 (copy)",
+        "byteIndex#0 (copy)"
+      ]
+    },
+    "743": {
+      "op": "+",
+      "defined_out": [
+        "byteIndex#0",
+        "packedValue#0",
+        "tmp%1#0",
+        "tmp%2#0"
+      ],
+      "stack_out": [
+        "packedValue#0",
+        "byteIndex#0",
+        "byteIndex#0",
+        "tmp%1#0",
+        "tmp%2#0"
+      ]
+    },
+    "744": {
+      "op": "frame_dig -3",
+      "defined_out": [
+        "byteIndex#0",
+        "packedValue#0",
+        "source#0 (copy)",
+        "tmp%1#0",
+        "tmp%2#0"
+      ],
+      "stack_out": [
+        "packedValue#0",
+        "byteIndex#0",
+        "byteIndex#0",
+        "tmp%1#0",
+        "tmp%2#0",
+        "source#0 (copy)"
+      ]
+    },
+    "746": {
+      "op": "swap",
+      "stack_out": [
+        "packedValue#0",
+        "byteIndex#0",
+        "byteIndex#0",
+        "tmp%1#0",
+        "source#0 (copy)",
+        "tmp%2#0"
+      ]
+    },
+    "747": {
+      "op": "getbyte",
+      "defined_out": [
+        "byteIndex#0",
+        "packedValue#0",
+        "tmp%1#0",
+        "tmp%3#0"
+      ],
+      "stack_out": [
+        "packedValue#0",
+        "byteIndex#0",
+        "byteIndex#0",
+        "tmp%1#0",
+        "tmp%3#0"
+      ]
+    },
+    "748": {
+      "op": "itob",
+      "defined_out": [
+        "byteIndex#0",
+        "packedValue#0",
+        "reinterpret_biguint%0#0",
+        "tmp%1#0"
+      ],
+      "stack_out": [
+        "packedValue#0",
+        "byteIndex#0",
+        "byteIndex#0",
+        "tmp%1#0",
+        "reinterpret_biguint%0#0"
+      ]
+    },
+    "749": {
+      "op": "b+",
+      "stack_out": [
+        "packedValue#0",
+        "byteIndex#0",
+        "byteIndex#0",
+        "packedValue#0"
+      ]
+    },
+    "750": {
+      "op": "frame_bury 0",
+      "defined_out": [
+        "byteIndex#0",
+        "packedValue#0"
+      ],
+      "stack_out": [
+        "packedValue#0",
+        "byteIndex#0",
+        "byteIndex#0"
+      ]
+    },
+    "752": {
+      "op": "intc_0 // 1",
+      "defined_out": [
+        "1",
+        "byteIndex#0",
+        "packedValue#0"
+      ],
+      "stack_out": [
+        "packedValue#0",
+        "byteIndex#0",
+        "byteIndex#0",
+        "1"
+      ]
+    },
+    "753": {
+      "op": "+",
+      "stack_out": [
+        "packedValue#0",
+        "byteIndex#0",
+        "byteIndex#0"
+      ]
+    },
+    "754": {
+      "op": "frame_bury 1",
+      "defined_out": [
+        "byteIndex#0",
+        "packedValue#0"
+      ],
+      "stack_out": [
+        "packedValue#0",
+        "byteIndex#0"
+      ]
+    },
+    "756": {
+      "op": "b packBytesToBigUint_while_top@1"
+    },
+    "759": {
+      "block": "packBytesToBigUint_after_while@3",
+      "stack_in": [
+        "packedValue#0",
+        "byteIndex#0"
+      ],
+      "retsub": true,
+      "op": "retsub",
+      "defined_out": [
+        "packedValue#0"
+      ],
+      "stack_out": [
+        "packedValue#0",
+        "byteIndex#0",
+        "packedValue#0"
+      ]
     }
   }
 }

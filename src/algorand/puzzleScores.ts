@@ -1,7 +1,7 @@
 import { AlgorandClient, microAlgo } from "@algorandfoundation/algokit-utils";
 import algosdk from "algosdk";
 import { Groth16Bn254LsigVerifier } from "snarkjs-algorand";
-import { PuzzleScoresClient } from "../shims/PuzzleScoresClient";
+import { PuzzleScoresClient } from "./PuzzleScoresClient";
 import { encodePuzzle } from "../game/serialize";
 import type { Move, Puzzle } from "../game/types";
 import {
@@ -103,6 +103,7 @@ export interface NormalizedWitness {
   proof: Groth16Bn254Proof;
   signals: bigint[];
   puzzleCode: Uint8Array;
+  senderPublicKey: Uint8Array;
 }
 
 export interface GeneratedScoreProof {
@@ -223,6 +224,20 @@ function bytesToHex(bytes: Uint8Array): string {
   return result;
 }
 
+function bytesEqual(left: Uint8Array, right: Uint8Array): boolean {
+  if (left.length !== right.length) {
+    return false;
+  }
+
+  for (let i = 0; i < left.length; i += 1) {
+    if (left[i] !== right[i]) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 async function withTimeout<T>(
   stage: string,
   promise: Promise<T>,
@@ -292,7 +307,10 @@ function normalizeWitness(witness: unknown, score: bigint): NormalizedWitness {
 
   const puzzleSignalCount = PUZZLE_CODE_BYTE_LENGTH * 2;
   const publicEmptyTubeSignalCount = 8;
-  const scoreSignalIndex = puzzleSignalCount + publicEmptyTubeSignalCount;
+  const senderSignalCount = ADDRESS_BYTE_LENGTH;
+  const senderSignalStartIndex = puzzleSignalCount + publicEmptyTubeSignalCount;
+  const scoreSignalIndex = senderSignalStartIndex + senderSignalCount;
+  const expectedSignalCount = scoreSignalIndex + 1;
 
   const decodePuzzleCode = (
     source: bigint[],
@@ -322,106 +340,64 @@ function normalizeWitness(witness: unknown, score: bigint): NormalizedWitness {
     return decoded;
   };
 
-  const validateLayout = (candidate: bigint[]): Uint8Array | null => {
-    if (candidate.length <= scoreSignalIndex) {
-      return null;
-    }
-
-    const decodedPuzzleCode = decodePuzzleCode(candidate, 0);
-    if (!decodedPuzzleCode) {
-      return null;
-    }
-
-    for (let i = 0; i < publicEmptyTubeSignalCount; i += 1) {
-      if (candidate[puzzleSignalCount + i] !== 0n) {
+  const decodeSenderPublicKey = (
+    source: bigint[],
+    startIndex: number,
+  ): Uint8Array | null => {
+    const decoded = new Uint8Array(ADDRESS_BYTE_LENGTH);
+    for (let byteIndex = 0; byteIndex < ADDRESS_BYTE_LENGTH; byteIndex += 1) {
+      const byteSignal = source[startIndex + byteIndex];
+      if (byteSignal === undefined || byteSignal < 0n || byteSignal > 255n) {
         return null;
       }
+      decoded[byteIndex] = Number(byteSignal);
     }
-
-    if (candidate[scoreSignalIndex] !== score) {
-      return null;
-    }
-
-    return decodedPuzzleCode;
+    return decoded;
   };
 
-  const directPuzzleCode = validateLayout(signals);
-  if (directPuzzleCode) {
-    return {
-      proof: { piA, piB, piC },
-      signals,
-      puzzleCode: directPuzzleCode,
-    };
-  }
-
-  const shiftedSignals = signals.slice(1);
-  const shiftedPuzzleCode = validateLayout(shiftedSignals);
-  if (shiftedPuzzleCode) {
-    return {
-      proof: { piA, piB, piC },
-      signals,
-      puzzleCode: shiftedPuzzleCode,
-    };
-  }
-
-  // Circom/snarkjs can emit public outputs before public inputs.
-  if (signals.length >= scoreSignalIndex + 1) {
-    const moveCount = signals[0];
-    const initialSignals = signals.slice(1, 1 + scoreSignalIndex);
-
-    if (
-      initialSignals.length === scoreSignalIndex &&
-      moveCount === score &&
-      initialSignals.every((value, index) =>
-        index >= puzzleSignalCount &&
-        index < puzzleSignalCount + publicEmptyTubeSignalCount
-          ? value === 0n
-          : true,
-      )
-    ) {
-      const decodedPuzzleCode = decodePuzzleCode(initialSignals, 0);
-      if (decodedPuzzleCode) {
-        return {
-          proof: { piA, piB, piC },
-          signals,
-          puzzleCode: decodedPuzzleCode,
-        };
-      }
-    }
-  }
-
-  if (signals.length > scoreSignalIndex + 1) {
-    const shiftedSignalsWithOutput = signals.slice(1);
-    const moveCount = shiftedSignalsWithOutput[0];
-    const initialSignals = shiftedSignalsWithOutput.slice(
-      1,
-      1 + scoreSignalIndex,
+  if (signals.length !== expectedSignalCount) {
+    throw new Error(
+      "Verifier witness signals do not match expected public layout",
     );
+  }
 
-    if (
-      initialSignals.length === scoreSignalIndex &&
-      moveCount === score &&
-      initialSignals.every((value, index) =>
-        index >= puzzleSignalCount &&
-        index < puzzleSignalCount + publicEmptyTubeSignalCount
-          ? value === 0n
-          : true,
-      )
-    ) {
-      const decodedPuzzleCode = decodePuzzleCode(initialSignals, 0);
-      if (decodedPuzzleCode) {
-        return {
-          proof: { piA, piB, piC },
-          signals,
-          puzzleCode: decodedPuzzleCode,
-        };
-      }
+  const decodedPuzzleCode = decodePuzzleCode(signals, 0);
+  if (!decodedPuzzleCode) {
+    throw new Error(
+      "Verifier witness signals do not match expected public layout",
+    );
+  }
+
+  for (let i = 0; i < publicEmptyTubeSignalCount; i += 1) {
+    if (signals[puzzleSignalCount + i] !== 0n) {
+      throw new Error(
+        "Verifier witness signals do not match expected public layout",
+      );
     }
   }
 
-  throw new Error(
-    "Verifier witness signals do not match expected public layout",
+  const decodedSenderPublicKey = decodeSenderPublicKey(
+    signals,
+    senderSignalStartIndex,
   );
+  if (!decodedSenderPublicKey) {
+    throw new Error(
+      "Verifier witness signals do not match expected public layout",
+    );
+  }
+
+  if (signals[scoreSignalIndex] !== score) {
+    throw new Error(
+      "Verifier witness signals do not match expected public layout",
+    );
+  }
+
+  return {
+    proof: { piA, piB, piC },
+    signals,
+    puzzleCode: decodedPuzzleCode,
+    senderPublicKey: decodedSenderPublicKey,
+  };
 }
 
 async function getExistingScoreFromAlgod(
@@ -628,6 +604,7 @@ export async function removeScoreOnChain({
 interface GenerateScoreProofArgs {
   networkId: string;
   algodClient: algosdk.Algodv2;
+  sender: string;
   puzzle: Puzzle;
   moveHistory: string[];
   score: number;
@@ -636,6 +613,7 @@ interface GenerateScoreProofArgs {
 export async function generateScoreProof({
   networkId,
   algodClient,
+  sender,
   puzzle,
   moveHistory,
   score,
@@ -662,7 +640,7 @@ export async function generateScoreProof({
 
   const [lsigAccount, witness] = await Promise.all([
     verifier.lsigAccount(),
-    verifier.proofAndSignals(buildColorSortProofInput(puzzle, moves)),
+    verifier.proofAndSignals(buildColorSortProofInput(puzzle, moves, sender)),
   ]);
 
   const normalizedWitness = normalizeWitness(witness, BigInt(score));
@@ -737,7 +715,7 @@ async function performScoreSave(
       console.debug("[score-save] generating proof inline");
     }
     const witness = await verifier.proofAndSignals(
-      buildColorSortProofInput(puzzle, moves),
+      buildColorSortProofInput(puzzle, moves, sender),
     );
     normalizedWitness = normalizeWitness(witness, BigInt(score));
   }
@@ -756,8 +734,19 @@ async function performScoreSave(
   }
 
   const nextScore = BigInt(score);
-  const onChainPuzzleCode = normalizedWitness.puzzleCode;
-  const scoreBoxName = buildScoreBoxName(onChainPuzzleCode, sender);
+  const witnessPuzzleCode = normalizedWitness.puzzleCode;
+  if (!bytesEqual(witnessPuzzleCode, puzzleCode)) {
+    throw new Error(
+      "Verifier witness puzzle code does not match requested puzzle",
+    );
+  }
+
+  const senderPublicKey = algosdk.decodeAddress(sender).publicKey;
+  if (!bytesEqual(normalizedWitness.senderPublicKey, senderPublicKey)) {
+    throw new Error("Verifier witness sender does not match requested sender");
+  }
+
+  const scoreBoxName = buildScoreBoxName(puzzleCode, sender);
 
   if (existingScore !== null) {
     if (nextScore >= existingScore) {
@@ -802,7 +791,7 @@ async function performScoreSave(
             args: {
               signals: normalizedWitness.signals,
               proof: normalizedWitness.proof,
-              puzzleCode: onChainPuzzleCode,
+              puzzleCode,
               newScore: nextScore,
               verifierTxn: {
                 txn: updateVerifierTxn,
@@ -878,7 +867,7 @@ async function performScoreSave(
           args: {
             signals: normalizedWitness.signals,
             proof: normalizedWitness.proof,
-            puzzleCode: onChainPuzzleCode,
+            puzzleCode,
             score: nextScore,
             payMbr: {
               txn: payMbr,
