@@ -1,4 +1,5 @@
 import * as snarkjs from "snarkjs";
+import algosdk from "algosdk";
 import type { Move, Puzzle } from "../game/types";
 import { DEFAULT_COLORS } from "../game/types";
 
@@ -93,9 +94,43 @@ export interface ProveResult {
 export interface ColorSortProofInput {
   [key: string]: string[];
   initial: string[];
+  puzzlePacked: string[];
+  senderPacked: string[];
   srcs: string[];
   dsts: string[];
   active: string[];
+}
+
+function packBytesToLimbs(bytes: Uint8Array, limbWidths: number[]): string[] {
+  const result: string[] = [];
+  let offset = 0;
+
+  for (const width of limbWidths) {
+    let value = 0n;
+    for (let i = 0; i < width; i += 1) {
+      value = (value << 8n) | BigInt(bytes[offset + i] ?? 0);
+    }
+    result.push(value.toString());
+    offset += width;
+  }
+
+  return result;
+}
+
+function packPuzzleInitialToLimbs(initial: string[]): string[] {
+  const puzzleBytes = new Uint8Array(20);
+  for (let i = 0; i < 20; i += 1) {
+    const high = Number(initial[i * 2] ?? "0");
+    const low = Number(initial[i * 2 + 1] ?? "0");
+    puzzleBytes[i] = ((high & 0x0f) << 4) | (low & 0x0f);
+  }
+
+  return packBytesToLimbs(puzzleBytes, [8, 8, 4]);
+}
+
+function packSenderToLimbs(sender: string): string[] {
+  const senderBytes = algosdk.decodeAddress(sender).publicKey;
+  return packBytesToLimbs(senderBytes, [8, 8, 8, 8]);
 }
 
 export const colorSortWasmUrl = wasmUrl;
@@ -104,10 +139,13 @@ export const colorSortZkeyUrl = zkeyUrl;
 export function buildColorSortProofInput(
   puzzle: Puzzle,
   moves: Move[],
+  sender: string,
 ): ColorSortProofInput {
   const initial = encodeInitialState(puzzle);
+  const puzzlePacked = packPuzzleInitialToLimbs(initial);
+  const senderPacked = packSenderToLimbs(sender);
   const { srcs, dsts, active } = encodeMoves(moves);
-  return { initial, srcs, dsts, active };
+  return { initial, puzzlePacked, senderPacked, srcs, dsts, active };
 }
 
 /**
@@ -119,8 +157,9 @@ export function buildColorSortProofInput(
 export async function proveColorSort(
   puzzle: Puzzle,
   moves: Move[],
+  sender: string,
 ): Promise<ProveResult> {
-  const input = buildColorSortProofInput(puzzle, moves);
+  const input = buildColorSortProofInput(puzzle, moves, sender);
 
   const { proof, publicSignals } = await snarkjs.groth16.fullProve(
     input,
@@ -144,7 +183,7 @@ export async function verifyColorSort(
   publicSignals: string[],
 ): Promise<boolean> {
   const vkeyResponse = await fetch(
-    new URL("../../zk/build/verification_key.json", import.meta.url).href,
+    new URL("./build/verification_key.json", import.meta.url).href,
   );
   const vkey = await vkeyResponse.json();
   return snarkjs.groth16.verify(vkey, publicSignals, proof);

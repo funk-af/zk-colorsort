@@ -61,6 +61,13 @@ const ADDRESS_BYTE_LENGTH = 32;
 const PUZZLE_CODE_BYTE_LENGTH = 20;
 const SCORE_BYTE_LENGTH = 8;
 const SCORE_KEY_BYTE_LENGTH = PUZZLE_CODE_BYTE_LENGTH + ADDRESS_BYTE_LENGTH;
+const PUZZLE_LIMB_WIDTHS = [8, 8, 4] as const;
+const SENDER_LIMB_WIDTHS = [8, 8, 8, 8] as const;
+const SCORE_SIGNAL_INDEX = 0;
+const PUZZLE_SIGNAL_START = 1;
+const SENDER_SIGNAL_START = PUZZLE_SIGNAL_START + PUZZLE_LIMB_WIDTHS.length;
+const PUBLIC_SIGNAL_COUNT =
+  1 + PUZZLE_LIMB_WIDTHS.length + SENDER_LIMB_WIDTHS.length;
 const VERIFIER_APP_OFFSET = 1;
 const ADD_SCORE_VERIFIER_TOTAL_LSIGS = 3;
 const UPDATE_SCORE_VERIFIER_TOTAL_LSIGS = 4;
@@ -223,6 +230,84 @@ function bytesToHex(bytes: Uint8Array): string {
   return result;
 }
 
+function bytesEqual(left: Uint8Array, right: Uint8Array): boolean {
+  if (left.length !== right.length) {
+    return false;
+  }
+  for (let i = 0; i < left.length; i += 1) {
+    if (left[i] !== right[i]) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function packBytesToLimbs(
+  bytes: Uint8Array,
+  widths: readonly number[],
+): bigint[] {
+  const limbs: bigint[] = [];
+  let offset = 0;
+  for (const width of widths) {
+    let limb = 0n;
+    for (let i = 0; i < width; i += 1) {
+      limb = (limb << 8n) | BigInt(bytes[offset + i] ?? 0);
+    }
+    limbs.push(limb);
+    offset += width;
+  }
+  return limbs;
+}
+
+function unpackLimbsToBytes(
+  limbs: readonly bigint[],
+  widths: readonly number[],
+): Uint8Array | null {
+  if (limbs.length !== widths.length) {
+    return null;
+  }
+
+  const totalBytes = widths.reduce((sum, width) => sum + width, 0);
+  const result = new Uint8Array(totalBytes);
+  let offset = 0;
+
+  for (let limbIndex = 0; limbIndex < widths.length; limbIndex += 1) {
+    const width = widths[limbIndex];
+    const limb = limbs[limbIndex];
+    if (limb < 0n || limb >= 1n << BigInt(width * 8)) {
+      return null;
+    }
+
+    let value = limb;
+    for (let i = width - 1; i >= 0; i -= 1) {
+      result[offset + i] = Number(value & 0xffn);
+      value >>= 8n;
+    }
+    offset += width;
+  }
+
+  return result;
+}
+
+function signalsMatchSender(signals: bigint[], sender: string): boolean {
+  const expectedSender = packBytesToLimbs(
+    algosdk.decodeAddress(sender).publicKey,
+    SENDER_LIMB_WIDTHS,
+  );
+
+  const outputFirstMatch = expectedSender.every(
+    (value, index) => signals[SENDER_SIGNAL_START + index] === value,
+  );
+  if (outputFirstMatch) {
+    return true;
+  }
+
+  const outputLastStart = PUZZLE_LIMB_WIDTHS.length;
+  return expectedSender.every(
+    (value, index) => signals[outputLastStart + index] === value,
+  );
+}
+
 async function withTimeout<T>(
   stage: string,
   promise: Promise<T>,
@@ -290,133 +375,69 @@ function normalizeWitness(witness: unknown, score: bigint): NormalizedWitness {
     return BigInt(value);
   });
 
-  const puzzleSignalCount = PUZZLE_CODE_BYTE_LENGTH * 2;
-  const publicEmptyTubeSignalCount = 8;
-  const scoreSignalIndex = puzzleSignalCount + publicEmptyTubeSignalCount;
-
-  const decodePuzzleCode = (
-    source: bigint[],
-    startIndex: number,
+  const validateLayout = (
+    candidate: bigint[],
+    scoreIndex: number,
+    puzzleStart: number,
+    senderStart: number,
   ): Uint8Array | null => {
-    const decoded = new Uint8Array(PUZZLE_CODE_BYTE_LENGTH);
-    for (
-      let byteIndex = 0;
-      byteIndex < PUZZLE_CODE_BYTE_LENGTH;
-      byteIndex += 1
-    ) {
-      const highNibbleSignal = source[startIndex + byteIndex * 2];
-      const lowNibbleSignal = source[startIndex + byteIndex * 2 + 1];
-      if (
-        highNibbleSignal === undefined ||
-        lowNibbleSignal === undefined ||
-        highNibbleSignal < 0n ||
-        highNibbleSignal > 15n ||
-        lowNibbleSignal < 0n ||
-        lowNibbleSignal > 15n
-      ) {
-        return null;
-      }
-      decoded[byteIndex] =
-        (Number(highNibbleSignal) << 4) | Number(lowNibbleSignal);
-    }
-    return decoded;
-  };
-
-  const validateLayout = (candidate: bigint[]): Uint8Array | null => {
-    if (candidate.length <= scoreSignalIndex) {
+    if (candidate.length < PUBLIC_SIGNAL_COUNT) {
       return null;
     }
 
-    const decodedPuzzleCode = decodePuzzleCode(candidate, 0);
-    if (!decodedPuzzleCode) {
+    if (candidate[scoreIndex] !== score) {
       return null;
     }
 
-    for (let i = 0; i < publicEmptyTubeSignalCount; i += 1) {
-      if (candidate[puzzleSignalCount + i] !== 0n) {
-        return null;
-      }
-    }
-
-    if (candidate[scoreSignalIndex] !== score) {
-      return null;
-    }
-
-    return decodedPuzzleCode;
-  };
-
-  const directPuzzleCode = validateLayout(signals);
-  if (directPuzzleCode) {
-    return {
-      proof: { piA, piB, piC },
-      signals,
-      puzzleCode: directPuzzleCode,
-    };
-  }
-
-  const shiftedSignals = signals.slice(1);
-  const shiftedPuzzleCode = validateLayout(shiftedSignals);
-  if (shiftedPuzzleCode) {
-    return {
-      proof: { piA, piB, piC },
-      signals,
-      puzzleCode: shiftedPuzzleCode,
-    };
-  }
-
-  // Circom/snarkjs can emit public outputs before public inputs.
-  if (signals.length >= scoreSignalIndex + 1) {
-    const moveCount = signals[0];
-    const initialSignals = signals.slice(1, 1 + scoreSignalIndex);
-
-    if (
-      initialSignals.length === scoreSignalIndex &&
-      moveCount === score &&
-      initialSignals.every((value, index) =>
-        index >= puzzleSignalCount &&
-        index < puzzleSignalCount + publicEmptyTubeSignalCount
-          ? value === 0n
-          : true,
-      )
-    ) {
-      const decodedPuzzleCode = decodePuzzleCode(initialSignals, 0);
-      if (decodedPuzzleCode) {
-        return {
-          proof: { piA, piB, piC },
-          signals,
-          puzzleCode: decodedPuzzleCode,
-        };
-      }
-    }
-  }
-
-  if (signals.length > scoreSignalIndex + 1) {
-    const shiftedSignalsWithOutput = signals.slice(1);
-    const moveCount = shiftedSignalsWithOutput[0];
-    const initialSignals = shiftedSignalsWithOutput.slice(
-      1,
-      1 + scoreSignalIndex,
+    const puzzleLimbs = candidate.slice(
+      puzzleStart,
+      puzzleStart + PUZZLE_LIMB_WIDTHS.length,
+    );
+    const senderLimbs = candidate.slice(
+      senderStart,
+      senderStart + SENDER_LIMB_WIDTHS.length,
     );
 
     if (
-      initialSignals.length === scoreSignalIndex &&
-      moveCount === score &&
-      initialSignals.every((value, index) =>
-        index >= puzzleSignalCount &&
-        index < puzzleSignalCount + publicEmptyTubeSignalCount
-          ? value === 0n
-          : true,
-      )
+      puzzleLimbs.length !== PUZZLE_LIMB_WIDTHS.length ||
+      senderLimbs.length !== SENDER_LIMB_WIDTHS.length
     ) {
-      const decodedPuzzleCode = decodePuzzleCode(initialSignals, 0);
-      if (decodedPuzzleCode) {
-        return {
-          proof: { piA, piB, piC },
-          signals,
-          puzzleCode: decodedPuzzleCode,
-        };
-      }
+      return null;
     }
+
+    if (senderLimbs.some((value) => value < 0n || value >= 1n << 64n)) {
+      return null;
+    }
+
+    return unpackLimbsToBytes(puzzleLimbs, PUZZLE_LIMB_WIDTHS);
+  };
+
+  const outputFirstPuzzle = validateLayout(
+    signals,
+    SCORE_SIGNAL_INDEX,
+    PUZZLE_SIGNAL_START,
+    SENDER_SIGNAL_START,
+  );
+  if (outputFirstPuzzle) {
+    return {
+      proof: { piA, piB, piC },
+      signals,
+      puzzleCode: outputFirstPuzzle,
+    };
+  }
+
+  const outputLastPuzzle = validateLayout(
+    signals,
+    PUBLIC_SIGNAL_COUNT - 1,
+    0,
+    PUZZLE_LIMB_WIDTHS.length,
+  );
+  if (outputLastPuzzle) {
+    return {
+      proof: { piA, piB, piC },
+      signals,
+      puzzleCode: outputLastPuzzle,
+    };
   }
 
   throw new Error(
@@ -628,6 +649,7 @@ export async function removeScoreOnChain({
 interface GenerateScoreProofArgs {
   networkId: string;
   algodClient: algosdk.Algodv2;
+  sender: string;
   puzzle: Puzzle;
   moveHistory: string[];
   score: number;
@@ -636,6 +658,7 @@ interface GenerateScoreProofArgs {
 export async function generateScoreProof({
   networkId,
   algodClient,
+  sender,
   puzzle,
   moveHistory,
   score,
@@ -662,7 +685,7 @@ export async function generateScoreProof({
 
   const [lsigAccount, witness] = await Promise.all([
     verifier.lsigAccount(),
-    verifier.proofAndSignals(buildColorSortProofInput(puzzle, moves)),
+    verifier.proofAndSignals(buildColorSortProofInput(puzzle, moves, sender)),
   ]);
 
   const normalizedWitness = normalizeWitness(witness, BigInt(score));
@@ -737,7 +760,7 @@ async function performScoreSave(
       console.debug("[score-save] generating proof inline");
     }
     const witness = await verifier.proofAndSignals(
-      buildColorSortProofInput(puzzle, moves),
+      buildColorSortProofInput(puzzle, moves, sender),
     );
     normalizedWitness = normalizeWitness(witness, BigInt(score));
   }
@@ -757,6 +780,12 @@ async function performScoreSave(
 
   const nextScore = BigInt(score);
   const onChainPuzzleCode = normalizedWitness.puzzleCode;
+  if (!bytesEqual(onChainPuzzleCode, puzzleCode)) {
+    throw new Error("Proof puzzle does not match submission puzzle");
+  }
+  if (!signalsMatchSender(normalizedWitness.signals, sender)) {
+    throw new Error("Proof sender does not match submission sender");
+  }
   const scoreBoxName = buildScoreBoxName(onChainPuzzleCode, sender);
 
   if (existingScore !== null) {

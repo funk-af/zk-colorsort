@@ -382,12 +382,13 @@ async function handleRemoveScore() {
 }
 
 function getProofKey(score: number | null): string | null {
-  if (!playStore.startPuzzle || !score || score <= 0) {
+  const sender = activeAddress.value;
+  if (!playStore.startPuzzle || !sender || !score || score <= 0) {
     return null;
   }
 
   try {
-    return `${encodePuzzle(playStore.startPuzzle)}:${score}`;
+    return `${encodePuzzle(playStore.startPuzzle)}:${sender}:${score}`;
   } catch {
     return null;
   }
@@ -445,6 +446,7 @@ async function refreshPrecomputedProof() {
     const generatedProof = await generateScoreProof({
       networkId,
       algodClient: algodClient.value,
+      sender,
       puzzle: currentPuzzle,
       moveHistory: bestMoves,
       score: candidateScore,

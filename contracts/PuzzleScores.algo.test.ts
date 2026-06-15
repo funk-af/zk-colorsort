@@ -444,4 +444,65 @@ describe("PuzzleScores contract", () => {
       }),
     ).toThrow("public puzzle code must match");
   });
+
+  test("score upload rejects mismatched public sender signals", () => {
+    const creator = ctx.any.account();
+    ctx.defaultSender = creator;
+    const contract = ctx.contract.create(PuzzleScores);
+    vi.spyOn(
+      contract as unknown as { verifyVerifierTxn: () => void },
+      "verifyVerifierTxn",
+    ).mockImplementation(() => {
+      throw new Error("public sender must match caller");
+    });
+    const user = ctx.any.account();
+    const verifier = creator;
+    const puzzleCode = createPuzzleCode(4);
+
+    const verifierAppCall = ctx.any.txn.applicationCall({
+      sender: creator,
+      appId: ctx.ledger.getApplicationForContract(contract),
+    });
+    ctx.txn.createScope([verifierAppCall], 0).execute(() => {
+      contract.setVerifier(verifier);
+    });
+
+    ctx.defaultSender = user;
+    const appCall = ctx.any.txn.applicationCall({
+      sender: user,
+      appId: ctx.ledger.getApplicationForContract(contract),
+    });
+    const appAccount = (
+      ctx.ledger.getApplicationForContract(contract) as unknown as {
+        address: ReturnType<typeof ctx.any.account>;
+      }
+    ).address;
+
+    expect(() =>
+      ctx.txn.createScope([appCall], 0).execute(() => {
+        const signals = buildSignalsForPuzzle(puzzleCode.raw, Uint64(7));
+        const pay = ctx.any.txn.payment({
+          sender: user,
+          receiver: appAccount,
+          amount: contract.boxMbr(),
+        });
+        const verifierTxn = ctx.any.txn.payment({
+          sender: verifier,
+          receiver: appAccount,
+          amount: Uint64(0),
+          fee: Uint64(0),
+        });
+        withLinkedVerifierReceiver(verifierTxn, () => {
+          contract.addScore(
+            signals,
+            buildProof(),
+            puzzleCode.value,
+            Uint64(7),
+            pay,
+            verifierTxn,
+          );
+        });
+      }),
+    ).toThrow("public sender must match caller");
+  });
 });

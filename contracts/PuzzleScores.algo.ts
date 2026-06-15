@@ -24,7 +24,16 @@ import {
 
 const BOX_BASE_MBR = Uint64(2_500);
 const BOX_BYTE_MBR = Uint64(400);
-const PUBLIC_SCORE_INDEX = Uint64(48);
+const PUBLIC_SIGNAL_COUNT = Uint64(8);
+const SCORE_SIGNAL_INDEX = Uint64(0);
+const PUZZLE_LIMB_0_INDEX = Uint64(1);
+const PUZZLE_LIMB_1_INDEX = Uint64(2);
+const PUZZLE_LIMB_2_INDEX = Uint64(3);
+const SENDER_LIMB_0_INDEX = Uint64(4);
+const SENDER_LIMB_1_INDEX = Uint64(5);
+const SENDER_LIMB_2_INDEX = Uint64(6);
+const SENDER_LIMB_3_INDEX = Uint64(7);
+const PUZZLE_CODE_LENGTH = Uint64(20);
 const SCORE_LENGTH = Uint64(8);
 const SCORE_KEY_LENGTH = Uint64(52);
 type PublicSignals = Uint256[];
@@ -148,7 +157,7 @@ export default class PuzzleScores extends Contract {
     verifierTxn: gtxn.PaymentTxn,
     signals: PublicSignals,
     _proof: Groth16Bn254Proof,
-    _puzzleCode: bytes,
+    puzzleCode: bytes,
     score: uint64,
   ): void {
     assert(this.verifier.hasValue, "verifier is not configured");
@@ -162,15 +171,40 @@ export default class PuzzleScores extends Contract {
     );
 
     assert(
-      signals.length >= PUBLIC_SCORE_INDEX + Uint64(1),
+      signals.length >= PUBLIC_SIGNAL_COUNT,
       "public signals length is invalid",
+    );
+    assert(
+      puzzleCode.length === PUZZLE_CODE_LENGTH,
+      "puzzle code length is invalid",
     );
 
     const expectedScore = BigUint(score);
-    const scoreAtEnd =
-      signals.at(PUBLIC_SCORE_INDEX)!.asBigUint() === expectedScore;
-    const scoreAtStart = signals.at(Uint64(0))!.asBigUint() === expectedScore;
+    const scoreAtOutput =
+      signals.at(SCORE_SIGNAL_INDEX)!.asBigUint() === expectedScore;
 
-    assert(scoreAtEnd || scoreAtStart, "public score must match");
+    const puzzleLimb0 = btoi(puzzleCode.slice(Uint64(0), Uint64(8)));
+    const puzzleLimb1 = btoi(puzzleCode.slice(Uint64(8), Uint64(16)));
+    const puzzleLimb2 = btoi(puzzleCode.slice(Uint64(16), Uint64(20)));
+
+    const senderLimb0 = btoi(Txn.sender.bytes.slice(Uint64(0), Uint64(8)));
+    const senderLimb1 = btoi(Txn.sender.bytes.slice(Uint64(8), Uint64(16)));
+    const senderLimb2 = btoi(Txn.sender.bytes.slice(Uint64(16), Uint64(24)));
+    const senderLimb3 = btoi(Txn.sender.bytes.slice(Uint64(24), Uint64(32)));
+
+    const puzzleMatches =
+      signals.at(PUZZLE_LIMB_0_INDEX)!.asBigUint() === BigUint(puzzleLimb0) &&
+      signals.at(PUZZLE_LIMB_1_INDEX)!.asBigUint() === BigUint(puzzleLimb1) &&
+      signals.at(PUZZLE_LIMB_2_INDEX)!.asBigUint() === BigUint(puzzleLimb2);
+
+    const senderMatches =
+      signals.at(SENDER_LIMB_0_INDEX)!.asBigUint() === BigUint(senderLimb0) &&
+      signals.at(SENDER_LIMB_1_INDEX)!.asBigUint() === BigUint(senderLimb1) &&
+      signals.at(SENDER_LIMB_2_INDEX)!.asBigUint() === BigUint(senderLimb2) &&
+      signals.at(SENDER_LIMB_3_INDEX)!.asBigUint() === BigUint(senderLimb3);
+
+    assert(scoreAtOutput, "public score must match");
+    assert(puzzleMatches, "public puzzle code must match");
+    assert(senderMatches, "public sender must match caller");
   }
 }

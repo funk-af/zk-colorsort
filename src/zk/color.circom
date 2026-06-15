@@ -375,11 +375,47 @@ template TubeOk(CAP) {
 }
 
 template ColorSort(NTUBES, CAP, NMOVES, NCOLORS, EMPTY_TUBES, TUBE_BITS, IDX_BITS, COLOR_BITS) {
-    signal input initial[NTUBES * CAP]; // public
+    signal input initial[NTUBES * CAP];
+    signal input puzzlePacked[3];
+    signal input senderPacked[4];
     signal input srcs[NMOVES];          // private
     signal input dsts[NMOVES];          // private
     signal input active[NMOVES];        // private
     signal output moveCount;            // public output
+
+    // Bind puzzlePacked to the canonical packed puzzle encoding used by the app.
+    signal puzzleBytes[20];
+    for (var i = 0; i < 20; i++) {
+        puzzleBytes[i] <== initial[i * 2] * 16 + initial[i * 2 + 1];
+    }
+
+    signal puzzleAcc0[9];
+    signal puzzleAcc1[9];
+    signal puzzleAcc2[5];
+    puzzleAcc0[0] <== 0;
+    puzzleAcc1[0] <== 0;
+    puzzleAcc2[0] <== 0;
+
+    for (var i = 0; i < 8; i++) {
+        puzzleAcc0[i + 1] <== puzzleAcc0[i] * 256 + puzzleBytes[i];
+        puzzleAcc1[i + 1] <== puzzleAcc1[i] * 256 + puzzleBytes[8 + i];
+    }
+    for (var i = 0; i < 4; i++) {
+        puzzleAcc2[i + 1] <== puzzleAcc2[i] * 256 + puzzleBytes[16 + i];
+    }
+
+    puzzlePacked[0] === puzzleAcc0[8];
+    puzzlePacked[1] === puzzleAcc1[8];
+    puzzlePacked[2] === puzzleAcc2[4];
+
+    // Keep senderPacked constrained and field-safe at 64-bit limb boundaries.
+    component senderRange[4];
+    for (var i = 0; i < 4; i++) {
+        senderRange[i] = LessThan(65);
+        senderRange[i].in[0] <== senderPacked[i];
+        senderRange[i].in[1] <== 18446744073709551616;
+        senderRange[i].out === 1;
+    }
 
     // Initial board soundness checks.
     component init = ValidateInitial(NTUBES, CAP, NCOLORS, EMPTY_TUBES, COLOR_BITS);
@@ -438,4 +474,4 @@ template ColorSort(NTUBES, CAP, NMOVES, NCOLORS, EMPTY_TUBES, TUBE_BITS, IDX_BIT
 }
 
 // 12 tubes, cap 4, 10 colors, 2 empty tubes, up to 120 moves.
-component main { public [initial] } = ColorSort(12, 4, 120, 10, 2, 4, 3, 5);
+component main { public [puzzlePacked, senderPacked] } = ColorSort(12, 4, 120, 10, 2, 4, 3, 5);
