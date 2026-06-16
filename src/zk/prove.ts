@@ -13,6 +13,8 @@ const NMOVES = 120;
 import wasmUrl from "./build/color_js/color.wasm?url";
 import zkeyUrl from "./build/color_final.zkey?url";
 
+let colorSortZkeyBytesPromise: Promise<Uint8Array> | null = null;
+
 // Map hex color string → circuit integer (1..10). Empty slot → 0.
 const colorToInt = new Map<string, number>(
   DEFAULT_COLORS.map((color, index) => [color, index + 1]),
@@ -136,6 +138,24 @@ function packSenderToLimbs(sender: string): string[] {
 export const colorSortWasmUrl = wasmUrl;
 export const colorSortZkeyUrl = zkeyUrl;
 
+export function getColorSortZkeyBytes(): Promise<Uint8Array> {
+  if (!colorSortZkeyBytesPromise) {
+    colorSortZkeyBytesPromise = fetch(zkeyUrl)
+      .then(async (response) => {
+        if (!response.ok) {
+          throw new Error(`Unable to load zkey: ${response.status}`);
+        }
+        return new Uint8Array(await response.arrayBuffer());
+      })
+      .catch((error: unknown) => {
+        colorSortZkeyBytesPromise = null;
+        throw error;
+      });
+  }
+
+  return colorSortZkeyBytesPromise;
+}
+
 export function buildColorSortProofInput(
   puzzle: Puzzle,
   moves: Move[],
@@ -160,11 +180,12 @@ export async function proveColorSort(
   sender: string,
 ): Promise<ProveResult> {
   const input = buildColorSortProofInput(puzzle, moves, sender);
+  const zkeyBytes = await getColorSortZkeyBytes();
 
   const { proof, publicSignals } = await snarkjs.groth16.fullProve(
     input,
     wasmUrl,
-    zkeyUrl,
+    zkeyBytes,
   );
 
   return {

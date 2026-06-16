@@ -8,7 +8,7 @@ import { asBytes, concatBytes, startsWithBytes } from "../utils/bytes";
 import {
   buildColorSortProofInput,
   colorSortWasmUrl,
-  colorSortZkeyUrl,
+  getColorSortZkeyBytes,
 } from "../zk/prove";
 import networks from "../networks.json";
 
@@ -108,7 +108,9 @@ export interface NormalizedWitness {
   puzzleCode: Uint8Array;
 }
 
-type LsigAccountResult = Awaited<ReturnType<Groth16Bn254LsigVerifier["lsigAccount"]>>;
+type LsigAccountResult = Awaited<
+  ReturnType<Groth16Bn254LsigVerifier["lsigAccount"]>
+>;
 
 export interface GeneratedScoreProof {
   normalizedWitness: NormalizedWitness;
@@ -174,13 +176,15 @@ function getVerifierTotalLsigs(operation: ScoreSaveOperation): number {
     : ADD_SCORE_VERIFIER_TOTAL_LSIGS;
 }
 
-function createGroth16Verifier(
+async function createGroth16Verifier(
   algorand: ReturnType<typeof AlgorandClient.fromClients>,
   operation: ScoreSaveOperation,
-): Groth16Bn254LsigVerifier {
+): Promise<Groth16Bn254LsigVerifier> {
+  const zkeyBytes = await getColorSortZkeyBytes();
+
   return new Groth16Bn254LsigVerifier({
     algorand,
-    zKey: colorSortZkeyUrl,
+    zKey: zkeyBytes,
     wasmProver: colorSortWasmUrl,
     appOffset: VERIFIER_APP_OFFSET,
     totalLsigs: getVerifierTotalLsigs(operation),
@@ -683,12 +687,12 @@ export async function generateScoreProof({
   }
 
   const algorand = AlgorandClient.fromClients({ algod: algodClient });
-  const verifier = createGroth16Verifier(algorand, "add");
+  const verifier = await createGroth16Verifier(algorand, "add");
 
-  const [lsigAccount, witness] = await Promise.all([
-    verifier.lsigAccount(),
-    verifier.proofAndSignals(buildColorSortProofInput(puzzle, moves, sender)),
-  ]);
+  const witness = await verifier.proofAndSignals(
+    buildColorSortProofInput(puzzle, moves, sender),
+  );
+  const lsigAccount = await verifier.lsigAccount();
 
   const normalizedWitness = normalizeWitness(witness, BigInt(score));
 
@@ -743,7 +747,7 @@ async function performScoreSave(
   );
   const saveOperation: ScoreSaveOperation =
     existingScore === null ? "add" : "update";
-  const verifier = createGroth16Verifier(algorand, saveOperation);
+  const verifier = await createGroth16Verifier(algorand, saveOperation);
 
   const configuredVerifier = await client.state.global.verifier();
 
