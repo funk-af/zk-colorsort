@@ -8,13 +8,14 @@ import App from "./App.vue";
 import router from "./router";
 
 const app = createApp(App);
+const isDev = import.meta.env.DEV;
 
 app.use(createPinia());
 app.use(router);
 app.use(WalletManagerPlugin, {
   wallets: [WalletId.LUTE, WalletId.PERA],
-  defaultNetwork: NetworkId.MAINNET,
-  options: { resetNetwork: true },
+  defaultNetwork: isDev ? NetworkId.LOCALNET : NetworkId.MAINNET,
+  options: { resetNetwork: !isDev },
 });
 
 const rootNode = document.querySelector<HTMLDivElement>("#app");
