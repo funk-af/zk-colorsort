@@ -2,6 +2,7 @@
   {
     "name": "MainNet",
     "networkId": "mainnet",
+    "puzzleScoresAppId": 3603459425,
     "indexer": {
       "url": "https://mainnet-idx.algonode.cloud",
       "port": "",
@@ -11,7 +12,6 @@
   {
     "name": "TestNet",
     "networkId": "testnet",
-    "puzzleScoresAppId": 764131198,
     "indexer": {
       "url": "https://testnet-idx.algonode.cloud",
       "port": "",
