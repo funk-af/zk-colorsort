@@ -3,9 +3,9 @@
 
 // @algorandfoundation/algorand-typescript/arc4/index.d.ts::Contract.approvalProgram() -> uint64:
 main:
-    intcblock 1 0 2 8 26500
+    intcblock 1 0 2 8 23700
     bytecblock "verifier" 0x151f7c75
-    // contracts/PuzzleScores.algo.ts:46
+    // contracts/PuzzleScores.algo.ts:47
     // export default class PuzzleScores extends Contract {
     txn NumAppArgs
     bz main___algots__.defaultCreate@16
@@ -14,7 +14,7 @@ main:
     match main_updateApplication_route@3
 
 main_switch_case_next@4:
-    // contracts/PuzzleScores.algo.ts:46
+    // contracts/PuzzleScores.algo.ts:47
     // export default class PuzzleScores extends Contract {
     txn OnCompletion
     !
@@ -27,16 +27,16 @@ main_switch_case_next@4:
     err
 
 main_boxMbr_route@6:
-    // contracts/PuzzleScores.algo.ts:49-50
+    // contracts/PuzzleScores.algo.ts:50-51
     // @readonly
     // public boxMbr(): uint64 {
-    pushbytes 0x151f7c750000000000006784
+    pushbytes 0x151f7c750000000000005c94
     log
     intc_0 // 1
     return
 
 main_updateApplication_route@3:
-    // contracts/PuzzleScores.algo.ts:62
+    // contracts/PuzzleScores.algo.ts:63
     // public updateApplication(): void {
     txn OnCompletion
     pushint 4 // UpdateApplication
@@ -47,7 +47,7 @@ main_updateApplication_route@3:
     b updateApplication
 
 main___algots__.defaultCreate@16:
-    // contracts/PuzzleScores.algo.ts:46
+    // contracts/PuzzleScores.algo.ts:47
     // export default class PuzzleScores extends Contract {
     txn OnCompletion
     !
@@ -61,7 +61,7 @@ main___algots__.defaultCreate@16:
 
 // contracts/PuzzleScores.algo.ts::PuzzleScores.setVerifier[routing]() -> void:
 setVerifier:
-    // contracts/PuzzleScores.algo.ts:54
+    // contracts/PuzzleScores.algo.ts:55
     // public setVerifier(verifierAddress: Account): void {
     txna ApplicationArgs 1
     dup
@@ -69,25 +69,25 @@ setVerifier:
     pushint 32 // 32
     ==
     assert // invalid number of bytes for arc4.static_array<arc4.uint8, 32>
-    // contracts/PuzzleScores.algo.ts:56
+    // contracts/PuzzleScores.algo.ts:57
     // Txn.sender === Global.creatorAddress,
     txn Sender
     global CreatorAddress
     ==
-    // contracts/PuzzleScores.algo.ts:55-58
+    // contracts/PuzzleScores.algo.ts:56-59
     // assert(
     //   Txn.sender === Global.creatorAddress,
     //   "only the creator can set the verifier",
     // );
     assert // only the creator can set the verifier
-    // contracts/PuzzleScores.algo.ts:47
+    // contracts/PuzzleScores.algo.ts:48
     // verifier = GlobalState<Account>({ key: "verifier" });
     bytec_0 // "verifier"
-    // contracts/PuzzleScores.algo.ts:59
+    // contracts/PuzzleScores.algo.ts:60
     // this.verifier.value = verifierAddress;
     swap
     app_global_put
-    // contracts/PuzzleScores.algo.ts:54
+    // contracts/PuzzleScores.algo.ts:55
     // public setVerifier(verifierAddress: Account): void {
     intc_0 // 1
     return
@@ -95,18 +95,18 @@ setVerifier:
 
 // contracts/PuzzleScores.algo.ts::PuzzleScores.updateApplication[routing]() -> void:
 updateApplication:
-    // contracts/PuzzleScores.algo.ts:64
+    // contracts/PuzzleScores.algo.ts:65
     // Txn.sender === Global.creatorAddress,
     txn Sender
     global CreatorAddress
     ==
-    // contracts/PuzzleScores.algo.ts:63-66
+    // contracts/PuzzleScores.algo.ts:64-67
     // assert(
     //   Txn.sender === Global.creatorAddress,
     //   "only the creator can update the app",
     // );
     assert // only the creator can update the app
-    // contracts/PuzzleScores.algo.ts:62
+    // contracts/PuzzleScores.algo.ts:63
     // public updateApplication(): void {
     intc_0 // 1
     return
@@ -114,7 +114,7 @@ updateApplication:
 
 // contracts/PuzzleScores.algo.ts::PuzzleScores.addScore[routing]() -> void:
 addScore:
-    // contracts/PuzzleScores.algo.ts:69-76
+    // contracts/PuzzleScores.algo.ts:70-77
     // public addScore(
     //   signals: PublicSignals,
     //   proof: Groth16Bn254Proof,
@@ -175,25 +175,31 @@ addScore:
     intc_0 // pay
     ==
     assert // transaction type is pay
-    // contracts/PuzzleScores.algo.ts:149
+    // contracts/PuzzleScores.algo.ts:78
+    // assert(score <= MAX_STORED_SCORE, "score exceeds one-byte storage");
+    dig 2
+    pushint 255 // 255
+    <=
+    assert // score exceeds one-byte storage
+    // contracts/PuzzleScores.algo.ts:154
     // return puzzleCode.concat(user.bytes);
     dig 3
-    // contracts/PuzzleScores.algo.ts:77
+    // contracts/PuzzleScores.algo.ts:80
     // const key = this.scoreKey(puzzleCode, Txn.sender);
     txn Sender
-    // contracts/PuzzleScores.algo.ts:149
+    // contracts/PuzzleScores.algo.ts:154
     // return puzzleCode.concat(user.bytes);
     concat
-    // contracts/PuzzleScores.algo.ts:78
+    // contracts/PuzzleScores.algo.ts:81
     // const [, exists] = BoxOp.get(key);
     dup
     box_len
     bury 1
-    // contracts/PuzzleScores.algo.ts:79
+    // contracts/PuzzleScores.algo.ts:82
     // assert(!exists, "score already exists for puzzle");
     !
     assert // score already exists for puzzle
-    // contracts/PuzzleScores.algo.ts:81
+    // contracts/PuzzleScores.algo.ts:84
     // this.verifyVerifierTxn(verifierTxn, signals, proof, puzzleCode, score);
     swap
     uncover 6
@@ -202,24 +208,24 @@ addScore:
     dig 6
     callsub verifyVerifierTxn
     popn 2
-    // contracts/PuzzleScores.algo.ts:85
+    // contracts/PuzzleScores.algo.ts:88
     // Txn.sender.bytes
     txn Sender
-    // contracts/PuzzleScores.algo.ts:85-86
+    // contracts/PuzzleScores.algo.ts:88-89
     // Txn.sender.bytes
     //   .slice(0, Uint64(32))
     substring 0 32
-    // contracts/PuzzleScores.algo.ts:87
+    // contracts/PuzzleScores.algo.ts:90
     // .equals(payMbr.sender.bytes.slice(0, Uint64(32))),
     dig 2
     gtxns Sender
     substring 0 32
-    // contracts/PuzzleScores.algo.ts:85-87
+    // contracts/PuzzleScores.algo.ts:88-90
     // Txn.sender.bytes
     //   .slice(0, Uint64(32))
     //   .equals(payMbr.sender.bytes.slice(0, Uint64(32))),
     ==
-    // contracts/PuzzleScores.algo.ts:84-89
+    // contracts/PuzzleScores.algo.ts:87-92
     // assert(
     //   Txn.sender.bytes
     //     .slice(0, Uint64(32))
@@ -227,24 +233,24 @@ addScore:
     //   "payment sender must match caller",
     // );
     assert // payment sender must match caller
-    // contracts/PuzzleScores.algo.ts:91
+    // contracts/PuzzleScores.algo.ts:94
     // Global.currentApplicationAddress.bytes
     global CurrentApplicationAddress
-    // contracts/PuzzleScores.algo.ts:91-92
+    // contracts/PuzzleScores.algo.ts:94-95
     // Global.currentApplicationAddress.bytes
     //   .slice(0, Uint64(32))
     substring 0 32
-    // contracts/PuzzleScores.algo.ts:93
+    // contracts/PuzzleScores.algo.ts:96
     // .equals(payMbr.receiver.bytes.slice(0, Uint64(32))),
     dig 2
     gtxns Receiver
     substring 0 32
-    // contracts/PuzzleScores.algo.ts:91-93
+    // contracts/PuzzleScores.algo.ts:94-96
     // Global.currentApplicationAddress.bytes
     //   .slice(0, Uint64(32))
     //   .equals(payMbr.receiver.bytes.slice(0, Uint64(32))),
     ==
-    // contracts/PuzzleScores.algo.ts:90-95
+    // contracts/PuzzleScores.algo.ts:93-98
     // assert(
     //   Global.currentApplicationAddress.bytes
     //     .slice(0, Uint64(32))
@@ -252,23 +258,26 @@ addScore:
     //   "payment receiver must be app account",
     // );
     assert // payment receiver must be app account
-    // contracts/PuzzleScores.algo.ts:96
+    // contracts/PuzzleScores.algo.ts:99
     // assert(payMbr.amount === requiredMbr, "payment must cover box MBR exactly");
     swap
     gtxns Amount
-    // contracts/PuzzleScores.algo.ts:153
+    // contracts/PuzzleScores.algo.ts:158
     // return BOX_BASE_MBR + BOX_BYTE_MBR * (SCORE_KEY_LENGTH + SCORE_LENGTH);
-    intc 4 // 26500
-    // contracts/PuzzleScores.algo.ts:96
+    intc 4 // 23700
+    // contracts/PuzzleScores.algo.ts:99
     // assert(payMbr.amount === requiredMbr, "payment must cover box MBR exactly");
     ==
     assert // payment must cover box MBR exactly
-    // contracts/PuzzleScores.algo.ts:98
-    // BoxOp.put(key, itob(score));
+    // contracts/PuzzleScores.algo.ts:162
+    // return itob(score).slice(Uint64(7), Uint64(8));
     swap
     itob
+    substring 7 8
+    // contracts/PuzzleScores.algo.ts:101
+    // BoxOp.put(key, this.encodeScoreByte(score));
     box_put
-    // contracts/PuzzleScores.algo.ts:69-76
+    // contracts/PuzzleScores.algo.ts:70-77
     // public addScore(
     //   signals: PublicSignals,
     //   proof: Groth16Bn254Proof,
@@ -283,7 +292,7 @@ addScore:
 
 // contracts/PuzzleScores.algo.ts::PuzzleScores.updateScore[routing]() -> void:
 updateScore:
-    // contracts/PuzzleScores.algo.ts:101-107
+    // contracts/PuzzleScores.algo.ts:104-110
     // public updateScore(
     //   signals: PublicSignals,
     //   proof: Groth16Bn254Proof,
@@ -335,23 +344,29 @@ updateScore:
     intc_0 // pay
     ==
     assert // transaction type is pay
-    // contracts/PuzzleScores.algo.ts:149
+    // contracts/PuzzleScores.algo.ts:111
+    // assert(newScore <= MAX_STORED_SCORE, "score exceeds one-byte storage");
+    dig 1
+    pushint 255 // 255
+    <=
+    assert // score exceeds one-byte storage
+    // contracts/PuzzleScores.algo.ts:154
     // return puzzleCode.concat(user.bytes);
     dig 2
-    // contracts/PuzzleScores.algo.ts:108
+    // contracts/PuzzleScores.algo.ts:113
     // const key = this.scoreKey(puzzleCode, Txn.sender);
     txn Sender
-    // contracts/PuzzleScores.algo.ts:149
+    // contracts/PuzzleScores.algo.ts:154
     // return puzzleCode.concat(user.bytes);
     concat
-    // contracts/PuzzleScores.algo.ts:109
+    // contracts/PuzzleScores.algo.ts:114
     // const [scoreBytes, exists] = BoxOp.get(key);
     dup
     box_get
-    // contracts/PuzzleScores.algo.ts:110
+    // contracts/PuzzleScores.algo.ts:115
     // assert(exists, "score does not exist for puzzle");
     assert // score does not exist for puzzle
-    // contracts/PuzzleScores.algo.ts:112
+    // contracts/PuzzleScores.algo.ts:117
     // this.verifyVerifierTxn(verifierTxn, signals, proof, puzzleCode, newScore);
     uncover 2
     uncover 6
@@ -360,18 +375,21 @@ updateScore:
     dig 6
     callsub verifyVerifierTxn
     popn 2
-    // contracts/PuzzleScores.algo.ts:114
+    // contracts/PuzzleScores.algo.ts:119
     // assert(newScore < btoi(scoreBytes), "new score must be better");
     btoi
     dig 2
     >
     assert // new score must be better
-    // contracts/PuzzleScores.algo.ts:115
-    // BoxOp.put(key, itob(newScore));
+    // contracts/PuzzleScores.algo.ts:162
+    // return itob(score).slice(Uint64(7), Uint64(8));
     swap
     itob
+    substring 7 8
+    // contracts/PuzzleScores.algo.ts:120
+    // BoxOp.put(key, this.encodeScoreByte(newScore));
     box_put
-    // contracts/PuzzleScores.algo.ts:101-107
+    // contracts/PuzzleScores.algo.ts:104-110
     // public updateScore(
     //   signals: PublicSignals,
     //   proof: Groth16Bn254Proof,
@@ -385,7 +403,7 @@ updateScore:
 
 // contracts/PuzzleScores.algo.ts::PuzzleScores.removeScore[routing]() -> void:
 removeScore:
-    // contracts/PuzzleScores.algo.ts:118
+    // contracts/PuzzleScores.algo.ts:123
     // public removeScore(puzzleCode: bytes): void {
     txna ApplicationArgs 1
     dup
@@ -398,19 +416,19 @@ removeScore:
     ==
     assert // invalid number of bytes for arc4.dynamic_array<arc4.uint8>
     extract 2 0
-    // contracts/PuzzleScores.algo.ts:119
+    // contracts/PuzzleScores.algo.ts:124
     // const key = this.scoreKey(puzzleCode, Txn.sender);
     txn Sender
-    // contracts/PuzzleScores.algo.ts:149
+    // contracts/PuzzleScores.algo.ts:154
     // return puzzleCode.concat(user.bytes);
     concat
-    // contracts/PuzzleScores.algo.ts:120
+    // contracts/PuzzleScores.algo.ts:125
     // const deleted = BoxOp.delete(key);
     box_del
-    // contracts/PuzzleScores.algo.ts:121
+    // contracts/PuzzleScores.algo.ts:126
     // assert(deleted, "score does not exist for puzzle");
     assert // score does not exist for puzzle
-    // contracts/PuzzleScores.algo.ts:123-129
+    // contracts/PuzzleScores.algo.ts:128-134
     // itxn
     //   .payment({
     //     receiver: Txn.sender,
@@ -419,15 +437,15 @@ removeScore:
     //   })
     //   .submit();
     itxn_begin
-    // contracts/PuzzleScores.algo.ts:125
+    // contracts/PuzzleScores.algo.ts:130
     // receiver: Txn.sender,
     txn Sender
-    // contracts/PuzzleScores.algo.ts:153
+    // contracts/PuzzleScores.algo.ts:158
     // return BOX_BASE_MBR + BOX_BYTE_MBR * (SCORE_KEY_LENGTH + SCORE_LENGTH);
-    intc 4 // 26500
+    intc 4 // 23700
     itxn_field Amount
     itxn_field Receiver
-    // contracts/PuzzleScores.algo.ts:123-128
+    // contracts/PuzzleScores.algo.ts:128-133
     // itxn
     //   .payment({
     //     receiver: Txn.sender,
@@ -436,11 +454,11 @@ removeScore:
     //   })
     intc_0 // 1
     itxn_field TypeEnum
-    // contracts/PuzzleScores.algo.ts:127
+    // contracts/PuzzleScores.algo.ts:132
     // fee: 0,
     intc_1 // 0
     itxn_field Fee
-    // contracts/PuzzleScores.algo.ts:123-129
+    // contracts/PuzzleScores.algo.ts:128-134
     // itxn
     //   .payment({
     //     receiver: Txn.sender,
@@ -449,7 +467,7 @@ removeScore:
     //   })
     //   .submit();
     itxn_submit
-    // contracts/PuzzleScores.algo.ts:118
+    // contracts/PuzzleScores.algo.ts:123
     // public removeScore(puzzleCode: bytes): void {
     intc_0 // 1
     return
@@ -457,7 +475,7 @@ removeScore:
 
 // contracts/PuzzleScores.algo.ts::PuzzleScores.getMyScore[routing]() -> void:
 getMyScore:
-    // contracts/PuzzleScores.algo.ts:132-133
+    // contracts/PuzzleScores.algo.ts:137-138
     // @readonly
     // public getMyScore(puzzleCode: bytes): [uint64, boolean] {
     txna ApplicationArgs 1
@@ -471,11 +489,11 @@ getMyScore:
     ==
     assert // invalid number of bytes for arc4.dynamic_array<arc4.uint8>
     extract 2 0
-    // contracts/PuzzleScores.algo.ts:134
+    // contracts/PuzzleScores.algo.ts:139
     // return this.getScoreForUser(puzzleCode, Txn.sender);
     txn Sender
     callsub contracts/PuzzleScores.algo.ts::PuzzleScores.getScoreForUser
-    // contracts/PuzzleScores.algo.ts:132-133
+    // contracts/PuzzleScores.algo.ts:137-138
     // @readonly
     // public getMyScore(puzzleCode: bytes): [uint64, boolean] {
     bytec_1 // 0x151f7c75
@@ -488,7 +506,7 @@ getMyScore:
 
 // contracts/PuzzleScores.algo.ts::PuzzleScores.getScoreForUser[routing]() -> void:
 getScoreForUser:
-    // contracts/PuzzleScores.algo.ts:137-138
+    // contracts/PuzzleScores.algo.ts:142-143
     // @readonly
     // public getScoreForUser(puzzleCode: bytes, user: Account): [uint64, boolean] {
     txna ApplicationArgs 1
@@ -519,29 +537,29 @@ getScoreForUser:
 
 // contracts/PuzzleScores.algo.ts::PuzzleScores.getScoreForUser(puzzleCode: bytes, user: bytes) -> bytes:
 contracts/PuzzleScores.algo.ts::PuzzleScores.getScoreForUser:
-    // contracts/PuzzleScores.algo.ts:137-138
+    // contracts/PuzzleScores.algo.ts:142-143
     // @readonly
     // public getScoreForUser(puzzleCode: bytes, user: Account): [uint64, boolean] {
     proto 2 1
-    // contracts/PuzzleScores.algo.ts:149
+    // contracts/PuzzleScores.algo.ts:154
     // return puzzleCode.concat(user.bytes);
     frame_dig -2
     frame_dig -1
     concat
-    // contracts/PuzzleScores.algo.ts:139
+    // contracts/PuzzleScores.algo.ts:144
     // const [scoreBytes, exists] = BoxOp.get(this.scoreKey(puzzleCode, user));
     box_get
-    // contracts/PuzzleScores.algo.ts:141
+    // contracts/PuzzleScores.algo.ts:146
     // if (!exists) {
     bnz contracts/PuzzleScores.algo.ts::PuzzleScores.getScoreForUser_after_if_else@2
-    // contracts/PuzzleScores.algo.ts:142
+    // contracts/PuzzleScores.algo.ts:147
     // return [Uint64(0), false];
     pushbytes 0x000000000000000000
     swap
     retsub
 
 contracts/PuzzleScores.algo.ts::PuzzleScores.getScoreForUser_after_if_else@2:
-    // contracts/PuzzleScores.algo.ts:145
+    // contracts/PuzzleScores.algo.ts:150
     // return [btoi(scoreBytes), true];
     frame_dig 0
     btoi
@@ -554,7 +572,7 @@ contracts/PuzzleScores.algo.ts::PuzzleScores.getScoreForUser_after_if_else@2:
 
 // contracts/PuzzleScores.algo.ts::PuzzleScores.verifyVerifierTxn(verifierTxn: uint64, signals: bytes, _proof: bytes, puzzleCode: bytes, score: uint64) -> bytes, bytes:
 verifyVerifierTxn:
-    // contracts/PuzzleScores.algo.ts:156-162
+    // contracts/PuzzleScores.algo.ts:165-171
     // private verifyVerifierTxn(
     //   verifierTxn: gtxn.PaymentTxn,
     //   signals: PublicSignals,
@@ -564,66 +582,76 @@ verifyVerifierTxn:
     // ): void {
     proto 5 2
     pushbytes ""
-    // contracts/PuzzleScores.algo.ts:163
+    // contracts/PuzzleScores.algo.ts:172
     // assert(this.verifier.hasValue, "verifier is not configured");
     intc_1 // 0
-    // contracts/PuzzleScores.algo.ts:47
+    // contracts/PuzzleScores.algo.ts:48
     // verifier = GlobalState<Account>({ key: "verifier" });
     bytec_0 // "verifier"
-    // contracts/PuzzleScores.algo.ts:163
+    // contracts/PuzzleScores.algo.ts:172
     // assert(this.verifier.hasValue, "verifier is not configured");
     app_global_get_ex
     assert // verifier is not configured
-    // contracts/PuzzleScores.algo.ts:165
+    // contracts/PuzzleScores.algo.ts:174
     // verifierTxn.sender === this.verifier.value,
     frame_dig -5
     gtxns Sender
     ==
-    // contracts/PuzzleScores.algo.ts:164-167
+    // contracts/PuzzleScores.algo.ts:173-176
     // assert(
     //   verifierTxn.sender === this.verifier.value,
     //   "verifier txn must come from the verifier",
     // );
     assert // verifier txn must come from the verifier
-    // contracts/PuzzleScores.algo.ts:169
+    // contracts/PuzzleScores.algo.ts:178
     // Global.currentApplicationAddress === verifierTxn.receiver,
     global CurrentApplicationAddress
     frame_dig -5
     gtxns Receiver
     ==
-    // contracts/PuzzleScores.algo.ts:168-171
+    // contracts/PuzzleScores.algo.ts:177-180
     // assert(
     //   Global.currentApplicationAddress === verifierTxn.receiver,
     //   "verifier txn receiver must be app account",
     // );
     assert // verifier txn receiver must be app account
-    // contracts/PuzzleScores.algo.ts:173
-    // assert(signals.length >= PUBLIC_SIGNAL_COUNT, "public signals length is invalid");
+    // contracts/PuzzleScores.algo.ts:183
+    // signals.length >= PUBLIC_SIGNAL_COUNT,
     frame_dig -4
     intc_1 // 0
     extract_uint16 // on error: invalid array length header
     intc_3 // 8
     >=
+    // contracts/PuzzleScores.algo.ts:182-185
+    // assert(
+    //   signals.length >= PUBLIC_SIGNAL_COUNT,
+    //   "public signals length is invalid",
+    // );
     assert // public signals length is invalid
-    // contracts/PuzzleScores.algo.ts:174
-    // assert(puzzleCode.length === PUZZLE_CODE_LENGTH, "puzzle code length is invalid");
+    // contracts/PuzzleScores.algo.ts:187
+    // puzzleCode.length === PUZZLE_CODE_LENGTH,
     frame_dig -2
     len
     dup
     pushint 20 // 20
     ==
+    // contracts/PuzzleScores.algo.ts:186-189
+    // assert(
+    //   puzzleCode.length === PUZZLE_CODE_LENGTH,
+    //   "puzzle code length is invalid",
+    // );
     assert // puzzle code length is invalid
-    // contracts/PuzzleScores.algo.ts:176
+    // contracts/PuzzleScores.algo.ts:191
     // const expectedScore = BigUint(score);
     frame_dig -1
     itob
-    // contracts/PuzzleScores.algo.ts:177
-    // const scoreAtOutput = signals.at(SCORE_SIGNAL_INDEX)!.asBigUint() === expectedScore;
+    // contracts/PuzzleScores.algo.ts:193
+    // signals.at(SCORE_SIGNAL_INDEX)!.asBigUint() === expectedScore;
     frame_dig -4
     extract 2 32
     b==
     swap
-    // contracts/PuzzleScores.algo.ts:179
+    // contracts/PuzzleScores.algo.ts:195
     // const puzzleLimb0 = btoi(puzzleCode.slice(Uint64(0), Uint64(8)));
     intc_1 // 0
     dig 1
@@ -644,7 +672,7 @@ verifyVerifierTxn:
     dig 2
     substring3
     btoi
-    // contracts/PuzzleScores.algo.ts:180
+    // contracts/PuzzleScores.algo.ts:196
     // const puzzleLimb1 = btoi(puzzleCode.slice(Uint64(8), Uint64(16)));
     pushint 16 // 16
     dig 3
@@ -659,7 +687,7 @@ verifyVerifierTxn:
     substring3
     btoi
     cover 3
-    // contracts/PuzzleScores.algo.ts:181
+    // contracts/PuzzleScores.algo.ts:197
     // const puzzleLimb2 = btoi(puzzleCode.slice(Uint64(16), Uint64(20)));
     pushint 20 // 20
     dig 3
@@ -673,60 +701,60 @@ verifyVerifierTxn:
     substring3
     btoi
     swap
-    // contracts/PuzzleScores.algo.ts:183
+    // contracts/PuzzleScores.algo.ts:199
     // const senderLimb0 = btoi(Txn.sender.bytes.slice(Uint64(0), Uint64(8)));
     txn Sender
     substring 0 8
     btoi
     swap
-    // contracts/PuzzleScores.algo.ts:184
+    // contracts/PuzzleScores.algo.ts:200
     // const senderLimb1 = btoi(Txn.sender.bytes.slice(Uint64(8), Uint64(16)));
     txn Sender
     substring 8 16
     btoi
     swap
-    // contracts/PuzzleScores.algo.ts:185
+    // contracts/PuzzleScores.algo.ts:201
     // const senderLimb2 = btoi(Txn.sender.bytes.slice(Uint64(16), Uint64(24)));
     txn Sender
     substring 16 24
     btoi
     swap
-    // contracts/PuzzleScores.algo.ts:186
+    // contracts/PuzzleScores.algo.ts:202
     // const senderLimb3 = btoi(Txn.sender.bytes.slice(Uint64(24), Uint64(32)));
     txn Sender
     substring 24 32
     btoi
     swap
-    // contracts/PuzzleScores.algo.ts:189
+    // contracts/PuzzleScores.algo.ts:205
     // signals.at(PUZZLE_LIMB_0_INDEX)!.asBigUint() === BigUint(puzzleLimb0) &&
     frame_dig -4
     extract 34 32
     swap
     itob
     b==
-    // contracts/PuzzleScores.algo.ts:189-190
+    // contracts/PuzzleScores.algo.ts:205-206
     // signals.at(PUZZLE_LIMB_0_INDEX)!.asBigUint() === BigUint(puzzleLimb0) &&
     // signals.at(PUZZLE_LIMB_1_INDEX)!.asBigUint() === BigUint(puzzleLimb1) &&
     bz verifyVerifierTxn_bool_false@4
-    // contracts/PuzzleScores.algo.ts:190
+    // contracts/PuzzleScores.algo.ts:206
     // signals.at(PUZZLE_LIMB_1_INDEX)!.asBigUint() === BigUint(puzzleLimb1) &&
     frame_dig -4
     extract 66 32
     frame_dig 2
     itob
     b==
-    // contracts/PuzzleScores.algo.ts:189-190
+    // contracts/PuzzleScores.algo.ts:205-206
     // signals.at(PUZZLE_LIMB_0_INDEX)!.asBigUint() === BigUint(puzzleLimb0) &&
     // signals.at(PUZZLE_LIMB_1_INDEX)!.asBigUint() === BigUint(puzzleLimb1) &&
     bz verifyVerifierTxn_bool_false@4
-    // contracts/PuzzleScores.algo.ts:191
+    // contracts/PuzzleScores.algo.ts:207
     // signals.at(PUZZLE_LIMB_2_INDEX)!.asBigUint() === BigUint(puzzleLimb2);
     frame_dig -4
     extract 98 32
     frame_dig 3
     itob
     b==
-    // contracts/PuzzleScores.algo.ts:189-191
+    // contracts/PuzzleScores.algo.ts:205-207
     // signals.at(PUZZLE_LIMB_0_INDEX)!.asBigUint() === BigUint(puzzleLimb0) &&
     // signals.at(PUZZLE_LIMB_1_INDEX)!.asBigUint() === BigUint(puzzleLimb1) &&
     // signals.at(PUZZLE_LIMB_2_INDEX)!.asBigUint() === BigUint(puzzleLimb2);
@@ -735,48 +763,48 @@ verifyVerifierTxn:
     frame_bury 0
 
 verifyVerifierTxn_bool_merge@5:
-    // contracts/PuzzleScores.algo.ts:194
+    // contracts/PuzzleScores.algo.ts:210
     // signals.at(SENDER_LIMB_0_INDEX)!.asBigUint() === BigUint(senderLimb0) &&
     frame_dig -4
     extract 130 32
     frame_dig 4
     itob
     b==
-    // contracts/PuzzleScores.algo.ts:194-195
+    // contracts/PuzzleScores.algo.ts:210-211
     // signals.at(SENDER_LIMB_0_INDEX)!.asBigUint() === BigUint(senderLimb0) &&
     // signals.at(SENDER_LIMB_1_INDEX)!.asBigUint() === BigUint(senderLimb1) &&
     bz verifyVerifierTxn_bool_false@10
-    // contracts/PuzzleScores.algo.ts:195
+    // contracts/PuzzleScores.algo.ts:211
     // signals.at(SENDER_LIMB_1_INDEX)!.asBigUint() === BigUint(senderLimb1) &&
     frame_dig -4
     extract 162 32
     frame_dig 5
     itob
     b==
-    // contracts/PuzzleScores.algo.ts:194-195
+    // contracts/PuzzleScores.algo.ts:210-211
     // signals.at(SENDER_LIMB_0_INDEX)!.asBigUint() === BigUint(senderLimb0) &&
     // signals.at(SENDER_LIMB_1_INDEX)!.asBigUint() === BigUint(senderLimb1) &&
     bz verifyVerifierTxn_bool_false@10
-    // contracts/PuzzleScores.algo.ts:196
+    // contracts/PuzzleScores.algo.ts:212
     // signals.at(SENDER_LIMB_2_INDEX)!.asBigUint() === BigUint(senderLimb2) &&
     frame_dig -4
     extract 194 32
     frame_dig 6
     itob
     b==
-    // contracts/PuzzleScores.algo.ts:194-196
+    // contracts/PuzzleScores.algo.ts:210-212
     // signals.at(SENDER_LIMB_0_INDEX)!.asBigUint() === BigUint(senderLimb0) &&
     // signals.at(SENDER_LIMB_1_INDEX)!.asBigUint() === BigUint(senderLimb1) &&
     // signals.at(SENDER_LIMB_2_INDEX)!.asBigUint() === BigUint(senderLimb2) &&
     bz verifyVerifierTxn_bool_false@10
-    // contracts/PuzzleScores.algo.ts:197
+    // contracts/PuzzleScores.algo.ts:213
     // signals.at(SENDER_LIMB_3_INDEX)!.asBigUint() === BigUint(senderLimb3);
     frame_dig -4
     extract 226 32
     frame_dig 7
     itob
     b==
-    // contracts/PuzzleScores.algo.ts:194-197
+    // contracts/PuzzleScores.algo.ts:210-213
     // signals.at(SENDER_LIMB_0_INDEX)!.asBigUint() === BigUint(senderLimb0) &&
     // signals.at(SENDER_LIMB_1_INDEX)!.asBigUint() === BigUint(senderLimb1) &&
     // signals.at(SENDER_LIMB_2_INDEX)!.asBigUint() === BigUint(senderLimb2) &&
@@ -785,15 +813,15 @@ verifyVerifierTxn_bool_merge@5:
     intc_0 // 1
 
 verifyVerifierTxn_bool_merge@11:
-    // contracts/PuzzleScores.algo.ts:199
+    // contracts/PuzzleScores.algo.ts:215
     // assert(scoreAtOutput, "public score must match");
     frame_dig 1
     assert // public score must match
-    // contracts/PuzzleScores.algo.ts:200
+    // contracts/PuzzleScores.algo.ts:216
     // assert(puzzleMatches, "public puzzle code must match");
     frame_dig 0
     assert // public puzzle code must match
-    // contracts/PuzzleScores.algo.ts:201
+    // contracts/PuzzleScores.algo.ts:217
     // assert(senderMatches, "public sender must match caller");
     assert // public sender must match caller
     frame_dig -4

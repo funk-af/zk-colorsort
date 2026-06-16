@@ -1,14 +1,9 @@
 import algosdk from "algosdk";
 import networks from "./networks.json";
-import {
-  asBytes,
-  concatBytes,
-  decodeUint64BigEndian,
-  startsWithBytes,
-} from "./utils/bytes";
+import { asBytes, concatBytes, startsWithBytes } from "./utils/bytes";
 
 const ADDRESS_BYTE_LENGTH = 32;
-const SCORE_BYTE_LENGTH = 8;
+const SCORE_BYTE_LENGTH = 1;
 const PUZZLE_CODE_BYTE_LENGTH = 20;
 const SCORE_KEY_BYTE_LENGTH = PUZZLE_CODE_BYTE_LENGTH + ADDRESS_BYTE_LENGTH;
 
@@ -156,7 +151,7 @@ export async function listPuzzleScores(
 
       entries.push({
         address,
-        score: decodeUint64BigEndian(valueBytes),
+        score: BigInt(valueBytes[0]),
       });
     }
 

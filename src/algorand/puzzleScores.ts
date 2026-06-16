@@ -4,12 +4,7 @@ import { Groth16Bn254LsigVerifier } from "snarkjs-algorand";
 import { PuzzleScoresClient } from "./PuzzleScoresClient";
 import { encodePuzzle } from "../game/serialize";
 import type { Move, Puzzle } from "../game/types";
-import {
-  asBytes,
-  concatBytes,
-  decodeUint64BigEndian,
-  startsWithBytes,
-} from "../utils/bytes";
+import { asBytes, concatBytes, startsWithBytes } from "../utils/bytes";
 import {
   buildColorSortProofInput,
   colorSortWasmUrl,
@@ -59,7 +54,8 @@ interface RemoveScoreOnChainArgs {
 const networkConfigs = networks as NetworkContractConfig[];
 const ADDRESS_BYTE_LENGTH = 32;
 const PUZZLE_CODE_BYTE_LENGTH = 20;
-const SCORE_BYTE_LENGTH = 8;
+const SCORE_BYTE_LENGTH = 1;
+const MAX_STORED_SCORE = 255;
 const SCORE_KEY_BYTE_LENGTH = PUZZLE_CODE_BYTE_LENGTH + ADDRESS_BYTE_LENGTH;
 const PUZZLE_LIMB_WIDTHS = [8, 8, 4] as const;
 const SENDER_LIMB_WIDTHS = [8, 8, 8, 8] as const;
@@ -469,7 +465,7 @@ async function getExistingScoreFromAlgod(
       return null;
     }
 
-    return decodeUint64BigEndian(valueBytes);
+    return BigInt(valueBytes[0]);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     if (
@@ -546,7 +542,7 @@ export async function saveScoreOnChain({
   precomputedProof,
   requirePrecomputedProof,
 }: SaveScoreOnChainArgs): Promise<SaveScoreResult> {
-  if (!Number.isInteger(score) || score <= 0) {
+  if (!Number.isInteger(score) || score <= 0 || score > MAX_STORED_SCORE) {
     return "skipped";
   }
 
@@ -663,8 +659,10 @@ export async function generateScoreProof({
   moveHistory,
   score,
 }: GenerateScoreProofArgs): Promise<GeneratedScoreProof> {
-  if (!Number.isInteger(score) || score <= 0) {
-    throw new Error("Score must be a positive integer");
+  if (!Number.isInteger(score) || score <= 0 || score > MAX_STORED_SCORE) {
+    throw new Error(
+      `Score must be a positive integer no greater than ${MAX_STORED_SCORE}`,
+    );
   }
 
   const moves = parseMoveHistory(moveHistory);

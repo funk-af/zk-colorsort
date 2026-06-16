@@ -34,8 +34,9 @@ const SENDER_LIMB_1_INDEX = Uint64(5);
 const SENDER_LIMB_2_INDEX = Uint64(6);
 const SENDER_LIMB_3_INDEX = Uint64(7);
 const PUZZLE_CODE_LENGTH = Uint64(20);
-const SCORE_LENGTH = Uint64(8);
+const SCORE_LENGTH = Uint64(1);
 const SCORE_KEY_LENGTH = Uint64(52);
+const MAX_STORED_SCORE = Uint64(255);
 type PublicSignals = Uint256[];
 type Groth16Bn254Proof = {
   piA: bytes<64>;
@@ -74,6 +75,8 @@ export default class PuzzleScores extends Contract {
     payMbr: gtxn.PaymentTxn,
     verifierTxn: gtxn.PaymentTxn,
   ): void {
+    assert(score <= MAX_STORED_SCORE, "score exceeds one-byte storage");
+
     const key = this.scoreKey(puzzleCode, Txn.sender);
     const [, exists] = BoxOp.get(key);
     assert(!exists, "score already exists for puzzle");
@@ -95,7 +98,7 @@ export default class PuzzleScores extends Contract {
     );
     assert(payMbr.amount === requiredMbr, "payment must cover box MBR exactly");
 
-    BoxOp.put(key, itob(score));
+    BoxOp.put(key, this.encodeScoreByte(score));
   }
 
   public updateScore(
@@ -105,6 +108,8 @@ export default class PuzzleScores extends Contract {
     newScore: uint64,
     verifierTxn: gtxn.PaymentTxn,
   ): void {
+    assert(newScore <= MAX_STORED_SCORE, "score exceeds one-byte storage");
+
     const key = this.scoreKey(puzzleCode, Txn.sender);
     const [scoreBytes, exists] = BoxOp.get(key);
     assert(exists, "score does not exist for puzzle");
@@ -112,7 +117,7 @@ export default class PuzzleScores extends Contract {
     this.verifyVerifierTxn(verifierTxn, signals, proof, puzzleCode, newScore);
 
     assert(newScore < btoi(scoreBytes), "new score must be better");
-    BoxOp.put(key, itob(newScore));
+    BoxOp.put(key, this.encodeScoreByte(newScore));
   }
 
   public removeScore(puzzleCode: bytes): void {
@@ -151,6 +156,10 @@ export default class PuzzleScores extends Contract {
 
   private scoreBoxMbr(): uint64 {
     return BOX_BASE_MBR + BOX_BYTE_MBR * (SCORE_KEY_LENGTH + SCORE_LENGTH);
+  }
+
+  private encodeScoreByte(score: uint64): bytes {
+    return itob(score).slice(Uint64(7), Uint64(8));
   }
 
   private verifyVerifierTxn(
