@@ -21,7 +21,7 @@
   {
     "name": "LocalNet",
     "networkId": "localnet",
-    "puzzleScoresAppId": 1001,
+    "puzzleScoresAppId": 1002,
     "indexer": {
       "url": "http://localhost",
       "port": "8980",

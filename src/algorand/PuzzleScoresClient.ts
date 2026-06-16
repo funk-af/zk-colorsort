@@ -6,18 +6,18 @@
  * requires: @algorandfoundation/algokit-utils: ^7
  */
 import { type AlgorandClient } from "@algorandfoundation/algokit-utils/types/algorand-client";
-import {
+import type {
   ABIReturn,
   AppReturn,
   SendAppTransactionResult,
 } from "@algorandfoundation/algokit-utils/types/app";
+import type { Arc56Contract } from "@algorandfoundation/algokit-utils/types/app-arc56";
 import {
-  Arc56Contract,
   getArc56ReturnValue,
   getABIStructFromABITuple,
 } from "@algorandfoundation/algokit-utils/types/app-arc56";
-import {
-  AppClient as _AppClient,
+import { AppClient as _AppClient } from "@algorandfoundation/algokit-utils/types/app-client";
+import type {
   AppClientMethodCallParams,
   AppClientParams,
   AppClientBareCallParams,
@@ -27,15 +27,15 @@ import {
   ResolveAppClientByNetwork,
   CloneAppClientParams,
 } from "@algorandfoundation/algokit-utils/types/app-client";
-import {
-  AppFactory as _AppFactory,
+import { AppFactory as _AppFactory } from "@algorandfoundation/algokit-utils/types/app-factory";
+import type {
   AppFactoryAppClientParams,
   AppFactoryResolveAppClientByCreatorAndNameParams,
   AppFactoryDeployParams,
   AppFactoryParams,
   CreateSchema,
 } from "@algorandfoundation/algokit-utils/types/app-factory";
-import {
+import type {
   TransactionComposer,
   AppCallMethodCall,
   AppMethodCallTransactionArgument,
@@ -43,7 +43,7 @@ import {
   RawSimulateOptions,
   SkipSignaturesSimulateOptions,
 } from "@algorandfoundation/algokit-utils/types/composer";
-import {
+import type {
   SendParams,
   SendSingleTransactionResult,
   SendAtomicTransactionComposerResults,
@@ -54,8 +54,8 @@ import {
   modelsv2,
   OnApplicationComplete,
   Transaction,
-  TransactionSigner,
 } from "algosdk";
+import type { TransactionSigner } from "algosdk";
 
 export const APP_SPEC: Arc56Contract = {
   name: "PuzzleScores",
@@ -2103,16 +2103,12 @@ export type PuzzleScoresComposer<TReturns extends [...any[]] = []> = {
       simulateResponse: modelsv2.SimulateResponse;
     }
   >;
-  simulate(
-    options: SkipSignaturesSimulateOptions,
-  ): Promise<
+  simulate(options: SkipSignaturesSimulateOptions): Promise<
     PuzzleScoresComposerResults<TReturns> & {
       simulateResponse: modelsv2.SimulateResponse;
     }
   >;
-  simulate(
-    options: RawSimulateOptions,
-  ): Promise<
+  simulate(options: RawSimulateOptions): Promise<
     PuzzleScoresComposerResults<TReturns> & {
       simulateResponse: modelsv2.SimulateResponse;
     }
