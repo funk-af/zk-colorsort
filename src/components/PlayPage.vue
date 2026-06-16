@@ -8,6 +8,39 @@
           <p>{{ dailyDateKey ?? "Custom puzzle" }}</p>
         </div>
         <div class="header-actions">
+          <div v-if="isDev" ref="networkMenuRoot" class="network-menu">
+            <button
+              class="network-button"
+              :disabled="networkSwitchDisabled"
+              :aria-expanded="networkMenuOpen"
+              aria-haspopup="menu"
+              aria-label="Switch network"
+              @click="toggleNetworkMenu"
+            >
+              {{ activeNetworkLabel }}
+            </button>
+            <div
+              v-if="networkMenuOpen"
+              class="network-menu-panel"
+              role="menu"
+              aria-label="Network options"
+            >
+              <button
+                v-for="network in networkOptions"
+                :key="network.networkId"
+                class="network-menu-item"
+                :class="{
+                  'is-active': activeNetworkId === network.networkId,
+                }"
+                :disabled="networkSwitchDisabled"
+                role="menuitemradio"
+                :aria-checked="activeNetworkId === network.networkId"
+                @click="selectNetwork(network.networkId)"
+              >
+                {{ network.name }}
+              </button>
+            </div>
+          </div>
           <button
             class="settings-button"
             @click="openPlaySettings"
@@ -151,8 +184,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from "vue";
-import { useNetwork, useWallet } from "@txnlab/use-wallet-vue";
+import { computed, onMounted, onUnmounted, ref, watch } from "vue";
+import { NetworkId, useNetwork, useWallet } from "@txnlab/use-wallet-vue";
 import { useRoute, useRouter } from "vue-router";
 import { usePlayPageStore } from "../stores/playPage";
 import { useWalletStore } from "../stores/wallet";
@@ -175,6 +208,12 @@ import ScoreHistogram from "./ScoreHistogram.vue";
 import SettingsModal from "./SettingsModal.vue";
 import Toast from "./Toast.vue";
 import { WalletButton } from "@txnlab/use-wallet-ui-vue";
+import networks from "../networks.json";
+
+interface NetworkOption {
+  name: string;
+  networkId: NetworkId;
+}
 
 const playStore = usePlayPageStore();
 const walletStore = useWalletStore();
@@ -182,7 +221,23 @@ const settingsStore = useSettingsStore();
 const route = useRoute();
 const router = useRouter();
 const { activeAddress, algodClient, transactionSigner } = useWallet();
-const { activeNetwork } = useNetwork();
+const { activeNetwork, setActiveNetwork } = useNetwork();
+const isDev = import.meta.env.DEV;
+const networkMenuOpen = ref(false);
+const networkMenuRoot = ref<HTMLElement | null>(null);
+const switchingNetwork = ref(false);
+
+const networkOptions = (networks as { name: string; networkId: string }[])
+  .map((item) => ({
+    name: item.name,
+    networkId: item.networkId.toLowerCase() as NetworkId,
+  }))
+  .filter(
+    (item): item is NetworkOption =>
+      item.networkId === NetworkId.MAINNET ||
+      item.networkId === NetworkId.TESTNET ||
+      item.networkId === NetworkId.LOCALNET,
+  );
 
 let scoreLookupRequestId = 0;
 let proofGenerationRequestId = 0;
@@ -212,6 +267,23 @@ const scoreComparison = computed(() => playStore.scoreComparison);
 const loadingScoreComparison = computed(() => playStore.loadingScoreComparison);
 const isWalletConnected = computed(() => walletStore.isWalletConnected);
 const invertTubes = computed(() => settingsStore.invertTubes);
+const activeNetworkId = computed(() =>
+  (activeNetwork.value ?? "").toLowerCase(),
+);
+const activeNetworkLabel = computed(() => {
+  const matched = networkOptions.find(
+    (item) => item.networkId === activeNetworkId.value,
+  );
+  return matched?.name ?? "Network";
+});
+const networkSwitchDisabled = computed(
+  () =>
+    loadingDaily.value ||
+    uploadingScore.value ||
+    proofGenerating.value ||
+    removingScore.value ||
+    switchingNetwork.value,
+);
 
 // Handlers
 function formatScoreComparisonSummary(
@@ -235,6 +307,56 @@ function openPlaySettings() {
 
 function closePlaySettings() {
   playStore.closePlaySettings();
+}
+
+function toggleNetworkMenu() {
+  if (networkSwitchDisabled.value) {
+    return;
+  }
+  networkMenuOpen.value = !networkMenuOpen.value;
+}
+
+function closeNetworkMenu() {
+  networkMenuOpen.value = false;
+}
+
+async function selectNetwork(networkId: NetworkId) {
+  if (networkSwitchDisabled.value || networkId === activeNetworkId.value) {
+    closeNetworkMenu();
+    return;
+  }
+
+  switchingNetwork.value = true;
+  try {
+    await setActiveNetwork(networkId);
+    playStore.setStatus(`Switched to ${networkId}`);
+  } catch (error) {
+    console.warn("Unable to switch network", error);
+    playStore.setStatus("Unable to switch network", 3500);
+  } finally {
+    switchingNetwork.value = false;
+    closeNetworkMenu();
+  }
+}
+
+function handleNetworkMenuKeydown(event: KeyboardEvent) {
+  if (event.key === "Escape") {
+    closeNetworkMenu();
+  }
+}
+
+function handleDocumentClick(event: MouseEvent) {
+  if (!networkMenuOpen.value) {
+    return;
+  }
+
+  const root = networkMenuRoot.value;
+  const target = event.target;
+  if (!root || !(target instanceof Node) || root.contains(target)) {
+    return;
+  }
+
+  closeNetworkMenu();
 }
 
 function goToPreviousDaily() {
@@ -597,6 +719,13 @@ function loadFromRouteState() {
 
 onMounted(() => {
   loadFromRouteState();
+  document.addEventListener("click", handleDocumentClick);
+  document.addEventListener("keydown", handleNetworkMenuKeydown);
+});
+
+onUnmounted(() => {
+  document.removeEventListener("click", handleDocumentClick);
+  document.removeEventListener("keydown", handleNetworkMenuKeydown);
 });
 
 watch([() => route.params.puzzleCode, () => route.hash], () => {

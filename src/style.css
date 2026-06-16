@@ -108,6 +108,61 @@ header p {
   border-radius: 8px;
 }
 
+.network-menu {
+  position: relative;
+}
+
+.network-button {
+  flex-shrink: 0;
+  min-width: 98px;
+  height: 40px;
+  padding: 6px 10px;
+  font-size: 14px;
+  font-family: var(--mono);
+  border-radius: 8px;
+  white-space: nowrap;
+}
+
+.network-menu-panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  display: grid;
+  gap: 4px;
+  min-width: 156px;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #121c2f;
+  box-shadow: var(--shadow);
+  z-index: 20;
+}
+
+.network-menu-item {
+  width: 100%;
+  text-align: left;
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+.network-menu-item.is-active {
+  border-color: var(--accent);
+  background: #16324b;
+}
+
+@media (max-width: 520px) {
+  .network-button {
+    min-width: 88px;
+    font-size: 13px;
+    padding: 6px 8px;
+  }
+
+  .network-menu-panel {
+    right: -10px;
+    min-width: 144px;
+  }
+}
+
 .mode-tabs {
   display: flex;
   gap: 8px;
