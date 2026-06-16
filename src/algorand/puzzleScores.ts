@@ -108,9 +108,13 @@ export interface NormalizedWitness {
   puzzleCode: Uint8Array;
 }
 
+type LsigAccountResult = Awaited<ReturnType<Groth16Bn254LsigVerifier["lsigAccount"]>>;
+
 export interface GeneratedScoreProof {
   normalizedWitness: NormalizedWitness;
   lsigAddress: string;
+  /** Cached lsig account — used to skip the second zkey fetch on submit */
+  lsigAccountCache: LsigAccountResult;
 }
 
 type ScoreSaveOperation = "add" | "update";
@@ -691,6 +695,7 @@ export async function generateScoreProof({
   return {
     normalizedWitness,
     lsigAddress: String(lsigAccount.addr),
+    lsigAccountCache: lsigAccount,
   };
 }
 
@@ -763,12 +768,13 @@ async function performScoreSave(
     normalizedWitness = normalizeWitness(witness, BigInt(score));
   }
 
-  const lsigAccount = await verifier.lsigAccount();
-  const verifierAddress = String(lsigAccount.addr);
+  const cachedLsigAccount =
+    precomputedProof?.lsigAccountCache ?? (await verifier.lsigAccount());
+  const verifierAddress = String(cachedLsigAccount.addr);
   const cachedVerifier = verifier as typeof verifier & {
-    lsigAccount: () => Promise<typeof lsigAccount>;
+    lsigAccount: () => Promise<typeof cachedLsigAccount>;
   };
-  cachedVerifier.lsigAccount = async () => lsigAccount;
+  cachedVerifier.lsigAccount = async () => cachedLsigAccount;
 
   if (configuredVerifier !== verifierAddress) {
     throw new Error(

@@ -1,0 +1,9 @@
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[[headers]]
+  for = "/*.(zkey|wasm)"
+  [headers.values]
+  Cache-Control = "public, max-age=31536000, immutable"
