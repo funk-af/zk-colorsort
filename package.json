@@ -10,8 +10,8 @@
     "test": "vitest",
     "test:run": "vitest run",
     "test:contracts": "pnpm run test:contracts:unit && pnpm run test:contracts:e2e",
-    "test:contracts:unit": "vitest run tests/contracts/PuzzleScores.algo.unit.test.ts",
-    "test:contracts:e2e": "vitest run tests/contracts/PuzzleScores.algo.e2e.spec.ts",
+    "test:contracts:unit": "vitest run --config vitest.config.contracts.ts contracts/tests/PuzzleScores.algo.unit.test.ts",
+    "test:contracts:e2e": "vitest run --config vitest.config.contracts.ts contracts/tests/PuzzleScores.algo.e2e.spec.ts",
     "compile:contracts": "algokit compile ts contracts --out-dir artifacts",
     "generate:client": "algokit generate client contracts/artifacts/PuzzleScores.arc56.json --language typescript --output src/algorand/PuzzleScoresClient.ts",
     "build:contracts": "pnpm run compile:contracts && pnpm run generate:client"

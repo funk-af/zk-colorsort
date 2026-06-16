@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "experimentalDecorators": false,
+    "types": ["node"]
+  },
+  "include": ["contracts/**/*.ts"],
+  "exclude": ["contracts/artifacts/**"]
+}

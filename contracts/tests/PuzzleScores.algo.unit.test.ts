@@ -7,7 +7,7 @@ import { Uint256 } from "@algorandfoundation/algorand-typescript/arc4";
 import { TestExecutionContext } from "@algorandfoundation/algorand-typescript-testing";
 import algosdk from "algosdk";
 import { afterEach, describe, expect, test, vi } from "vitest";
-import PuzzleScores from "../../contracts/PuzzleScores.algo";
+import PuzzleScores from "../PuzzleScores.algo";
 
 function toAddressBytes(address: string): Uint8Array {
   return algosdk.decodeAddress(address).publicKey;

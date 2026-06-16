@@ -183,7 +183,7 @@ flowchart LR
   - Frontend on-chain interaction and score upload orchestration
 - `contracts/PuzzleScores.algo.ts`
   - Algorand TypeScript smart contract
-- `tests/contracts/PuzzleScores.algo.unit.test.ts`
+- `contracts/tests/PuzzleScores.algo.unit.test.ts`
   - Contract tests
 
 ## Getting Started
