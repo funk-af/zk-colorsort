@@ -4,7 +4,7 @@ import { Groth16Bn254LsigVerifier } from "snarkjs-algorand";
 import { PuzzleScoresClient } from "./PuzzleScoresClient";
 import { encodePuzzle } from "../game/serialize";
 import type { Move, Puzzle } from "../game/types";
-import { asBytes, concatBytes, startsWithBytes } from "../utils/bytes";
+import { asBytes, concatBytes } from "../utils/bytes";
 import {
   buildColorSortProofInput,
   colorSortWasmUrl,
@@ -91,10 +91,12 @@ type BoxValueResponse = {
 
 type BoxListItem = {
   name: string | Uint8Array;
+  value?: string | Uint8Array;
 };
 
 type BoxListResponse = {
   boxes?: BoxListItem[];
+  nextToken?: string;
 };
 
 interface PuzzleScoreEntry {
@@ -496,18 +498,19 @@ async function listPuzzleScoresFromAlgod(
   const entries: PuzzleScoreEntry[] = [];
   const response = (await algodClient
     .getApplicationBoxes(Number(appId))
+    .include("values")
+    .prefix(puzzleCode)
+    .limit(1000)
     .do()) as BoxListResponse;
 
   for (const box of response.boxes ?? []) {
     const boxNameBytes = asBytes(box.name);
-    if (!startsWithBytes(boxNameBytes, puzzleCode)) {
-      continue;
-    }
 
     if (boxNameBytes.length !== SCORE_KEY_BYTE_LENGTH) {
       continue;
     }
 
+    // Extract address from box name (skip puzzle code, take next 32 bytes)
     const addressBytes = boxNameBytes.slice(
       PUZZLE_CODE_BYTE_LENGTH,
       SCORE_KEY_BYTE_LENGTH,
@@ -520,18 +523,19 @@ async function listPuzzleScoresFromAlgod(
       continue;
     }
 
-    const score = await getExistingScoreFromAlgod(
-      algodClient,
-      appId,
-      boxNameBytes,
-    );
-    if (score === null) {
+    // Extract score from box value (should be 1 byte, base64 encoded)
+    if (!box.value) {
+      continue;
+    }
+
+    const valueBytes = asBytes(box.value);
+    if (valueBytes.length !== SCORE_BYTE_LENGTH) {
       continue;
     }
 
     entries.push({
       address,
-      score,
+      score: BigInt(valueBytes[0]),
     });
   }
 
@@ -835,7 +839,7 @@ async function performScoreSave(
             });
           }
 
-          await updateGroup.updateScore({
+          updateGroup.updateScore({
             args: {
               signals: normalizedWitness.signals,
               proof: normalizedWitness.proof,
@@ -911,7 +915,7 @@ async function performScoreSave(
           });
         }
 
-        await addGroup.addScore({
+        addGroup.addScore({
           args: {
             signals: normalizedWitness.signals,
             proof: normalizedWitness.proof,

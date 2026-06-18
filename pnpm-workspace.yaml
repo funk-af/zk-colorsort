@@ -2,3 +2,4 @@ allowBuilds:
   vue-demi: true
 minimumReleaseAgeExclude:
   - '@txnlab/use-wallet-ui-vue@1.0.0'
+  - snarkjs-algorand@0.14.0
