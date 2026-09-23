@@ -1,7 +1,7 @@
 {
   "name": "zk-colorsort",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -17,34 +17,34 @@
     "build:contracts": "pnpm run compile:contracts && pnpm run generate:client"
   },
   "dependencies": {
-    "@algorandfoundation/algokit-utils": "^9.2.0",
-    "@perawallet/connect": "^1.5.2",
+    "@algorandfoundation/algokit-utils": "^9.2.2",
+    "@galaxypay/use-wallet-lute": "^1.0.0",
+    "@txnlab/use-wallet-pera": "^5.0.1",
     "@txnlab/use-wallet-ui-vue": "^1.0.0",
-    "@txnlab/use-wallet-vue": "^4.6.0",
-    "algosdk": "^3.6.0",
-    "lute-connect": "^1.7.0",
-    "pinia": "^2.1.0",
+    "@txnlab/use-wallet-vue": "^5.0.1",
+    "algosdk": "^3.8.0",
+    "pinia": "^2.3.1",
     "snarkjs-algorand": "^0.14.0",
-    "vue": "^3.4.0",
-    "vue-router": "^4.3.0"
+    "vue": "^3.5.43",
+    "vue-router": "^4.6.4"
   },
   "devDependencies": {
     "@algorandfoundation/algokit-utils-debug": "^1.0.4",
-    "@algorandfoundation/algorand-typescript": "^1.1.0",
-    "@algorandfoundation/algorand-typescript-testing": "^1.1.0",
-    "@algorandfoundation/puya-ts": "^1.1.0",
+    "@algorandfoundation/algorand-typescript": "^1.3.1",
+    "@algorandfoundation/algorand-typescript-testing": "^1.2.0",
+    "@algorandfoundation/puya-ts": "^1.3.1",
     "@rollup/plugin-typescript": "^12.3.0",
-    "@types/node": "^25.9.3",
+    "@types/node": "^25.9.8",
     "@types/snarkjs": "^0.7.9",
-    "@vitejs/plugin-vue": "^5.0.0",
-    "@vue/test-utils": "^2.4.0",
+    "@vitejs/plugin-vue": "^5.2.4",
+    "@vue/test-utils": "^2.5.1",
     "circomlib": "^2.0.5",
     "snarkjs": "^0.7.6",
-    "typescript": "~6.0.2",
-    "vite": "^8.0.12",
+    "typescript": "~6.0.3",
+    "vite": "^8.3.0",
     "vite-plugin-node-polyfills": "^0.28.0",
-    "vitest": "^4.1.7",
-    "vue-tsc": "^3.3.3"
+    "vitest": "^4.1.11",
+    "vue-tsc": "^3.3.11"
   },
-  "packageManager": "pnpm@11.4.0+sha512.f0febc7e37552ab485494a914241b338e0b3580b93d54ce31f00933015880863129038a1b4ae4e414a0ee63ac35bf21197e990172c4a68256450b5636310968f"
+  "packageManager": "pnpm@11.25.0+sha512.5cde925b4f075f725eb71fbae18a42ffe784524789f19b61c731cb8721ec28aaee160e01a8d5af4fedb2a42cdbf300efe23db356b0d4a17b4d63e11f8ab7c956"
 }

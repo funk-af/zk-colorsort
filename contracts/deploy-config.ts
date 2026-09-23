@@ -11,7 +11,7 @@ import {
 const ZKEY_PATH = "src/zk/build/color_final.zkey";
 const WASM_PATH = "src/zk/build/color_js/color.wasm";
 const VERIFIER_APP_OFFSET = 1;
-const ADD_SCORE_TOTAL_LSIGS = 3;
+const ADD_SCORE_TOTAL_LSIGS = 2;
 
 type NetworkConfig = {
   networkId: string;

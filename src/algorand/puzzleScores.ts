@@ -65,8 +65,14 @@ const SENDER_SIGNAL_START = PUZZLE_SIGNAL_START + PUZZLE_LIMB_WIDTHS.length;
 const PUBLIC_SIGNAL_COUNT =
   1 + PUZZLE_LIMB_WIDTHS.length + SENDER_LIMB_WIDTHS.length;
 const VERIFIER_APP_OFFSET = 1;
-const ADD_SCORE_VERIFIER_TOTAL_LSIGS = 3;
-const UPDATE_SCORE_VERIFIER_TOTAL_LSIGS = 4;
+// The Groth16 BN254 verifier lsig consumes ~77.6k opcode budget. LogicSig budget
+// is pooled as (group size * 20_000) across *every* txn in the group, including
+// the app call and MBR payment, so each group needs 4 txns in total:
+//   add:    payMbr + verifier + appCall + 1 extra lsig
+//   update: verifier + appCall + 2 extra lsigs
+// totalLsigs counts the verifier itself plus the extra padding lsigs.
+const ADD_SCORE_VERIFIER_TOTAL_LSIGS = 2;
+const UPDATE_SCORE_VERIFIER_TOTAL_LSIGS = 3;
 const scoreStatusInFlight = new Map<string, Promise<ScoreUploadStatus>>();
 const scoreSaveInFlight = new Map<string, Promise<SaveScoreResult>>();
 

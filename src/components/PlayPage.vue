@@ -184,7 +184,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, watch } from "vue";
+import {
+  computed,
+  onMounted,
+  onUnmounted,
+  ref,
+  shallowRef,
+  watch,
+} from "vue";
 import { NetworkId, useNetwork, useWallet } from "@txnlab/use-wallet-vue";
 import { useRoute, useRouter } from "vue-router";
 import { usePlayPageStore } from "../stores/playPage";
@@ -241,7 +248,10 @@ const networkOptions = (networks as { name: string; networkId: string }[])
 
 let scoreLookupRequestId = 0;
 let proofGenerationRequestId = 0;
-const precomputedProof = ref<GeneratedScoreProof | null>(null);
+// shallowRef: the proof holds algosdk class instances and Uint8Arrays. A deep
+// ref would unwrap them into plain structural types that no longer satisfy
+// GeneratedScoreProof, and deep reactivity on proof bytes is wasted work.
+const precomputedProof = shallowRef<GeneratedScoreProof | null>(null);
 const precomputedProofKey = ref<string | null>(null);
 const removingScore = ref(false);
 
