@@ -20,6 +20,12 @@
   status = 200
   force = true
 
+[[redirects]]
+  from = "/api/discord-interactions"
+  to = "/.netlify/functions/discord-interactions"
+  status = 200
+  force = true
+
 # SPA fallback: puzzle codes and daily dates are client-side routes.
 [[redirects]]
   from = "/*"

@@ -18,7 +18,8 @@
     "test:functions:e2e": "vitest run --config vitest.config.contracts.ts netlify/functions/tests/sponsored-functions.e2e.spec.ts",
     "typecheck:functions": "tsc -p tsconfig.netlify.json --noEmit",
     "export:vk": "node scripts/export-vk.ts",
-    "deploy:contract": "tsx contracts/deploy.ts"
+    "deploy:contract": "tsx contracts/deploy.ts",
+    "discord:register-commands": "tsx scripts/register-discord-commands.ts"
   },
   "dependencies": {
     "@algorandfoundation/algokit-utils": "^9.2.2",

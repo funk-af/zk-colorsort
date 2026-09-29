@@ -14,6 +14,11 @@
  */
 import { DiscordSDK, patchUrlMappings } from "@discord/embedded-app-sdk";
 import { discordUserKey } from "../algorand/scoreGroups";
+import {
+  DISCORD_PLAY_BUTTON_ID,
+  DISCORD_PLAY_BUTTON_LABEL,
+  DISCORD_SHARE_COMMAND,
+} from "./share";
 
 export interface DiscordIdentity {
   userId: string;
@@ -106,4 +111,48 @@ export async function openExternalLink(url: string): Promise<boolean> {
   }
   const result = await sdkInstance.commands.openExternalLink({ url });
   return result.opened !== false;
+}
+
+export type ShareScoreOutcome = "shared" | "cancelled";
+
+const BUTTON_STYLE_PRIMARY = 1;
+
+/**
+ * Posts the score to a channel as an interaction message: it renders as the
+ * user having run `/colorsort`, with our content and a "Play" button whose
+ * click reaches `netlify/functions/discord-interactions.ts` and launches the
+ * Activity for the clicker.
+ *
+ * `shareInteraction` ships in the SDK but is not yet in Discord's public
+ * reference, so if the client rejects it we fall back to `shareLink`, which
+ * posts the same text with an Activity launch link instead of a button.
+ */
+export async function shareScore(content: string): Promise<ShareScoreOutcome> {
+  if (!sdkInstance) {
+    throw new Error("Discord Activity is not connected");
+  }
+  try {
+    const result = await sdkInstance.commands.shareInteraction({
+      command: DISCORD_SHARE_COMMAND,
+      content,
+      components: [
+        {
+          type: 1,
+          components: [
+            {
+              type: 2,
+              style: BUTTON_STYLE_PRIMARY,
+              label: DISCORD_PLAY_BUTTON_LABEL,
+              custom_id: DISCORD_PLAY_BUTTON_ID,
+            },
+          ],
+        },
+      ],
+    });
+    return result.success ? "shared" : "cancelled";
+  } catch (cause) {
+    console.warn("shareInteraction unavailable, falling back to shareLink", cause);
+    const result = await sdkInstance.commands.shareLink({ message: content });
+    return result.success ? "shared" : "cancelled";
+  }
 }

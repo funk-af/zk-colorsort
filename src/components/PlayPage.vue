@@ -215,6 +215,13 @@
         >
           Keep permanently with a wallet
         </button>
+        <button
+          class="small-button"
+          :disabled="loadingDaily || sharingScore || !discordIdentity"
+          @click="handleShareScore"
+        >
+          {{ sharingScore ? "Sharing..." : "Share score to a channel" }}
+        </button>
       </div>
     </ScoresModal>
   </main>
@@ -242,7 +249,8 @@ import {
   MAX_SPONSORED_UPDATES,
   serializeWitness,
 } from "../algorand/scoreGroups";
-import { openExternalLink } from "../discord/activity";
+import { openExternalLink, shareScore } from "../discord/activity";
+import { formatShareScoreMessage } from "../discord/share";
 import { encodePuzzle } from "../game/serialize";
 import { getTodayDateKey, parseDateKey } from "../game/daily";
 import { getBestScoreMoves } from "../storage/scores";
@@ -339,6 +347,7 @@ const proofIdentityLabel = computed(() =>
     : (activeAddress.value ?? null),
 );
 const sponsoredUpdatesExhausted = ref(false);
+const sharingScore = ref(false);
 
 // Lowest of the locally saved solve and the submitted on-chain score.
 const personalBest = computed<number | null>(() => {
@@ -381,7 +390,7 @@ const scorePanelHint = computed(() => {
     return "Submit your score for free to see how it compares to others";
   }
   if (!isWalletConnected.value) {
-    return "Connect your Algorand wallet to unlock this feature";
+    return "Connect your Algorand wallet to submit your score and compare it to others";
   }
   if (loadingScoreComparison.value) {
     return "Loading how your recorded score compares...";
@@ -716,6 +725,35 @@ async function handleKeepPermanently() {
   const opened = await openExternalLink(url);
   if (!opened) {
     playStore.setStatus("Unable to open the browser", 3000);
+  }
+}
+
+/**
+ * Posts the best score to a Discord channel as a `/colorsort` interaction
+ * message with a button that launches the Activity.
+ */
+async function handleShareScore() {
+  const score = bestScore.value;
+  if (score === null || sharingScore.value) {
+    return;
+  }
+  sharingScore.value = true;
+  try {
+    const outcome = await shareScore(
+      formatShareScoreMessage({
+        dateKey: playStore.dailyDateKey,
+        score,
+        comparison: scoreComparison.value,
+      }),
+    );
+    if (outcome === "shared") {
+      playStore.setStatus("Score shared", 3000);
+    }
+  } catch (cause) {
+    console.error("Sharing score failed", cause);
+    playStore.setStatus("Unable to share the score", 4000);
+  } finally {
+    sharingScore.value = false;
   }
 }
 

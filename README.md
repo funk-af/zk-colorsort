@@ -306,7 +306,7 @@ app-account MBR float) as the hard ceiling.
 
 Copy `.env.example`. Build-time (Vite): `VITE_DISCORD_CLIENT_ID`,
 `VITE_SITE_URL`. Function runtime (Netlify env, mark secrets as secret):
-`DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET`, `SPONSOR_MNEMONIC`,
+`DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET`, `DISCORD_PUBLIC_KEY`, `SPONSOR_MNEMONIC`,
 `SPONSOR_MIN_BALANCE`, `MIN_DISCORD_ACCOUNT_AGE_DAYS`, `ALGORAND_NETWORK`, and
 optional `PUZZLE_SCORES_APP_ID` / `ALGOD_URL` overrides.
 
@@ -320,6 +320,40 @@ Discord developer portal:
   `mainnet-idx.4160.nodely.dev`.
 - OAuth2 redirect is not needed; the Embedded App SDK handles the code flow
   and `netlify/functions/discord-token.ts` exchanges it.
+
+### Sharing scores and the `/colorsort` command
+
+- **Share score to a channel** (Scores panel, Activity only) calls the SDK's
+  `shareInteraction`: the message is posted as the player having run
+  `/colorsort`, with the score text from `src/discord/share.ts` and a
+  "Play today's puzzle" button. `shareInteraction` is in the SDK but not yet
+  in Discord's public reference; if the client rejects it the app falls back
+  to `shareLink`, which posts the same text with an Activity launch link.
+- **`/colorsort`** and the button are handled by
+  `netlify/functions/discord-interactions.ts` (routed from
+  `/api/discord-interactions`). It verifies Discord's Ed25519 signature with
+  `DISCORD_PUBLIC_KEY`, answers the PING check, and responds with
+  `LAUNCH_ACTIVITY`, which opens the Activity for the user who invoked it.
+
+Setup, once:
+
+1. Developer portal → General Information: copy **Public Key** into the
+   `DISCORD_PUBLIC_KEY` Netlify env var and deploy.
+2. Set **Interactions Endpoint URL** to
+   `https://<site>/api/discord-interactions`. Discord sends a signed PING and
+   only saves the URL when it gets `{"type":1}` back.
+3. Register the command with the bot token from the portal's Bot page (local
+   only, never a Netlify var):
+
+   ```bash
+   DISCORD_BOT_TOKEN=... pnpm run discord:register-commands
+   ```
+
+   The script uses a per-command POST, which upserts by name. Do not bulk
+   overwrite (PUT) commands: that also removes the Entry Point command Discord
+   created for the Activity, which stays on the "Discord launches Activity"
+   handler and needs no endpoint. Global commands can take up to an hour to
+   show in clients.
 
 ### Terms of Service and Privacy Policy
 
