@@ -32,7 +32,7 @@ export default async (request: Request) => {
 };
 
 export const config: Config = {
-  path: "/api/discord-token",
+  // Routed from /api/discord-token by a forced redirect in netlify.toml.
   rateLimit: {
     windowLimit: 30,
     windowSize: 60,

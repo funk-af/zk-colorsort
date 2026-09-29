@@ -63,7 +63,7 @@
     </div>
     <template v-else>
       <div class="controls wrap">
-        <div v-if="dailyDateKey" class="control-group">
+        <div v-if="dailyDateKey && !isActivity" class="control-group">
           <button
             :disabled="loadingDaily || !canGoPrevDay"
             @click="goToPreviousDaily"
@@ -77,7 +77,11 @@
             ❯
           </button>
         </div>
-        <button v-else :disabled="loadingDaily" @click="loadTodayDaily">
+        <button
+          v-else-if="!isActivity"
+          :disabled="loadingDaily"
+          @click="loadTodayDaily"
+        >
           Daily Today
         </button>
         <span v-if="bestScore !== null" class="metric"
@@ -124,14 +128,25 @@
         </div>
       </div>
 
-      <section class="panel score-panel">
+      <section
+        v-if="!isActivity || bestScore !== null"
+        class="panel score-panel"
+      >
         <div class="score-panel-head">
           <div>
             <h2>Scores</h2>
             <p class="hint">{{ scorePanelHint }}</p>
+            <p v-if="isActivity && discordError" class="hint discord-error">
+              {{ discordError }}
+            </p>
           </div>
           <div v-if="!isActivity" class="header-actions">
             <WalletButton size="sm" />
+          </div>
+          <div v-else-if="discordStatus === 'error'" class="header-actions">
+            <button class="small-button" @click="retryDiscordSignIn">
+              Retry sign-in
+            </button>
           </div>
         </div>
         <div>
@@ -292,6 +307,7 @@ const invertTubes = computed(() => settingsStore.invertTubes);
 const isActivity = computed(() => discordStore.isActivity);
 const discordIdentity = computed(() => discordStore.identity);
 const discordStatus = computed(() => discordStore.status);
+const discordError = computed(() => discordStore.error);
 const isTodaysDaily = computed(
   () =>
     playStore.dailyDateKey !== null &&
@@ -317,7 +333,7 @@ const scorePanelHint = computed(() => {
       return "Connecting to Discord...";
     }
     if (discordStatus.value === "error") {
-      return "Discord sign-in failed. Reopen the Activity to try again.";
+      return "Discord sign-in failed.";
     }
     if (!isTodaysDaily.value) {
       return "Only today's daily puzzle can be submitted from Discord.";
@@ -376,6 +392,10 @@ function formatScoreComparisonSummary(
       : "";
 
   return `Your score (${comparison.userScore}) is better than ${comparison.betterThanPercent}% of other players.${tieText}`;
+}
+
+function retryDiscordSignIn() {
+  void discordStore.connect();
 }
 
 function openPlaySettings() {
@@ -954,6 +974,15 @@ async function refreshOnChainScoreState() {
 }
 
 function loadFromRouteState() {
+  if (isActivity.value) {
+    // Inside Discord only today's daily puzzle is playable: ignore shared
+    // puzzle codes, past dates, and imported moves from the URL.
+    if (!playStore.puzzle && !playStore.loadingDaily) {
+      playStore.loadTodayDaily();
+    }
+    return;
+  }
+
   const importedMoves = movesFromQuery(route.query.moves);
   if (importedMoves) {
     playStore.importMoves(importedMoves);
@@ -1063,3 +1092,10 @@ watch(
   { immediate: true },
 );
 </script>
+
+<style scoped>
+.discord-error {
+  color: #f97373;
+  word-break: break-word;
+}
+</style>

@@ -193,7 +193,7 @@ export default async (request: Request) => {
 };
 
 export const config: Config = {
-  path: "/api/submit-sponsored",
+  // Routed from /api/submit-sponsored by a forced redirect in netlify.toml.
   rateLimit: {
     windowLimit: 20,
     windowSize: 60,
