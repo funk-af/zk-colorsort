@@ -177,6 +177,11 @@
         </div>
       </div>
       <div v-if="showUploadScore">
+        <p v-if="isActivity" class="hint">
+          Submitting publishes a one-way hash of your Discord ID and your
+          score on the public Algorand ledger. The entry is cleared after the
+          day ends, but the transaction stays in the ledger's history.
+        </p>
         <button
           :disabled="loadingDaily || uploadingScore || !proofReady"
           @click="handleUploadScore"

@@ -3,17 +3,22 @@
  *
  *   pnpm run discord:register-commands
  *
- * Reads DISCORD_CLIENT_ID and DISCORD_BOT_TOKEN from the environment (or
- * `.env`). Uses POST, which upserts by name, rather than the bulk PUT that
- * would also wipe the Entry Point command Discord created for the Activity.
- * Global commands can take up to an hour to appear in clients.
+ * Reads DISCORD_CLIENT_ID and DISCORD_BOT_TOKEN from the environment,
+ * `.env.local`, or `.env` (in that order of precedence). Uses POST, which
+ * upserts by name, rather than the bulk PUT that would also wipe the Entry
+ * Point command Discord created for the Activity. Global commands can take up
+ * to an hour to appear in clients.
  */
 import { DISCORD_SHARE_COMMAND } from "../src/discord/share";
 
-try {
-  process.loadEnvFile?.(".env");
-} catch {
-  // No .env file; rely on the environment.
+// loadEnvFile never overrides variables that are already set, so loading
+// .env.local first gives it precedence over .env, matching Vite.
+for (const file of [".env.local", ".env"]) {
+  try {
+    process.loadEnvFile?.(file);
+  } catch {
+    // File absent; keep going.
+  }
 }
 
 function requireEnv(name: string): string {

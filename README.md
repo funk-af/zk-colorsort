@@ -360,7 +360,9 @@ Setup, once:
 Discord requires both URLs on the app's General Information page. They are
 served at `/terms` and `/privacy` (`src/components/TermsPage.vue`,
 `src/components/PrivacyPage.vue`) and written in plain language for a free
-daily game.
+daily game. Both link to the repo's GitHub Issues as the way to report
+problems and request data changes, which Discord's Developer Policy requires;
+mention the same link in the app's portal description.
 
 ### Verification key for the functions
 
