@@ -128,6 +128,18 @@
         </div>
       </div>
 
+      <div
+        v-if="isActivity && discordStatus === 'error'"
+        class="panel discord-banner"
+        role="alert"
+      >
+        <p class="hint">Discord sign-in failed.</p>
+        <p class="hint discord-error">{{ discordError }}</p>
+        <button class="small-button" @click="retryDiscordSignIn">
+          Retry sign-in
+        </button>
+      </div>
+
       <section
         v-if="!isActivity || bestScore !== null"
         class="panel score-panel"
@@ -1094,6 +1106,14 @@ watch(
 </script>
 
 <style scoped>
+.discord-banner {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
 .discord-error {
   color: #f97373;
   word-break: break-word;
