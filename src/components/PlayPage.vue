@@ -84,12 +84,16 @@
         >
           Daily Today
         </button>
-        <span v-if="bestScore !== null" class="metric"
-          >Best: {{ bestScore }}</span
-        >
         <span class="metric">
           {{ solved ? "Score" : "Moves" }}: {{ moves }}
         </span>
+        <button
+          :disabled="loadingDaily"
+          aria-haspopup="dialog"
+          @click="openScoresModal"
+        >
+          Scores
+        </button>
       </div>
 
       <Board
@@ -109,6 +113,13 @@
         >
           Reset
         </button>
+        <span v-if="personalBest !== null" class="metric" title="Personal Best"
+          >PB: {{ personalBest }}</span
+        >
+        <span v-if="globalBest !== null" class="metric" title="Global Best"
+          >GB: {{ globalBest }}</span
+        >
+
         <div class="control-group">
           <button
             class="icon-toggle"
@@ -139,70 +150,6 @@
           Retry sign-in
         </button>
       </div>
-
-      <section
-        v-if="!isActivity || bestScore !== null"
-        class="panel score-panel"
-      >
-        <div class="score-panel-head">
-          <div>
-            <h2>Scores</h2>
-            <p class="hint">{{ scorePanelHint }}</p>
-            <p v-if="isActivity && discordError" class="hint discord-error">
-              {{ discordError }}
-            </p>
-          </div>
-          <div v-if="!isActivity" class="header-actions">
-            <WalletButton size="sm" />
-          </div>
-          <div v-else-if="discordStatus === 'error'" class="header-actions">
-            <button class="small-button" @click="retryDiscordSignIn">
-              Retry sign-in
-            </button>
-          </div>
-        </div>
-        <div>
-          <button
-            v-if="showUploadScore"
-            :disabled="loadingDaily || uploadingScore || !proofReady"
-            @click="handleUploadScore"
-          >
-            {{
-              proofGenerating
-                ? "Generating proof..."
-                : uploadingScore
-                  ? "Uploading..."
-                  : scoreComparison
-                    ? "Update Score"
-                    : "Submit Score"
-            }}
-          </button>
-        </div>
-        <ScoreHistogram v-if="scoreComparison" :comparison="scoreComparison" />
-        <div v-if="scoreComparison && !isActivity" class="score-actions">
-          <button
-            class="small-button"
-            :disabled="loadingDaily || removingScore"
-            @click="handleRemoveScore"
-          >
-            {{ removingScore ? "Removing..." : "remove score" }}
-          </button>
-        </div>
-        <div v-if="isActivity && bestScore !== null" class="score-actions">
-          <p class="hint">
-            Scores submitted from Discord are kept for the day and cleared at
-            midnight UTC. To record this score permanently, open the game in
-            your browser and submit it with your Algorand wallet.
-          </p>
-          <button
-            class="small-button"
-            :disabled="loadingDaily"
-            @click="handleKeepPermanently"
-          >
-            Keep permanently with a wallet
-          </button>
-        </div>
-      </section>
     </template>
 
     <SettingsModal
@@ -211,18 +158,70 @@
       @close="closePlaySettings"
       @invert-change="handleInvertTubesChange"
     />
+
+    <ScoresModal :open="scoresModalOpen" @close="closeScoresModal">
+      <div class="score-panel-head">
+        <div>
+          <p class="hint">{{ scorePanelHint }}</p>
+          <p v-if="isActivity && discordError" class="hint discord-error">
+            {{ discordError }}
+          </p>
+        </div>
+        <div v-if="!isActivity" class="header-actions">
+          <WalletButton size="sm" />
+        </div>
+        <div v-else-if="discordStatus === 'error'" class="header-actions">
+          <button class="small-button" @click="retryDiscordSignIn">
+            Retry sign-in
+          </button>
+        </div>
+      </div>
+      <div v-if="showUploadScore">
+        <button
+          :disabled="loadingDaily || uploadingScore || !proofReady"
+          @click="handleUploadScore"
+        >
+          {{
+            proofGenerating
+              ? "Generating proof..."
+              : uploadingScore
+                ? "Uploading..."
+                : scoreComparison
+                  ? "Update Score"
+                  : "Submit Score"
+          }}
+        </button>
+      </div>
+      <ScoreHistogram v-if="scoreComparison" :comparison="scoreComparison" />
+      <div v-if="scoreComparison && !isActivity" class="score-actions">
+        <button
+          class="small-button"
+          :disabled="loadingDaily || removingScore"
+          @click="handleRemoveScore"
+        >
+          {{ removingScore ? "Removing..." : "remove score" }}
+        </button>
+      </div>
+      <div v-if="isActivity && bestScore !== null" class="score-actions">
+        <p class="hint">
+          Scores submitted from Discord are kept for the day and cleared at
+          midnight UTC. To record this score permanently, open the game in your
+          browser and submit it with your Algorand wallet.
+        </p>
+        <button
+          class="small-button"
+          :disabled="loadingDaily"
+          @click="handleKeepPermanently"
+        >
+          Keep permanently with a wallet
+        </button>
+      </div>
+    </ScoresModal>
   </main>
 </template>
 
 <script setup lang="ts">
-import {
-  computed,
-  onMounted,
-  onUnmounted,
-  ref,
-  shallowRef,
-  watch,
-} from "vue";
+import { computed, onMounted, onUnmounted, ref, shallowRef, watch } from "vue";
 import { NetworkId, useNetwork, useWallet } from "@txnlab/use-wallet-vue";
 import { useRoute, useRouter } from "vue-router";
 import { usePlayPageStore } from "../stores/playPage";
@@ -250,6 +249,7 @@ import { getBestScoreMoves } from "../storage/scores";
 import { movesFromQuery, puzzleFromText } from "../url/share";
 import Board from "./Board.vue";
 import ScoreHistogram from "./ScoreHistogram.vue";
+import ScoresModal from "./ScoresModal.vue";
 import SettingsModal from "./SettingsModal.vue";
 import Toast from "./Toast.vue";
 import { WalletButton } from "@txnlab/use-wallet-ui-vue";
@@ -308,6 +308,7 @@ const selectedTube = computed(() => playStore.selectedTube);
 const showColorLetters = computed(() => playStore.showColorLetters);
 const historyLength = computed(() => playStore.historyLength);
 const settingsModalOpen = computed(() => playStore.settingsModalOpen);
+const scoresModalOpen = computed(() => playStore.scoresModalOpen);
 const showUploadScore = computed(() => playStore.showUploadScore);
 const proofReady = computed(() => playStore.proofReady);
 const proofGenerating = computed(() => playStore.proofGenerating);
@@ -339,9 +340,27 @@ const proofIdentityLabel = computed(() =>
 );
 const sponsoredUpdatesExhausted = ref(false);
 
+// Lowest of the locally saved solve and the submitted on-chain score.
+const personalBest = computed<number | null>(() => {
+  const candidates = [bestScore.value, scoreComparison.value?.userScore].filter(
+    (score): score is number => typeof score === "number" && score > 0,
+  );
+  return candidates.length > 0 ? Math.min(...candidates) : null;
+});
+
+// Lowest score anyone has recorded on-chain; only known once the player has
+// submitted, because that is when the comparison is fetched.
+const globalBest = computed<number | null>(() => {
+  const scores = scoreComparison.value?.allScores ?? [];
+  return scores.length > 0 ? Math.min(...scores) : null;
+});
+
 const scorePanelHint = computed(() => {
   if (isActivity.value) {
-    if (discordStatus.value === "connecting" || discordStatus.value === "idle") {
+    if (
+      discordStatus.value === "connecting" ||
+      discordStatus.value === "idle"
+    ) {
       return "Connecting to Discord...";
     }
     if (discordStatus.value === "error") {
@@ -416,6 +435,14 @@ function openPlaySettings() {
 
 function closePlaySettings() {
   playStore.closePlaySettings();
+}
+
+function openScoresModal() {
+  playStore.openScoresModal();
+}
+
+function closeScoresModal() {
+  playStore.closeScoresModal();
 }
 
 function toggleNetworkMenu() {
@@ -580,7 +607,9 @@ interface SponsoredSubmitResponse {
 async function waitForSponsoredConfirmation(txId: string): Promise<void> {
   const deadline = Date.now() + 25_000;
   while (Date.now() < deadline) {
-    const info = await algodClient.value.pendingTransactionInformation(txId).do();
+    const info = await algodClient.value
+      .pendingTransactionInformation(txId)
+      .do();
     if (info.poolError) {
       throw new Error(info.poolError);
     }
@@ -859,8 +888,7 @@ async function refreshSponsoredScoreState(requestId: number) {
       return;
     }
 
-    const capReached =
-      (status.existing?.updates ?? 0) >= MAX_SPONSORED_UPDATES;
+    const capReached = (status.existing?.updates ?? 0) >= MAX_SPONSORED_UPDATES;
     sponsoredUpdatesExhausted.value = capReached;
     playStore.setShowUploadScore(
       candidateScore > 0 && status.status === "needs-upload" && !capReached,

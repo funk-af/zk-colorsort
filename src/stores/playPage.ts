@@ -33,6 +33,7 @@ export const usePlayPageStore = defineStore("playPage", () => {
   const toast = ref<string | null>(null);
   const codeInput = ref("");
   const settingsModalOpen = ref(false);
+  const scoresModalOpen = ref(false);
   const showColorLetters = ref(false);
 
   // Score upload state
@@ -72,6 +73,14 @@ export const usePlayPageStore = defineStore("playPage", () => {
 
   function closePlaySettings() {
     settingsModalOpen.value = false;
+  }
+
+  function openScoresModal() {
+    scoresModalOpen.value = true;
+  }
+
+  function closeScoresModal() {
+    scoresModalOpen.value = false;
   }
 
   function setStatus(message: string, time = 3000) {
@@ -140,6 +149,7 @@ export const usePlayPageStore = defineStore("playPage", () => {
     codeInput.value = "";
     scoreComparison.value = null;
     loadingScoreComparison.value = false;
+    scoresModalOpen.value = false;
 
     try {
       const generatedResult = await generateDailyPuzzleFromIndexer(dateKey);
@@ -220,6 +230,7 @@ export const usePlayPageStore = defineStore("playPage", () => {
     codeInput.value = "";
     scoreComparison.value = null;
     loadingScoreComparison.value = false;
+    scoresModalOpen.value = false;
     showUploadScore.value = false;
     proofReady.value = false;
     proofGenerating.value = false;
@@ -266,6 +277,8 @@ export const usePlayPageStore = defineStore("playPage", () => {
 
     const saved = saveBestScore(startPuzzle.value, parsed.length, imported);
     bestScore.value = getBestScore(startPuzzle.value);
+    // The imported solve exists to be submitted, so surface the scores modal.
+    scoresModalOpen.value = true;
     if (saved === parsed.length) {
       setStatus(`Imported your ${parsed.length}-move solve`, 4000);
     } else {
@@ -311,6 +324,7 @@ export const usePlayPageStore = defineStore("playPage", () => {
     if (solved.value && dailyDateKey.value && startPuzzle.value) {
       saveBestScore(startPuzzle.value, moves.value, moveHistory.value);
       bestScore.value = moves.value;
+      scoresModalOpen.value = true;
     }
   }
 
@@ -392,6 +406,7 @@ export const usePlayPageStore = defineStore("playPage", () => {
     toast,
     codeInput,
     settingsModalOpen,
+    scoresModalOpen,
     showColorLetters,
     showUploadScore,
     proofReady,
@@ -409,6 +424,8 @@ export const usePlayPageStore = defineStore("playPage", () => {
     // Actions
     openPlaySettings,
     closePlaySettings,
+    openScoresModal,
+    closeScoresModal,
     setStatus,
     goToPreviousDaily,
     goToNextDaily,
