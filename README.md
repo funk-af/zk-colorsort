@@ -321,7 +321,7 @@ Discord developer portal:
 - OAuth2 redirect is not needed; the Embedded App SDK handles the code flow
   and `netlify/functions/discord-token.ts` exchanges it.
 
-### Sharing scores and the `/colorsort` command
+### Sharing scores and the slash commands
 
 - **Share score to a channel** (Scores panel, Activity only) calls the SDK's
   `shareInteraction`: the message is posted as the player having run
@@ -334,6 +334,24 @@ Discord developer portal:
   `/api/discord-interactions`). It verifies Discord's Ed25519 signature with
   `DISCORD_PUBLIC_KEY`, answers the PING check, and responds with
   `LAUNCH_ACTIVITY`, which opens the Activity for the user who invoked it.
+- **`/score [user]`** posts the invoking user's (or the picked user's)
+  recorded score for today's daily puzzle to the channel, with the same
+  "better than X%" line as the Activity and the play button. The lookup is
+  by the sponsored identity `sha256("discord:" + userId)`, so only scores
+  submitted from the Activity are found; a wallet score is not tied to a
+  Discord account. The mention renders without pinging. No score, or an
+  empty board, gets a private reply instead.
+- **`/graph`** posts today's score distribution (wallet and sponsored
+  scores together) as a text bar chart, one row per recorded move count,
+  with the play button.
+- Both commands read the chain synchronously: today's puzzle code comes from
+  the block seed (cached per day per function instance) and the scores from
+  algod box listings, in `netlify/functions/lib/scoreboard.ts`. The read is
+  capped at 2.2 s so the reply always lands inside Discord's 3-second
+  deadline; a slow chain gets a private "try again" instead of Discord's
+  "did not respond". Deferred replies are not an option here: the free plan
+  has no background functions and the function runtime cannot keep working
+  after the response is sent.
 
 Setup, once:
 
@@ -342,7 +360,7 @@ Setup, once:
 2. Set **Interactions Endpoint URL** to
    `https://<site>/api/discord-interactions`. Discord sends a signed PING and
    only saves the URL when it gets `{"type":1}` back.
-3. Register the command with the bot token from the portal's Bot page (local
+3. Register the commands with the bot token from the portal's Bot page (local
    only, never a Netlify var):
 
    ```bash

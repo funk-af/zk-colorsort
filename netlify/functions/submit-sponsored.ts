@@ -14,19 +14,17 @@ import {
   signalsMatchScore,
   type ScoreSaveOperation,
 } from "../../src/algorand/scoreGroups";
-import { getTodayDateKey } from "../../src/game/daily";
-import { getDailyPuzzleCodeBytes } from "../../src/game/dailyCode";
 import { discordAccountCreatedAt, fetchDiscordUser } from "./lib/discord";
 import {
   getAlgodClient,
   getAlgorandClient,
   getAppId,
   getMinDiscordAccountAgeDays,
-  getNetworkId,
   getSponsorAccount,
   getSponsorMinBalance,
 } from "./lib/env";
 import { HttpError, errorResponse, json, readJsonBody } from "./lib/http";
+import { todaysPuzzleCode } from "./lib/scoreboard";
 import { createSponsoredVerifier } from "./lib/verifier";
 
 interface SubmitBody {
@@ -36,19 +34,6 @@ interface SubmitBody {
 }
 
 const CONFIRMATION_POLL_MS = 4_500;
-const dailyCodeCache = new Map<string, Uint8Array>();
-
-async function todaysPuzzleCode(): Promise<Uint8Array> {
-  const dateKey = getTodayDateKey();
-  const cached = dailyCodeCache.get(dateKey);
-  if (cached) {
-    return cached;
-  }
-  const code = await getDailyPuzzleCodeBytes(dateKey, getNetworkId());
-  dailyCodeCache.clear();
-  dailyCodeCache.set(dateKey, code);
-  return code;
-}
 
 async function waitBriefly(
   algod: algosdk.Algodv2,

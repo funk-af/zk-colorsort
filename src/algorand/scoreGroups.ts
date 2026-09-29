@@ -9,7 +9,15 @@ import { microAlgo } from "@algorandfoundation/algokit-utils";
 import algosdk from "algosdk";
 import type { Groth16Bn254LsigVerifier } from "snarkjs-algorand";
 import type { PuzzleScoresClient } from "./PuzzleScoresClient";
+import {
+  USER_KEY_BYTE_LENGTH,
+  bytesToHex,
+  discordUserKey,
+  sponsoredIdentityLabel,
+} from "./identity";
 import { asBytes, concatBytes } from "../utils/bytes";
+
+export { USER_KEY_BYTE_LENGTH, bytesToHex, discordUserKey, sponsoredIdentityLabel };
 
 export interface Groth16Bn254Proof {
   piA: Uint8Array;
@@ -33,7 +41,6 @@ export interface SerializedWitness {
 export type ScoreSaveOperation = "add" | "update";
 
 export const ADDRESS_BYTE_LENGTH = 32;
-export const USER_KEY_BYTE_LENGTH = 32;
 export const PUZZLE_CODE_BYTE_LENGTH = 20;
 export const SCORE_BYTE_LENGTH = 1;
 export const SPONSORED_VALUE_BYTE_LENGTH = 2;
@@ -76,14 +83,6 @@ export function getVerifierTotalLsigs(
   return operation === "update"
     ? UPDATE_SCORE_VERIFIER_TOTAL_LSIGS
     : ADD_SCORE_VERIFIER_TOTAL_LSIGS;
-}
-
-export function bytesToHex(bytes: Uint8Array): string {
-  let result = "";
-  for (const byte of bytes) {
-    result += byte.toString(16).padStart(2, "0");
-  }
-  return result;
 }
 
 export function bytesEqual(left: Uint8Array, right: Uint8Array): boolean {
@@ -162,16 +161,6 @@ export function unpackLimbsToBytes(
 /** Identity bytes for a wallet address (32-byte public key). */
 export function addressToIdentity(address: string): Uint8Array {
   return algosdk.decodeAddress(address).publicKey;
-}
-
-/**
- * Identity bytes for a Discord user: sha256("discord:" + userId).
- * Uses WebCrypto so it works in browsers and Node alike.
- */
-export async function discordUserKey(userId: string): Promise<Uint8Array> {
-  const data = new TextEncoder().encode(`discord:${userId}`);
-  const digest = await globalThis.crypto.subtle.digest("SHA-256", data);
-  return new Uint8Array(digest);
 }
 
 export function signalsMatchIdentity(
@@ -524,7 +513,10 @@ export async function listPuzzleScoresFromAlgod(
 ): Promise<PuzzleScoreEntry[]> {
   const entries: PuzzleScoreEntry[] = [];
 
-  const walletBoxes = await listBoxesWithPrefix(algodClient, appId, puzzleCode);
+  const [walletBoxes, sponsoredBoxes] = await Promise.all([
+    listBoxesWithPrefix(algodClient, appId, puzzleCode),
+    listBoxesWithPrefix(algodClient, appId, buildSponsoredPrefix(puzzleCode)),
+  ]);
   for (const box of walletBoxes) {
     const boxNameBytes = asBytes(box.name);
     if (boxNameBytes.length !== SCORE_KEY_BYTE_LENGTH || !box.value) {
@@ -551,11 +543,6 @@ export async function listPuzzleScoresFromAlgod(
     });
   }
 
-  const sponsoredBoxes = await listBoxesWithPrefix(
-    algodClient,
-    appId,
-    buildSponsoredPrefix(puzzleCode),
-  );
   for (const box of sponsoredBoxes) {
     const boxNameBytes = asBytes(box.name);
     if (boxNameBytes.length !== SPONSORED_KEY_BYTE_LENGTH || !box.value) {
@@ -569,7 +556,7 @@ export async function listPuzzleScoresFromAlgod(
       SPONSORED_PREFIX.length + PUZZLE_CODE_BYTE_LENGTH,
     );
     entries.push({
-      identity: `sponsored:${bytesToHex(userKey)}`,
+      identity: sponsoredIdentityLabel(userKey),
       sponsored: true,
       score: BigInt(valueBytes[0]),
     });
@@ -577,10 +564,6 @@ export async function listPuzzleScoresFromAlgod(
 
   entries.sort((a, b) => (a.score < b.score ? -1 : a.score > b.score ? 1 : 0));
   return entries;
-}
-
-export function sponsoredIdentityLabel(userKey: Uint8Array): string {
-  return `sponsored:${bytesToHex(userKey)}`;
 }
 
 /**

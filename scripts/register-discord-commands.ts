@@ -1,5 +1,6 @@
 /**
- * Registers the `/colorsort` slash command for the Discord application.
+ * Registers the `/colorsort`, `/score`, and `/graph` slash commands for
+ * the Discord application.
  *
  *   pnpm run discord:register-commands
  *
@@ -9,7 +10,12 @@
  * Point command Discord created for the Activity. Global commands can take up
  * to an hour to appear in clients.
  */
-import { DISCORD_SHARE_COMMAND } from "../src/discord/share";
+import {
+  DISCORD_GRAPH_COMMAND,
+  DISCORD_SCORE_COMMAND,
+  DISCORD_SCORE_USER_OPTION,
+  DISCORD_SHARE_COMMAND,
+} from "../src/discord/share";
 
 // loadEnvFile never overrides variables that are already set, so loading
 // .env.local first gives it precedence over .env, matching Vite.
@@ -30,19 +36,41 @@ function requireEnv(name: string): string {
 }
 
 const CHAT_INPUT = 1;
+const OPTION_TYPE_USER = 6;
 
-async function main() {
-  const applicationId = requireEnv("DISCORD_CLIENT_ID");
-  const botToken = requireEnv("DISCORD_BOT_TOKEN");
-
-  // integration_types / contexts are omitted so the command inherits the
-  // installation contexts enabled for the app in the developer portal.
-  const command = {
+// integration_types / contexts are omitted so the commands inherit the
+// installation contexts enabled for the app in the developer portal.
+const commands = [
+  {
     name: DISCORD_SHARE_COMMAND,
     description: "Play today's Color Sort puzzle",
     type: CHAT_INPUT,
-  };
+  },
+  {
+    name: DISCORD_SCORE_COMMAND,
+    description: "Post a player's score for today's Color Sort puzzle",
+    type: CHAT_INPUT,
+    options: [
+      {
+        type: OPTION_TYPE_USER,
+        name: DISCORD_SCORE_USER_OPTION,
+        description: "Whose score to post (defaults to you)",
+        required: false,
+      },
+    ],
+  },
+  {
+    name: DISCORD_GRAPH_COMMAND,
+    description: "Post a graph of today's Color Sort scores",
+    type: CHAT_INPUT,
+  },
+];
 
+async function registerCommand(
+  applicationId: string,
+  botToken: string,
+  command: (typeof commands)[number],
+) {
   const response = await fetch(
     `https://discord.com/api/v10/applications/${applicationId}/commands`,
     {
@@ -57,10 +85,18 @@ async function main() {
 
   const body = await response.text();
   if (!response.ok) {
-    throw new Error(`Discord returned ${response.status}: ${body}`);
+    throw new Error(`Discord returned ${response.status} for /${command.name}: ${body}`);
   }
   const created = JSON.parse(body) as { id: string; name: string };
   console.log(`Registered /${created.name} (command id ${created.id})`);
+}
+
+async function main() {
+  const applicationId = requireEnv("DISCORD_CLIENT_ID");
+  const botToken = requireEnv("DISCORD_BOT_TOKEN");
+  for (const command of commands) {
+    await registerCommand(applicationId, botToken, command);
+  }
 }
 
 main().catch((error) => {

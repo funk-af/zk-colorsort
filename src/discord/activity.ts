@@ -14,11 +14,7 @@
  */
 import { DiscordSDK, patchUrlMappings } from "@discord/embedded-app-sdk";
 import { discordUserKey } from "../algorand/scoreGroups";
-import {
-  DISCORD_PLAY_BUTTON_ID,
-  DISCORD_PLAY_BUTTON_LABEL,
-  DISCORD_SHARE_COMMAND,
-} from "./share";
+import { DISCORD_SHARE_COMMAND, playButtonRow } from "./share";
 
 export interface DiscordIdentity {
   userId: string;
@@ -115,8 +111,6 @@ export async function openExternalLink(url: string): Promise<boolean> {
 
 export type ShareScoreOutcome = "shared" | "cancelled";
 
-const BUTTON_STYLE_PRIMARY = 1;
-
 /**
  * Posts the score to a channel as an interaction message: it renders as the
  * user having run `/colorsort`, with our content and a "Play" button whose
@@ -135,19 +129,7 @@ export async function shareScore(content: string): Promise<ShareScoreOutcome> {
     const result = await sdkInstance.commands.shareInteraction({
       command: DISCORD_SHARE_COMMAND,
       content,
-      components: [
-        {
-          type: 1,
-          components: [
-            {
-              type: 2,
-              style: BUTTON_STYLE_PRIMARY,
-              label: DISCORD_PLAY_BUTTON_LABEL,
-              custom_id: DISCORD_PLAY_BUTTON_ID,
-            },
-          ],
-        },
-      ],
+      components: [playButtonRow()],
     });
     return result.success ? "shared" : "cancelled";
   } catch (cause) {

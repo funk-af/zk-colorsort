@@ -4,6 +4,7 @@ import {
   handleInteraction,
   verifyDiscordSignature,
   type DiscordInteraction,
+  type InteractionDeps,
 } from "./lib/interactions";
 
 /**
@@ -11,14 +12,22 @@ import {
  * to `https://<site>/api/discord-interactions`; Discord validates it with a
  * signed PING on save.
  *
- * Handles the `/colorsort` slash command and the "Play" button on shared
- * score messages by answering with LAUNCH_ACTIVITY, which opens the Activity
- * for the user who clicked. No Algorand or Discord API calls are made here,
- * so the 3-second response deadline is comfortable even on a cold start.
+ * Handles the `/colorsort` slash command and the "Play" button on posted
+ * messages by answering with LAUNCH_ACTIVITY, which opens the Activity for
+ * the user who clicked. `/score` and `/graph` read today's scores from
+ * the chain and post them to the channel; that read is bounded by a time
+ * budget so the answer always lands inside Discord's 3-second deadline. The
+ * chain module is imported lazily so the launch paths stay fast on a cold
+ * start.
  *
  * Only signed requests are accepted; the free plan's two code-based rate
  * limit rules are already used by the token and submit functions.
  */
+const deps: InteractionDeps = {
+  loadDailyScoreboard: async () =>
+    (await import("./lib/scoreboard")).loadDailyScoreboard(),
+};
+
 export default async (request: Request) => {
   if (request.method !== "POST") {
     return json({ error: "Method not allowed" }, 405);
@@ -46,5 +55,5 @@ export default async (request: Request) => {
     return json({ error: "Malformed interaction" }, 400);
   }
 
-  return json(handleInteraction(interaction));
+  return json(await handleInteraction(interaction, deps));
 };
