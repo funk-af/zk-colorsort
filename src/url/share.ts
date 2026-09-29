@@ -145,3 +145,29 @@ export function setCurrentUrlPuzzle(puzzle: Puzzle): void {
 
   window.history.replaceState(null, "", nextPath);
 }
+
+const MOVE_ENTRY_PATTERN = /^[1-9]\d*:[1-9]\d*$/;
+const MAX_IMPORTED_MOVES = 120;
+
+/**
+ * Parses a `moves` query value ("3:7,1:11,...", 1-based tube numbers) handed
+ * over from the Discord Activity. Returns null unless every entry is
+ * well-formed; the play store then verifies the list actually solves the puzzle.
+ */
+export function movesFromQuery(value: unknown): string[] | null {
+  const raw = Array.isArray(value) ? value[0] : value;
+  if (typeof raw !== "string" || !raw.trim()) {
+    return null;
+  }
+  const entries = raw
+    .split(",")
+    .map((entry) => entry.trim())
+    .filter((entry) => entry.length > 0);
+  if (entries.length === 0 || entries.length > MAX_IMPORTED_MOVES) {
+    return null;
+  }
+  if (!entries.every((entry) => MOVE_ENTRY_PATTERN.test(entry))) {
+    return null;
+  }
+  return entries;
+}

@@ -183,6 +183,13 @@ flowchart LR
   - Frontend on-chain interaction and score upload orchestration
 - `contracts/PuzzleScores.algo.ts`
   - Algorand TypeScript smart contract
+- `src/algorand/scoreGroups.ts`
+  - Environment-neutral witness/box/group helpers shared by the app, the
+    Netlify functions, and the tests
+- `src/discord/`
+  - Discord Activity integration (proxy mappings, OAuth handshake)
+- `netlify/functions/`
+  - Discord token exchange, sponsored submit, and the daily sweep
 - `contracts/tests/PuzzleScores.algo.unit.test.ts`
   - Contract tests
 
@@ -250,6 +257,104 @@ Run on-chain contract e2e tests against LocalNet:
 ```bash
 algokit localnet start
 pnpm test:contracts:e2e
+```
+
+## Discord Activity and Sponsored Scores
+
+The same build runs as a [Discord Activity](https://discord.com/developers/docs/activities/overview)
+(the app inside Discord's iframe). Activity mode is detected from the `frame_id`
+query parameter Discord adds; outside Discord nothing changes.
+
+Inside Discord there is **no wallet connect**. Instead:
+
+- The proof is still generated in the player's browser, but bound to
+  `sha256("discord:" + userId)` instead of a wallet address.
+- A Netlify function (`netlify/functions/submit-sponsored.ts`) verifies the
+  Discord identity and submits the score from a **sponsor account**, paying the
+  group fees. Box MBR comes from the app account.
+- Only **today's daily puzzle** is sponsored. A scheduled function
+  (`netlify/functions/sweep-sponsored.ts`) deletes sponsored score boxes the
+  next day, releasing their MBR back to the app account.
+- "Keep permanently with a wallet" opens the website in the external browser
+  with the puzzle and move list in the URL (`?moves=3:7,1:11,...`); the
+  website verifies the moves solve the puzzle, records the best score locally,
+  and the normal wallet flow takes over.
+
+### Contract additions
+
+- `setSponsor(address)` (creator-only) and globals `sponsor`,
+  `sponsoredPuzzle`, `sponsoredCount`.
+- `addSponsoredScore` / `updateSponsoredScore(signals, proof, puzzleCode, userKey, score, verifierTxn)`:
+  sponsor-only; the proof's identity limbs must equal the 32-byte `userKey`.
+- Sponsored boxes: key `"s" + puzzleCode(20) + userKey(32)`, value
+  `score(1) + updates(1)`.
+- Caps that hold even if the sponsor key leaks: at most 8 updates per user key
+  per puzzle, and at most 1,000 sponsored boxes per puzzle code.
+- `sweepSponsoredScores(puzzleCode, userKeys[])` (sponsor-only) deletes boxes;
+  missing keys are ignored so the sweep is idempotent.
+- `getSponsoredScore(puzzleCode, userKey)` read-only accessor.
+
+### Abuse limits
+
+Failed groups are never included in a block, so they cost nothing; a drain
+needs valid proofs. Layers: Netlify per-IP rate limits declared in each
+function, Discord account age (snowflake timestamp), "today's puzzle only",
+the contract caps above, and small hand-topped-up floats (sponsor fee float,
+app-account MBR float) as the hard ceiling.
+
+### Configuration
+
+Copy `.env.example`. Build-time (Vite): `VITE_DISCORD_CLIENT_ID`,
+`VITE_SITE_URL`. Function runtime (Netlify env, mark secrets as secret):
+`DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET`, `SPONSOR_MNEMONIC`,
+`SPONSOR_MIN_BALANCE`, `MIN_DISCORD_ACCOUNT_AGE_DAYS`, `ALGORAND_NETWORK`, and
+optional `PUZZLE_SCORES_APP_ID` / `ALGOD_URL` overrides.
+
+Discord developer portal:
+
+- Activity URL mapping `/` → the Netlify site.
+- Proxy mappings for the Algorand hosts the app talks to (see
+  `DISCORD_PROXY_MAPPINGS` in `src/discord/activity.ts`): `/algod` →
+  `mainnet-api.algonode.cloud`, `/algod-nodely` → `mainnet-api.4160.nodely.dev`,
+  `/idx` → `mainnet-idx.algonode.cloud`, `/idx-nodely` →
+  `mainnet-idx.4160.nodely.dev`.
+- OAuth2 redirect is not needed; the Embedded App SDK handles the code flow
+  and `netlify/functions/discord-token.ts` exchanges it.
+
+### Terms of Service and Privacy Policy
+
+Discord requires both URLs on the app's General Information page. They are
+served at `/terms` and `/privacy` (`src/components/TermsPage.vue`,
+`src/components/PrivacyPage.vue`) and written in plain language for a free
+daily game.
+
+### Verification key for the functions
+
+The functions build the Groth16 verifier LogicSig from
+`netlify/functions/lib/verification_key.bn254.json` instead of the 52 MiB
+zkey. Regenerate it whenever the zkey changes:
+
+```bash
+pnpm run export:vk
+```
+
+### Deploying the contract upgrade
+
+Adding the sponsor globals grows the global schema (ints 1, bytes 3).
+`contracts/deploy-config.ts` updates an existing app in place with an update
+transaction that carries the new schema (`updateAppInPlace`), which the
+network allows since AVM 13. The extra global-state MBR (128,500 µALGO) is
+charged to the **creator** account, so fund the creator first. The script then
+tops up the app account (`SPONSOR_MBR_FLOAT_ALGO`, default 1) and calls
+`setSponsor` with the `SPONSOR_MNEMONIC` account.
+
+### Local testing
+
+```bash
+algokit localnet start
+pnpm test:contracts:e2e      # includes the sponsored paths and the schema upgrade
+pnpm run test:functions:e2e  # submit + sweep functions against LocalNet (Discord mocked)
+pnpm run typecheck:functions
 ```
 
 ## Network Configuration

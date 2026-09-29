@@ -5,6 +5,7 @@ import type { PuzzleScoreComparison } from "../algorand/puzzleScores";
 import { clonePuzzle, applyMove } from "../game/rules";
 import { isPuzzleSolved } from "../game/win";
 import { getBestScore, saveBestScore } from "../storage/scores";
+import { parseMoveHistory } from "../algorand/puzzleScores";
 import {
   generateDailyPuzzleFromIndexer,
   getTodayDateKey,
@@ -36,6 +37,9 @@ export const usePlayPageStore = defineStore("playPage", () => {
 
   // Score upload state
   const showUploadScore = ref(false);
+  // Move list handed over in the URL (e.g. from the Discord Activity's
+  // "keep permanently" link); applied once the matching puzzle is loaded.
+  let pendingImportedMoves: string[] | null = null;
   const proofReady = ref(false);
   const proofGenerating = ref(false);
   const uploadingScore = ref(false);
@@ -154,6 +158,7 @@ export const usePlayPageStore = defineStore("playPage", () => {
       moveHistory.value = [];
       selectedTube.value = null;
       moves.value = 0;
+      applyImportedMoves();
     } catch {
       if (requestId !== latestDailyLoadId) {
         return;
@@ -219,6 +224,53 @@ export const usePlayPageStore = defineStore("playPage", () => {
     proofReady.value = false;
     proofGenerating.value = false;
     uploadingScore.value = false;
+    applyImportedMoves();
+  }
+
+  /**
+   * Queue a move list (entries like "3:7", 1-based tube numbers) to be
+   * recorded as the best score for the puzzle once it is loaded. Only a list
+   * that actually solves the puzzle is accepted.
+   */
+  function importMoves(imported: string[]) {
+    pendingImportedMoves = imported;
+    applyImportedMoves();
+  }
+
+  function applyImportedMoves() {
+    if (!pendingImportedMoves || !startPuzzle.value) {
+      return;
+    }
+    const imported = pendingImportedMoves;
+    pendingImportedMoves = null;
+
+    const parsed = parseMoveHistory(imported);
+    if (!parsed || parsed.length === 0) {
+      setStatus("Ignored shared moves: invalid format", 4000);
+      return;
+    }
+
+    let board = clonePuzzle(startPuzzle.value);
+    for (const move of parsed) {
+      const result = applyMove(board, move);
+      if (!result) {
+        setStatus("Ignored shared moves: not a valid solution", 4000);
+        return;
+      }
+      board = result.puzzle;
+    }
+    if (!isPuzzleSolved(board)) {
+      setStatus("Ignored shared moves: puzzle not solved", 4000);
+      return;
+    }
+
+    const saved = saveBestScore(startPuzzle.value, parsed.length, imported);
+    bestScore.value = getBestScore(startPuzzle.value);
+    if (saved === parsed.length) {
+      setStatus(`Imported your ${parsed.length}-move solve`, 4000);
+    } else {
+      setStatus("Your saved score is already as good or better", 4000);
+    }
   }
 
   function playMove(tubeIndex: number) {
@@ -363,6 +415,7 @@ export const usePlayPageStore = defineStore("playPage", () => {
     loadTodayDaily,
     loadDailyPuzzle,
     loadSharedPuzzle,
+    importMoves,
     resetPlay,
     togglePlayColorLetters,
     updatePlayCodeInput,

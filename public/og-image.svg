@@ -100,9 +100,7 @@
      font-family="Segoe UI, Arial, sans-serif"
      font-size="82"
      font-weight="800"
-     id="text6">
-    ZK Color Sort
-  </text><text
+     id="text6">Color Sort</text><text
      x="140"
      y="362"
      fill="#d9e6ff"

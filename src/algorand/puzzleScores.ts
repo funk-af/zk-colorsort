@@ -1,26 +1,43 @@
-import { AlgorandClient, microAlgo } from "@algorandfoundation/algokit-utils";
+import { AlgorandClient } from "@algorandfoundation/algokit-utils";
 import algosdk from "algosdk";
 import { Groth16Bn254LsigVerifier } from "snarkjs-algorand";
 import { PuzzleScoresClient } from "./PuzzleScoresClient";
-import { encodePuzzle } from "../game/serialize";
+import {
+  MAX_STORED_SCORE,
+  VERIFIER_APP_OFFSET,
+  addressToIdentity,
+  buildScoreBoxName,
+  buildSponsoredBoxName,
+  bytesEqual,
+  bytesToHex,
+  composeScoreGroup,
+  getExistingScoreFromAlgod,
+  getExistingSponsoredScoreFromAlgod,
+  getVerifierTotalLsigs,
+  innerTxnExtraFee,
+  listPuzzleScoresFromAlgod,
+  normalizeWitness,
+  signalsMatchIdentity,
+  sponsoredIdentityLabel,
+  type NormalizedWitness,
+  type ScoreSaveOperation,
+  type SponsoredScoreEntry,
+} from "./scoreGroups";
+import { puzzleCodeBytes } from "../game/dailyCode";
 import type { Move, Puzzle } from "../game/types";
-import { asBytes, concatBytes } from "../utils/bytes";
 import {
   buildColorSortProofInput,
   colorSortWasmUrl,
   getColorSortZkeyBytes,
+  type ProofIdentity,
 } from "../zk/prove";
 import networks from "../networks.json";
+
+export type { NormalizedWitness } from "./scoreGroups";
 
 interface NetworkContractConfig {
   networkId: string;
   puzzleScoresAppId?: number;
-}
-
-interface Groth16Bn254Proof {
-  piA: Uint8Array;
-  piB: Uint8Array;
-  piC: Uint8Array;
 }
 
 interface SaveScoreOnChainArgs {
@@ -43,6 +60,14 @@ interface ScoreUploadStatusArgs {
   score: number;
 }
 
+interface SponsoredScoreStatusArgs {
+  networkId: string;
+  algodClient: algosdk.Algodv2;
+  userKey: Uint8Array;
+  puzzle: Puzzle;
+  score: number;
+}
+
 interface RemoveScoreOnChainArgs {
   networkId: string;
   algodClient: algosdk.Algodv2;
@@ -52,32 +77,16 @@ interface RemoveScoreOnChainArgs {
 }
 
 const networkConfigs = networks as NetworkContractConfig[];
-const ADDRESS_BYTE_LENGTH = 32;
-const PUZZLE_CODE_BYTE_LENGTH = 20;
-const SCORE_BYTE_LENGTH = 1;
-const MAX_STORED_SCORE = 255;
-const SCORE_KEY_BYTE_LENGTH = PUZZLE_CODE_BYTE_LENGTH + ADDRESS_BYTE_LENGTH;
-const PUZZLE_LIMB_WIDTHS = [8, 8, 4] as const;
-const SENDER_LIMB_WIDTHS = [8, 8, 8, 8] as const;
-const SCORE_SIGNAL_INDEX = 0;
-const PUZZLE_SIGNAL_START = 1;
-const SENDER_SIGNAL_START = PUZZLE_SIGNAL_START + PUZZLE_LIMB_WIDTHS.length;
-const PUBLIC_SIGNAL_COUNT =
-  1 + PUZZLE_LIMB_WIDTHS.length + SENDER_LIMB_WIDTHS.length;
-const VERIFIER_APP_OFFSET = 1;
-// The Groth16 BN254 verifier lsig consumes ~77.6k opcode budget. LogicSig budget
-// is pooled as (group size * 20_000) across *every* txn in the group, including
-// the app call and MBR payment, so each group needs 4 txns in total:
-//   add:    payMbr + verifier + appCall + 1 extra lsig
-//   update: verifier + appCall + 2 extra lsigs
-// totalLsigs counts the verifier itself plus the extra padding lsigs.
-const ADD_SCORE_VERIFIER_TOTAL_LSIGS = 2;
-const UPDATE_SCORE_VERIFIER_TOTAL_LSIGS = 3;
 const scoreStatusInFlight = new Map<string, Promise<ScoreUploadStatus>>();
 const scoreSaveInFlight = new Map<string, Promise<SaveScoreResult>>();
 
 type SaveScoreResult = "added" | "updated" | "skipped";
-type ScoreUploadStatus = "needs-upload" | "recorded" | "unavailable";
+export type ScoreUploadStatus = "needs-upload" | "recorded" | "unavailable";
+
+export interface SponsoredScoreStatus {
+  status: ScoreUploadStatus;
+  existing: SponsoredScoreEntry | null;
+}
 
 export interface PuzzleScoreComparison {
   allScores: number[];
@@ -87,33 +96,6 @@ export interface PuzzleScoreComparison {
   playersBeaten: number;
   betterThanPercent: number;
   tiedPlayersCount: number;
-}
-
-type BoxValueResponse = {
-  value?: string | Uint8Array;
-  box?: { value?: string | Uint8Array };
-  "application-box"?: { value?: string | Uint8Array };
-};
-
-type BoxListItem = {
-  name: string | Uint8Array;
-  value?: string | Uint8Array;
-};
-
-type BoxListResponse = {
-  boxes?: BoxListItem[];
-  nextToken?: string;
-};
-
-interface PuzzleScoreEntry {
-  address: string;
-  score: bigint;
-}
-
-export interface NormalizedWitness {
-  proof: Groth16Bn254Proof;
-  signals: bigint[];
-  puzzleCode: Uint8Array;
 }
 
 type LsigAccountResult = Awaited<
@@ -127,8 +109,6 @@ export interface GeneratedScoreProof {
   lsigAccountCache: LsigAccountResult;
 }
 
-type ScoreSaveOperation = "add" | "update";
-
 function resolveNetworkId(networkId: string): string {
   const normalized = networkId.toLowerCase();
   return networkConfigs.some((config) => config.networkId === normalized)
@@ -136,7 +116,7 @@ function resolveNetworkId(networkId: string): string {
     : "testnet";
 }
 
-function getPuzzleScoresAppId(networkId: string): bigint | null {
+export function getPuzzleScoresAppId(networkId: string): bigint | null {
   const resolvedNetworkId = resolveNetworkId(networkId);
   const appId = networkConfigs.find(
     (config) => config.networkId === resolvedNetworkId,
@@ -147,46 +127,19 @@ function getPuzzleScoresAppId(networkId: string): bigint | null {
     : null;
 }
 
-function decodeBase64UrlToBytes(value: string): Uint8Array {
-  const base64 = value.replace(/-/g, "+").replace(/_/g, "/");
-  const padded = base64 + "=".repeat((4 - (base64.length % 4)) % 4);
-  const binary = atob(padded);
-  const bytes = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i += 1) {
-    bytes[i] = binary.charCodeAt(i);
-  }
-  return bytes;
-}
-
-function getPuzzleCodeBytes(puzzle: Puzzle): Uint8Array | null {
-  try {
-    const encoded = encodePuzzle(puzzle);
-    const bytes = decodeBase64UrlToBytes(encoded);
-    return bytes.length === PUZZLE_CODE_BYTE_LENGTH ? bytes : null;
-  } catch {
-    return null;
-  }
-}
-
 function toSafeScore(value: bigint): number | null {
   const numeric = Number(value);
   return Number.isSafeInteger(numeric) && numeric > 0 ? numeric : null;
 }
 
-function buildScoreBoxName(puzzleCode: Uint8Array, sender: string): Uint8Array {
-  const addressBytes = algosdk.decodeAddress(sender).publicKey;
-  return concatBytes([puzzleCode, addressBytes]);
-}
-
-function getVerifierTotalLsigs(operation: ScoreSaveOperation): number {
-  return operation === "update"
-    ? UPDATE_SCORE_VERIFIER_TOTAL_LSIGS
-    : ADD_SCORE_VERIFIER_TOTAL_LSIGS;
-}
-
-async function createGroth16Verifier(
+/**
+ * Builds the Groth16 lsig verifier from the browser-served zkey. `sponsored`
+ * groups carry no MBR payment, so they use one more padding lsig.
+ */
+export async function createGroth16Verifier(
   algorand: ReturnType<typeof AlgorandClient.fromClients>,
   operation: ScoreSaveOperation,
+  sponsored = false,
 ): Promise<Groth16Bn254LsigVerifier> {
   const zkeyBytes = await getColorSortZkeyBytes();
 
@@ -195,7 +148,7 @@ async function createGroth16Verifier(
     zKey: zkeyBytes,
     wasmProver: colorSortWasmUrl,
     appOffset: VERIFIER_APP_OFFSET,
-    totalLsigs: getVerifierTotalLsigs(operation),
+    totalLsigs: getVerifierTotalLsigs(operation, sponsored),
   });
 }
 
@@ -222,7 +175,7 @@ function parseStoredMove(value: string): Move | null {
   };
 }
 
-function parseMoveHistory(moveHistory: string[]): Move[] | null {
+export function parseMoveHistory(moveHistory: string[]): Move[] | null {
   const moves: Move[] = [];
   for (const value of moveHistory) {
     const move = parseStoredMove(value);
@@ -232,92 +185,6 @@ function parseMoveHistory(moveHistory: string[]): Move[] | null {
     moves.push(move);
   }
   return moves;
-}
-
-function bytesToHex(bytes: Uint8Array): string {
-  let result = "";
-  for (const byte of bytes) {
-    result += byte.toString(16).padStart(2, "0");
-  }
-  return result;
-}
-
-function bytesEqual(left: Uint8Array, right: Uint8Array): boolean {
-  if (left.length !== right.length) {
-    return false;
-  }
-  for (let i = 0; i < left.length; i += 1) {
-    if (left[i] !== right[i]) {
-      return false;
-    }
-  }
-  return true;
-}
-
-function packBytesToLimbs(
-  bytes: Uint8Array,
-  widths: readonly number[],
-): bigint[] {
-  const limbs: bigint[] = [];
-  let offset = 0;
-  for (const width of widths) {
-    let limb = 0n;
-    for (let i = 0; i < width; i += 1) {
-      limb = (limb << 8n) | BigInt(bytes[offset + i] ?? 0);
-    }
-    limbs.push(limb);
-    offset += width;
-  }
-  return limbs;
-}
-
-function unpackLimbsToBytes(
-  limbs: readonly bigint[],
-  widths: readonly number[],
-): Uint8Array | null {
-  if (limbs.length !== widths.length) {
-    return null;
-  }
-
-  const totalBytes = widths.reduce((sum, width) => sum + width, 0);
-  const result = new Uint8Array(totalBytes);
-  let offset = 0;
-
-  for (let limbIndex = 0; limbIndex < widths.length; limbIndex += 1) {
-    const width = widths[limbIndex];
-    const limb = limbs[limbIndex];
-    if (limb < 0n || limb >= 1n << BigInt(width * 8)) {
-      return null;
-    }
-
-    let value = limb;
-    for (let i = width - 1; i >= 0; i -= 1) {
-      result[offset + i] = Number(value & 0xffn);
-      value >>= 8n;
-    }
-    offset += width;
-  }
-
-  return result;
-}
-
-function signalsMatchSender(signals: bigint[], sender: string): boolean {
-  const expectedSender = packBytesToLimbs(
-    algosdk.decodeAddress(sender).publicKey,
-    SENDER_LIMB_WIDTHS,
-  );
-
-  const outputFirstMatch = expectedSender.every(
-    (value, index) => signals[SENDER_SIGNAL_START + index] === value,
-  );
-  if (outputFirstMatch) {
-    return true;
-  }
-
-  const outputLastStart = PUZZLE_LIMB_WIDTHS.length;
-  return expectedSender.every(
-    (value, index) => signals[outputLastStart + index] === value,
-  );
 }
 
 async function withTimeout<T>(
@@ -346,209 +213,6 @@ async function withTimeout<T>(
   }
 }
 
-function normalizeWitness(witness: unknown, score: bigint): NormalizedWitness {
-  const rawWitness = witness as {
-    proof?: Partial<Groth16Bn254Proof> & {
-      pi_aBytes?: Uint8Array;
-      pi_bBytes?: Uint8Array;
-      pi_cBytes?: Uint8Array;
-    };
-    signals?: Array<string | number | bigint | undefined>;
-  };
-
-  const proof = rawWitness?.proof;
-  if (!proof) {
-    throw new Error("Verifier witness proof is missing");
-  }
-
-  const piA = proof.piA ?? proof.pi_aBytes;
-  const piB = proof.piB ?? proof.pi_bBytes;
-  const piC = proof.piC ?? proof.pi_cBytes;
-
-  if (!(piA instanceof Uint8Array) || piA.length !== 64) {
-    throw new Error("Verifier proof piA is invalid");
-  }
-  if (!(piB instanceof Uint8Array) || piB.length !== 128) {
-    throw new Error("Verifier proof piB is invalid");
-  }
-  if (!(piC instanceof Uint8Array) || piC.length !== 64) {
-    throw new Error("Verifier proof piC is invalid");
-  }
-
-  const rawSignals = rawWitness?.signals;
-  if (!Array.isArray(rawSignals) || rawSignals.length === 0) {
-    throw new Error("Verifier witness signals are missing");
-  }
-
-  const signals = rawSignals.map((value, index) => {
-    if (value === undefined || value === null) {
-      throw new Error(`Verifier signal ${index} is missing`);
-    }
-    return BigInt(value);
-  });
-
-  const validateLayout = (
-    candidate: bigint[],
-    scoreIndex: number,
-    puzzleStart: number,
-    senderStart: number,
-  ): Uint8Array | null => {
-    if (candidate.length < PUBLIC_SIGNAL_COUNT) {
-      return null;
-    }
-
-    if (candidate[scoreIndex] !== score) {
-      return null;
-    }
-
-    const puzzleLimbs = candidate.slice(
-      puzzleStart,
-      puzzleStart + PUZZLE_LIMB_WIDTHS.length,
-    );
-    const senderLimbs = candidate.slice(
-      senderStart,
-      senderStart + SENDER_LIMB_WIDTHS.length,
-    );
-
-    if (
-      puzzleLimbs.length !== PUZZLE_LIMB_WIDTHS.length ||
-      senderLimbs.length !== SENDER_LIMB_WIDTHS.length
-    ) {
-      return null;
-    }
-
-    if (senderLimbs.some((value) => value < 0n || value >= 1n << 64n)) {
-      return null;
-    }
-
-    return unpackLimbsToBytes(puzzleLimbs, PUZZLE_LIMB_WIDTHS);
-  };
-
-  const outputFirstPuzzle = validateLayout(
-    signals,
-    SCORE_SIGNAL_INDEX,
-    PUZZLE_SIGNAL_START,
-    SENDER_SIGNAL_START,
-  );
-  if (outputFirstPuzzle) {
-    return {
-      proof: { piA, piB, piC },
-      signals,
-      puzzleCode: outputFirstPuzzle,
-    };
-  }
-
-  const outputLastPuzzle = validateLayout(
-    signals,
-    PUBLIC_SIGNAL_COUNT - 1,
-    0,
-    PUZZLE_LIMB_WIDTHS.length,
-  );
-  if (outputLastPuzzle) {
-    return {
-      proof: { piA, piB, piC },
-      signals,
-      puzzleCode: outputLastPuzzle,
-    };
-  }
-
-  throw new Error(
-    "Verifier witness signals do not match expected public layout",
-  );
-}
-
-async function getExistingScoreFromAlgod(
-  algodClient: algosdk.Algodv2,
-  appId: bigint,
-  scoreBoxName: Uint8Array,
-): Promise<bigint | null> {
-  try {
-    const boxResponse = (await algodClient
-      .getApplicationBoxByName(Number(appId), scoreBoxName)
-      .do()) as BoxValueResponse;
-
-    const valueBase64 =
-      boxResponse.value ??
-      boxResponse.box?.value ??
-      boxResponse["application-box"]?.value;
-
-    if (!valueBase64) {
-      return null;
-    }
-
-    const valueBytes = asBytes(valueBase64);
-    if (valueBytes.length !== SCORE_BYTE_LENGTH) {
-      return null;
-    }
-
-    return BigInt(valueBytes[0]);
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    if (
-      message.includes("box not found") ||
-      message.includes("404") ||
-      message.includes("not found")
-    ) {
-      return null;
-    }
-
-    throw error;
-  }
-}
-
-async function listPuzzleScoresFromAlgod(
-  algodClient: algosdk.Algodv2,
-  appId: bigint,
-  puzzleCode: Uint8Array,
-): Promise<PuzzleScoreEntry[]> {
-  const entries: PuzzleScoreEntry[] = [];
-  const response = (await algodClient
-    .getApplicationBoxes(Number(appId))
-    .include("values")
-    .prefix(puzzleCode)
-    .limit(1000)
-    .do()) as BoxListResponse;
-
-  for (const box of response.boxes ?? []) {
-    const boxNameBytes = asBytes(box.name);
-
-    if (boxNameBytes.length !== SCORE_KEY_BYTE_LENGTH) {
-      continue;
-    }
-
-    // Extract address from box name (skip puzzle code, take next 32 bytes)
-    const addressBytes = boxNameBytes.slice(
-      PUZZLE_CODE_BYTE_LENGTH,
-      SCORE_KEY_BYTE_LENGTH,
-    );
-
-    let address: string;
-    try {
-      address = algosdk.encodeAddress(addressBytes);
-    } catch {
-      continue;
-    }
-
-    // Extract score from box value (should be 1 byte, base64 encoded)
-    if (!box.value) {
-      continue;
-    }
-
-    const valueBytes = asBytes(box.value);
-    if (valueBytes.length !== SCORE_BYTE_LENGTH) {
-      continue;
-    }
-
-    entries.push({
-      address,
-      score: BigInt(valueBytes[0]),
-    });
-  }
-
-  entries.sort((a, b) => (a.score < b.score ? -1 : a.score > b.score ? 1 : 0));
-  return entries;
-}
-
 export async function saveScoreOnChain({
   networkId,
   algodClient,
@@ -574,7 +238,7 @@ export async function saveScoreOnChain({
     return "skipped";
   }
 
-  const puzzleCode = getPuzzleCodeBytes(puzzle);
+  const puzzleCode = puzzleCodeBytes(puzzle);
   if (!puzzleCode) {
     return "skipped";
   }
@@ -629,7 +293,7 @@ export async function removeScoreOnChain({
     return false;
   }
 
-  const puzzleCode = getPuzzleCodeBytes(puzzle);
+  const puzzleCode = puzzleCodeBytes(puzzle);
   if (!puzzleCode) {
     return false;
   }
@@ -646,14 +310,13 @@ export async function removeScoreOnChain({
   });
 
   const suggestedParams = await algodClient.getTransactionParams().do();
-  const minFee = suggestedParams.minFee ?? 1000n;
 
   await client.send.removeScore({
     args: {
       puzzleCode,
     },
     sender,
-    extraFee: microAlgo(minFee),
+    extraFee: innerTxnExtraFee(suggestedParams.minFee),
     boxReferences: [{ appId, name: buildScoreBoxName(puzzleCode, sender) }],
   });
 
@@ -663,10 +326,13 @@ export async function removeScoreOnChain({
 interface GenerateScoreProofArgs {
   networkId: string;
   algodClient: algosdk.Algodv2;
-  sender: string;
+  /** Wallet address, or a 32-byte user key for sponsored submissions. */
+  sender: ProofIdentity;
   puzzle: Puzzle;
   moveHistory: string[];
   score: number;
+  /** Sponsored submissions use one more padding lsig than wallet adds. */
+  sponsored?: boolean;
 }
 
 export async function generateScoreProof({
@@ -676,6 +342,7 @@ export async function generateScoreProof({
   puzzle,
   moveHistory,
   score,
+  sponsored = false,
 }: GenerateScoreProofArgs): Promise<GeneratedScoreProof> {
   if (!Number.isInteger(score) || score <= 0 || score > MAX_STORED_SCORE) {
     throw new Error(
@@ -697,7 +364,7 @@ export async function generateScoreProof({
   }
 
   const algorand = AlgorandClient.fromClients({ algod: algodClient });
-  const verifier = await createGroth16Verifier(algorand, "add");
+  const verifier = await createGroth16Verifier(algorand, "add", sponsored);
 
   const witness = await verifier.proofAndSignals(
     buildColorSortProofInput(puzzle, moves, sender),
@@ -797,157 +464,49 @@ async function performScoreSave(
   }
 
   const nextScore = BigInt(score);
-  const onChainPuzzleCode = normalizedWitness.puzzleCode;
-  if (!bytesEqual(onChainPuzzleCode, puzzleCode)) {
+  if (!bytesEqual(normalizedWitness.puzzleCode, puzzleCode)) {
     throw new Error("Proof puzzle does not match submission puzzle");
   }
-  if (!signalsMatchSender(normalizedWitness.signals, sender)) {
+  if (!signalsMatchIdentity(normalizedWitness.signals, addressToIdentity(sender))) {
     throw new Error("Proof sender does not match submission sender");
   }
-  const scoreBoxName = buildScoreBoxName(onChainPuzzleCode, sender);
 
-  if (existingScore !== null) {
-    if (nextScore >= existingScore) {
-      return "skipped";
+  if (existingScore !== null && nextScore >= existingScore) {
+    return "skipped";
+  }
+
+  let mbr: number | undefined;
+  if (saveOperation === "add") {
+    const mbrResult = await client.send.boxMbr({ sender, args: [] });
+    mbr = Number(mbrResult.return ?? 0n);
+    if (!Number.isSafeInteger(mbr) || mbr <= 0) {
+      throw new Error("Unable to calculate box MBR amount");
     }
-
-    const updateGroup = client.newGroup();
-
-    await withTimeout(
-      "composing update verification transactions",
-      verifier.verificationParams({
-        proof: normalizedWitness.proof,
-        signals: normalizedWitness.signals,
-        composer: updateGroup,
-        paramsCallback: async ({ lsigParams, lsigsFee }) => {
-          const updateSuggestedParams = await algodClient
-            .getTransactionParams()
-            .do();
-          const updateVerifierTxn =
-            algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-              sender: lsigParams.sender,
-              receiver: client.appAddress,
-              amount: 0,
-              suggestedParams: {
-                ...updateSuggestedParams,
-                fee: 0,
-                flatFee: true,
-              },
-            });
-
-          if (import.meta.env.DEV) {
-            console.debug("[score-save] update tx fees", {
-              minFee: updateSuggestedParams.minFee,
-              lsigsFee,
-              appCallExtraFee: lsigsFee,
-              verifierFee: updateVerifierTxn.fee,
-              totalLsigs: getVerifierTotalLsigs("update"),
-            });
-          }
-
-          updateGroup.updateScore({
-            args: {
-              signals: normalizedWitness.signals,
-              proof: normalizedWitness.proof,
-              puzzleCode: onChainPuzzleCode,
-              newScore: nextScore,
-              verifierTxn: {
-                txn: updateVerifierTxn,
-                signer: lsigParams.signer,
-              } as any,
-            },
-            sender,
-            extraFee: lsigsFee,
-            boxReferences: [{ appId, name: scoreBoxName }],
-          });
-        },
-      }),
-      90_000,
-    );
-
-    await withTimeout(
-      "sending update transaction group",
-      updateGroup.send(),
-      120_000,
-    );
-
-    return "updated";
   }
 
-  const mbrResult = await client.send.boxMbr({ sender, args: [] });
-  const mbr = Number(mbrResult.return ?? 0n);
-  if (!Number.isSafeInteger(mbr) || mbr <= 0) {
-    throw new Error("Unable to calculate box MBR amount");
-  }
-
-  const addGroup = client.newGroup();
-
-  await withTimeout(
-    "composing add verification transactions",
-    verifier.verificationParams({
-      proof: normalizedWitness.proof,
-      signals: normalizedWitness.signals,
-      composer: addGroup,
-      paramsCallback: async ({ lsigParams, lsigsFee }) => {
-        const suggestedParams = await algodClient.getTransactionParams().do();
-        const verifierTxn = algosdk.makePaymentTxnWithSuggestedParamsFromObject(
-          {
-            sender: lsigParams.sender,
-            receiver: client.appAddress,
-            amount: 0,
-            suggestedParams: {
-              ...suggestedParams,
-              fee: 0,
-              flatFee: true,
-            },
-          },
-        );
-        const payMbr = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-          sender,
-          receiver: client.appAddress,
-          amount: mbr,
-          suggestedParams,
-        });
-
-        if (import.meta.env.DEV) {
-          console.debug("[score-save] add tx fees", {
-            minFee: suggestedParams.minFee,
-            lsigsFee,
-            appCallExtraFee: lsigsFee,
-            payMbrFee: payMbr.fee,
-            verifierFee: verifierTxn.fee,
-            payMbrAmount: mbr,
-            totalLsigs: getVerifierTotalLsigs("add"),
-          });
-        }
-
-        addGroup.addScore({
-          args: {
-            signals: normalizedWitness.signals,
-            proof: normalizedWitness.proof,
-            puzzleCode: onChainPuzzleCode,
-            score: nextScore,
-            payMbr: {
-              txn: payMbr,
-              signer,
-            } as any,
-            verifierTxn: {
-              txn: verifierTxn,
-              signer: lsigParams.signer,
-            } as any,
-          },
-          sender,
-          extraFee: lsigsFee,
-          boxReferences: [{ appId, name: scoreBoxName }],
-        });
-      },
+  const group = await withTimeout(
+    `composing ${saveOperation} verification transactions`,
+    composeScoreGroup({
+      client,
+      algodClient,
+      verifier,
+      operation: saveOperation,
+      witness: normalizedWitness,
+      score: nextScore,
+      sender,
+      signer,
+      mbr,
     }),
     90_000,
   );
 
-  await withTimeout("sending add transaction group", addGroup.send(), 120_000);
+  await withTimeout(
+    `sending ${saveOperation} transaction group`,
+    group.send(),
+    120_000,
+  );
 
-  return "added";
+  return saveOperation === "add" ? "added" : "updated";
 }
 
 export async function getScoreUploadStatusOnChain({
@@ -965,7 +524,7 @@ export async function getScoreUploadStatusOnChain({
     return "unavailable";
   }
 
-  const puzzleCode = getPuzzleCodeBytes(puzzle);
+  const puzzleCode = puzzleCodeBytes(puzzle);
   if (!puzzleCode) {
     return "unavailable";
   }
@@ -1016,15 +575,57 @@ export async function getScoreUploadStatusOnChain({
   }
 }
 
+/**
+ * Status of a sponsored (Discord-keyed) score for a puzzle. Unlike wallet
+ * scores, sponsored entries also carry an update counter that caps how many
+ * improvements the sponsor will pay for.
+ */
+export async function getSponsoredScoreStatusOnChain({
+  networkId,
+  algodClient,
+  userKey,
+  puzzle,
+  score,
+}: SponsoredScoreStatusArgs): Promise<SponsoredScoreStatus> {
+  const appId = getPuzzleScoresAppId(networkId);
+  const puzzleCode = puzzleCodeBytes(puzzle);
+  if (!appId || !puzzleCode) {
+    return { status: "unavailable", existing: null };
+  }
+
+  const existing = await getExistingSponsoredScoreFromAlgod(
+    algodClient,
+    appId,
+    buildSponsoredBoxName(puzzleCode, userKey),
+  );
+  const compareScore =
+    Number.isInteger(score) && score > 0 ? BigInt(score) : null;
+
+  if (existing === null) {
+    return { status: "needs-upload", existing };
+  }
+  if (compareScore === null) {
+    return { status: "recorded", existing };
+  }
+  return {
+    status: compareScore < existing.score ? "needs-upload" : "recorded",
+    existing,
+  };
+}
+
 export async function getPuzzleScoreComparisonOnChain({
   networkId,
   algodClient,
   sender,
+  userKey,
   puzzle,
 }: {
   networkId: string;
   algodClient: algosdk.Algodv2;
-  sender: string;
+  /** Wallet address whose score to compare (ignored when userKey is set). */
+  sender?: string;
+  /** Sponsored user key whose score to compare. */
+  userKey?: Uint8Array;
   puzzle: Puzzle;
 }): Promise<PuzzleScoreComparison | null> {
   const appId = getPuzzleScoresAppId(networkId);
@@ -1032,8 +633,13 @@ export async function getPuzzleScoreComparisonOnChain({
     return null;
   }
 
-  const puzzleCode = getPuzzleCodeBytes(puzzle);
+  const puzzleCode = puzzleCodeBytes(puzzle);
   if (!puzzleCode) {
+    return null;
+  }
+
+  const identity = userKey ? sponsoredIdentityLabel(userKey) : sender;
+  if (!identity) {
     return null;
   }
 
@@ -1056,7 +662,7 @@ export async function getPuzzleScoreComparisonOnChain({
     }
 
     allScores.push(numericScore);
-    if (entry.address === sender) {
+    if (entry.identity === identity) {
       userScore = numericScore;
     }
   }

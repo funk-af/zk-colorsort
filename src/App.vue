@@ -20,6 +20,11 @@
             />
           </a>
         </div>
+        <nav class="legal-links" aria-label="Legal">
+          <router-link to="/terms">Terms</router-link>
+          <span aria-hidden="true">·</span>
+          <router-link to="/privacy">Privacy</router-link>
+        </nav>
         <div class="app-version">v{{ appVersion }}</div>
       </footer>
     </div>
@@ -55,6 +60,16 @@ const appVersion = __APP_VERSION__;
   justify-content: center;
   align-items: center;
   gap: 8px;
+}
+
+.legal-links {
+  display: flex;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.legal-links a {
+  color: inherit;
 }
 
 .app-version {

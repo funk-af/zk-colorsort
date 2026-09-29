@@ -130,9 +130,25 @@ function packPuzzleInitialToLimbs(initial: string[]): string[] {
   return packBytesToLimbs(puzzleBytes, [8, 8, 4]);
 }
 
-function packSenderToLimbs(sender: string): string[] {
-  const senderBytes = algosdk.decodeAddress(sender).publicKey;
-  return packBytesToLimbs(senderBytes, [8, 8, 8, 8]);
+/**
+ * The identity bound into the proof's public inputs: either an Algorand
+ * address (wallet submissions) or a raw 32-byte user key (sponsored
+ * submissions keyed by a Discord user id hash).
+ */
+export type ProofIdentity = string | Uint8Array;
+
+export function identityToBytes(identity: ProofIdentity): Uint8Array {
+  if (typeof identity === "string") {
+    return algosdk.decodeAddress(identity).publicKey;
+  }
+  if (identity.length !== 32) {
+    throw new Error(`Proof identity must be 32 bytes, got ${identity.length}`);
+  }
+  return identity;
+}
+
+function packSenderToLimbs(identity: ProofIdentity): string[] {
+  return packBytesToLimbs(identityToBytes(identity), [8, 8, 8, 8]);
 }
 
 export const colorSortWasmUrl = wasmUrl;
@@ -159,7 +175,7 @@ export function getColorSortZkeyBytes(): Promise<Uint8Array> {
 export function buildColorSortProofInput(
   puzzle: Puzzle,
   moves: Move[],
-  sender: string,
+  sender: ProofIdentity,
 ): ColorSortProofInput {
   const initial = encodeInitialState(puzzle);
   const puzzlePacked = packPuzzleInitialToLimbs(initial);
@@ -177,7 +193,7 @@ export function buildColorSortProofInput(
 export async function proveColorSort(
   puzzle: Puzzle,
   moves: Move[],
-  sender: string,
+  sender: ProofIdentity,
 ): Promise<ProveResult> {
   const input = buildColorSortProofInput(puzzle, moves, sender);
   const zkeyBytes = await getColorSortZkeyBytes();

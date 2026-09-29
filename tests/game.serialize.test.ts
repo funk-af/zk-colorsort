@@ -76,3 +76,16 @@ describe("serialize", () => {
     expect(decodePuzzle(shortPayload)).toBeNull();
   });
 });
+
+describe("movesFromQuery", () => {
+  it("accepts well-formed move lists and rejects the rest", async () => {
+    const { movesFromQuery } = await import("../src/url/share");
+    expect(movesFromQuery("1:2,3:12")).toEqual(["1:2", "3:12"]);
+    expect(movesFromQuery(["1:2,3:4"])).toEqual(["1:2", "3:4"]);
+    expect(movesFromQuery("")).toBeNull();
+    expect(movesFromQuery(undefined)).toBeNull();
+    expect(movesFromQuery("0:2")).toBeNull();
+    expect(movesFromQuery("1:2,bogus")).toBeNull();
+    expect(movesFromQuery(Array.from({ length: 121 }, () => "1:2").join(","))).toBeNull();
+  });
+});

@@ -1,4 +1,5 @@
 allowBuilds:
+  esbuild: true
   vue-demi: true
 minimumReleaseAgeExclude:
   - '@txnlab/use-wallet-ui-vue@1.0.0'

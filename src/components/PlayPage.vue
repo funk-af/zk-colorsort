@@ -4,7 +4,7 @@
     <header>
       <div class="header-top">
         <div>
-          <h1>ZK Color Sort</h1>
+          <h1>Color Sort</h1>
           <p>{{ dailyDateKey ?? "Custom puzzle" }}</p>
         </div>
         <div class="header-actions">
@@ -128,19 +128,9 @@
         <div class="score-panel-head">
           <div>
             <h2>Scores</h2>
-            <p class="hint">
-              {{
-                !isWalletConnected
-                  ? "Connect your Algorand wallet to unlock this feature"
-                  : loadingScoreComparison
-                    ? "Loading how your recorded score compares..."
-                    : scoreComparison
-                      ? formatScoreComparisonSummary(scoreComparison)
-                      : "Submit your score to see how it compares to others"
-              }}
-            </p>
+            <p class="hint">{{ scorePanelHint }}</p>
           </div>
-          <div class="header-actions">
+          <div v-if="!isActivity" class="header-actions">
             <WalletButton size="sm" />
           </div>
         </div>
@@ -162,13 +152,27 @@
           </button>
         </div>
         <ScoreHistogram v-if="scoreComparison" :comparison="scoreComparison" />
-        <div v-if="scoreComparison" class="score-actions">
+        <div v-if="scoreComparison && !isActivity" class="score-actions">
           <button
             class="small-button"
             :disabled="loadingDaily || removingScore"
             @click="handleRemoveScore"
           >
             {{ removingScore ? "Removing..." : "remove score" }}
+          </button>
+        </div>
+        <div v-if="isActivity && bestScore !== null" class="score-actions">
+          <p class="hint">
+            Scores submitted from Discord are kept for the day and cleared at
+            midnight UTC. To record this score permanently, open the game in
+            your browser and submit it with your Algorand wallet.
+          </p>
+          <button
+            class="small-button"
+            :disabled="loadingDaily"
+            @click="handleKeepPermanently"
+          >
+            Keep permanently with a wallet
           </button>
         </div>
       </section>
@@ -197,19 +201,26 @@ import { useRoute, useRouter } from "vue-router";
 import { usePlayPageStore } from "../stores/playPage";
 import { useWalletStore } from "../stores/wallet";
 import { useSettingsStore } from "../stores/settings";
+import { useDiscordStore } from "../stores/discord";
 import {
   generateScoreProof,
   getPuzzleScoreComparisonOnChain,
   getScoreUploadStatusOnChain,
+  getSponsoredScoreStatusOnChain,
   removeScoreOnChain,
   saveScoreOnChain,
   type GeneratedScoreProof,
   type PuzzleScoreComparison,
 } from "../algorand/puzzleScores";
+import {
+  MAX_SPONSORED_UPDATES,
+  serializeWitness,
+} from "../algorand/scoreGroups";
+import { openExternalLink } from "../discord/activity";
 import { encodePuzzle } from "../game/serialize";
 import { getTodayDateKey, parseDateKey } from "../game/daily";
 import { getBestScoreMoves } from "../storage/scores";
-import { puzzleFromText } from "../url/share";
+import { movesFromQuery, puzzleFromText } from "../url/share";
 import Board from "./Board.vue";
 import ScoreHistogram from "./ScoreHistogram.vue";
 import SettingsModal from "./SettingsModal.vue";
@@ -225,6 +236,7 @@ interface NetworkOption {
 const playStore = usePlayPageStore();
 const walletStore = useWalletStore();
 const settingsStore = useSettingsStore();
+const discordStore = useDiscordStore();
 const route = useRoute();
 const router = useRouter();
 const { activeAddress, algodClient, transactionSigner } = useWallet();
@@ -277,6 +289,61 @@ const scoreComparison = computed(() => playStore.scoreComparison);
 const loadingScoreComparison = computed(() => playStore.loadingScoreComparison);
 const isWalletConnected = computed(() => walletStore.isWalletConnected);
 const invertTubes = computed(() => settingsStore.invertTubes);
+const isActivity = computed(() => discordStore.isActivity);
+const discordIdentity = computed(() => discordStore.identity);
+const discordStatus = computed(() => discordStore.status);
+const isTodaysDaily = computed(
+  () =>
+    playStore.dailyDateKey !== null &&
+    playStore.dailyDateKey === getTodayDateKey(),
+);
+// Identity the proof is bound to: the Discord user key inside the Activity,
+// otherwise the connected wallet address.
+const proofIdentity = computed<string | Uint8Array | null>(() =>
+  isActivity.value
+    ? (discordIdentity.value?.userKey ?? null)
+    : (activeAddress.value ?? null),
+);
+const proofIdentityLabel = computed(() =>
+  isActivity.value
+    ? (discordIdentity.value?.userId ?? null)
+    : (activeAddress.value ?? null),
+);
+const sponsoredUpdatesExhausted = ref(false);
+
+const scorePanelHint = computed(() => {
+  if (isActivity.value) {
+    if (discordStatus.value === "connecting" || discordStatus.value === "idle") {
+      return "Connecting to Discord...";
+    }
+    if (discordStatus.value === "error") {
+      return "Discord sign-in failed. Reopen the Activity to try again.";
+    }
+    if (!isTodaysDaily.value) {
+      return "Only today's daily puzzle can be submitted from Discord.";
+    }
+    if (loadingScoreComparison.value) {
+      return "Loading how your recorded score compares...";
+    }
+    if (scoreComparison.value) {
+      return formatScoreComparisonSummary(scoreComparison.value);
+    }
+    if (sponsoredUpdatesExhausted.value) {
+      return "You have used today's free score updates.";
+    }
+    return "Submit your score for free to see how it compares to others";
+  }
+  if (!isWalletConnected.value) {
+    return "Connect your Algorand wallet to unlock this feature";
+  }
+  if (loadingScoreComparison.value) {
+    return "Loading how your recorded score compares...";
+  }
+  if (scoreComparison.value) {
+    return formatScoreComparisonSummary(scoreComparison.value);
+  }
+  return "Submit your score to see how it compares to others";
+});
 const activeNetworkId = computed(() =>
   (activeNetwork.value ?? "").toLowerCase(),
 );
@@ -402,6 +469,11 @@ function handleInvertTubesChange(inverted: boolean) {
 }
 
 async function handleUploadScore() {
+  if (isActivity.value) {
+    await handleSponsoredUpload();
+    return;
+  }
+
   const sender = activeAddress.value;
   const currentPuzzle = playStore.startPuzzle;
   const networkId = activeNetwork.value || "testnet";
@@ -466,6 +538,126 @@ async function handleUploadScore() {
   }
 }
 
+interface SponsoredSubmitResponse {
+  status?: "confirmed" | "pending";
+  txId?: string;
+  error?: string;
+  code?: string;
+}
+
+async function waitForSponsoredConfirmation(txId: string): Promise<void> {
+  const deadline = Date.now() + 25_000;
+  while (Date.now() < deadline) {
+    const info = await algodClient.value.pendingTransactionInformation(txId).do();
+    if (info.poolError) {
+      throw new Error(info.poolError);
+    }
+    if (info.confirmedRound && info.confirmedRound > 0n) {
+      return;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+  }
+  throw new Error("Timed out waiting for confirmation");
+}
+
+async function handleSponsoredUpload() {
+  const identity = discordIdentity.value;
+  const candidateScore = playStore.bestScore ?? 0;
+
+  if (!identity) {
+    playStore.setStatus("Discord sign-in is not ready yet");
+    return;
+  }
+  if (!isTodaysDaily.value) {
+    playStore.setStatus(
+      "Only today's daily puzzle can be submitted from Discord",
+      4000,
+    );
+    return;
+  }
+
+  const proofKey = getProofKey(candidateScore);
+  const proofToUse =
+    proofKey && precomputedProofKey.value === proofKey
+      ? precomputedProof.value
+      : null;
+  if (!proofToUse) {
+    playStore.setStatus("Proof is not ready yet. Please wait.");
+    return;
+  }
+
+  playStore.setUploadingScore(true);
+  try {
+    const response = await fetch("/api/submit-sponsored", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        accessToken: identity.accessToken,
+        witness: serializeWitness(proofToUse.normalizedWitness),
+        score: candidateScore,
+      }),
+    });
+    const result = (await response.json()) as SponsoredSubmitResponse;
+
+    if (!response.ok) {
+      if (result.code === "update_cap") {
+        sponsoredUpdatesExhausted.value = true;
+      }
+      const message =
+        result.code === "paused"
+          ? "Free submissions are paused right now. Try again later."
+          : result.code === "account_age"
+            ? "Your Discord account is too new for free submissions."
+            : (result.error ?? "Unable to submit score");
+      playStore.setStatus(message, 5000);
+      return;
+    }
+
+    if (result.status === "pending" && result.txId) {
+      playStore.setStatus("Submitted, waiting for confirmation...", 0);
+      await waitForSponsoredConfirmation(result.txId);
+    }
+    playStore.setStatus("Score submitted", 3000);
+  } catch (error) {
+    console.warn("Unable to submit sponsored score", error);
+    playStore.setStatus("Unable to submit score", 3500);
+  } finally {
+    playStore.setUploadingScore(false);
+    await refreshOnChainScoreState();
+    await refreshPrecomputedProof();
+  }
+}
+
+/**
+ * Opens the website in the external browser with this puzzle and the best
+ * solve's move list, so the player can record the score with their wallet.
+ */
+async function handleKeepPermanently() {
+  const currentPuzzle = playStore.startPuzzle;
+  if (!currentPuzzle) {
+    return;
+  }
+  const moves = getBestScoreMoves(currentPuzzle) ?? [];
+  if (moves.length === 0) {
+    playStore.setStatus("Solve the puzzle first", 3000);
+    return;
+  }
+
+  const siteUrl = (
+    (import.meta.env.VITE_SITE_URL as string | undefined) ??
+    window.location.origin
+  ).replace(/\/+$/, "");
+  const query = `?moves=${encodeURIComponent(moves.join(","))}`;
+  const url = playStore.dailyDateKey
+    ? `${siteUrl}/${query}#${playStore.dailyDateKey}`
+    : `${siteUrl}/${encodePuzzle(currentPuzzle)}${query}`;
+
+  const opened = await openExternalLink(url);
+  if (!opened) {
+    playStore.setStatus("Unable to open the browser", 3000);
+  }
+}
+
 async function handleRemoveScore() {
   const sender = activeAddress.value;
   const currentPuzzle = playStore.startPuzzle;
@@ -514,13 +706,13 @@ async function handleRemoveScore() {
 }
 
 function getProofKey(score: number | null): string | null {
-  const sender = activeAddress.value;
-  if (!playStore.startPuzzle || !sender || !score || score <= 0) {
+  const identity = proofIdentityLabel.value;
+  if (!playStore.startPuzzle || !identity || !score || score <= 0) {
     return null;
   }
 
   try {
-    return `${encodePuzzle(playStore.startPuzzle)}:${sender}:${score}`;
+    return `${encodePuzzle(playStore.startPuzzle)}:${identity}:${score}`;
   } catch {
     return null;
   }
@@ -537,7 +729,7 @@ async function refreshPrecomputedProof() {
   const requestId = proofGenerationRequestId + 1;
   proofGenerationRequestId = requestId;
 
-  const sender = activeAddress.value;
+  const sender = proofIdentity.value;
   const currentPuzzle = playStore.startPuzzle;
   const candidateScore = playStore.bestScore ?? 0;
   const networkId = activeNetwork.value || "testnet";
@@ -582,6 +774,7 @@ async function refreshPrecomputedProof() {
       puzzle: currentPuzzle,
       moveHistory: bestMoves,
       score: candidateScore,
+      sponsored: isActivity.value,
     });
 
     if (requestId !== proofGenerationRequestId) {
@@ -603,9 +796,80 @@ async function refreshPrecomputedProof() {
   }
 }
 
+async function refreshSponsoredScoreState(requestId: number) {
+  const identity = discordIdentity.value;
+  const currentPuzzle = playStore.startPuzzle;
+  const networkId = activeNetwork.value || "mainnet";
+  const candidateScore = playStore.bestScore ?? 0;
+
+  if (
+    !identity ||
+    !currentPuzzle ||
+    playStore.loadingDaily ||
+    !isTodaysDaily.value
+  ) {
+    playStore.setShowUploadScore(false);
+    playStore.setScoreComparison(null);
+    playStore.setLoadingScoreComparison(false);
+    return;
+  }
+
+  playStore.setLoadingScoreComparison(true);
+  try {
+    const status = await getSponsoredScoreStatusOnChain({
+      networkId,
+      algodClient: algodClient.value,
+      userKey: identity.userKey,
+      puzzle: currentPuzzle,
+      score: candidateScore,
+    });
+    if (requestId !== scoreLookupRequestId) {
+      return;
+    }
+
+    const capReached =
+      (status.existing?.updates ?? 0) >= MAX_SPONSORED_UPDATES;
+    sponsoredUpdatesExhausted.value = capReached;
+    playStore.setShowUploadScore(
+      candidateScore > 0 && status.status === "needs-upload" && !capReached,
+    );
+
+    if (!status.existing) {
+      playStore.setScoreComparison(null);
+      return;
+    }
+
+    const comparison = await getPuzzleScoreComparisonOnChain({
+      networkId,
+      algodClient: algodClient.value,
+      userKey: identity.userKey,
+      puzzle: currentPuzzle,
+    });
+    if (requestId !== scoreLookupRequestId) {
+      return;
+    }
+    playStore.setScoreComparison(comparison);
+  } catch {
+    if (requestId !== scoreLookupRequestId) {
+      return;
+    }
+    playStore.setShowUploadScore(candidateScore > 0);
+    playStore.setScoreComparison(null);
+  } finally {
+    if (requestId === scoreLookupRequestId) {
+      playStore.setLoadingScoreComparison(false);
+    }
+  }
+}
+
 async function refreshOnChainScoreState() {
   const requestId = scoreLookupRequestId + 1;
   scoreLookupRequestId = requestId;
+
+  if (isActivity.value) {
+    await refreshSponsoredScoreState(requestId);
+    return;
+  }
 
   const sender = activeAddress.value;
   const currentPuzzle = playStore.startPuzzle;
@@ -690,6 +954,15 @@ async function refreshOnChainScoreState() {
 }
 
 function loadFromRouteState() {
+  const importedMoves = movesFromQuery(route.query.moves);
+  if (importedMoves) {
+    playStore.importMoves(importedMoves);
+    // Drop the moves from the URL so a reload does not re-import them.
+    const nextQuery = { ...route.query };
+    delete nextQuery.moves;
+    void router.replace({ query: nextQuery, hash: route.hash || undefined });
+  }
+
   const routeCode =
     typeof route.params.puzzleCode === "string"
       ? route.params.puzzleCode.trim()
@@ -762,6 +1035,7 @@ watch(
 watch(
   [
     () => activeAddress.value,
+    () => discordIdentity.value,
     () => activeNetwork.value,
     () => playStore.loadingDaily,
     () => playStore.startPuzzle,
@@ -776,6 +1050,7 @@ watch(
 watch(
   [
     () => activeAddress.value,
+    () => discordIdentity.value,
     () => activeNetwork.value,
     () => playStore.loadingDaily,
     () => playStore.startPuzzle,

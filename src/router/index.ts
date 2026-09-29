@@ -12,6 +12,16 @@ const routes = [
     component: () => import("../components/BuilderPage.vue"),
   },
   {
+    path: "/terms",
+    name: "terms",
+    component: () => import("../components/TermsPage.vue"),
+  },
+  {
+    path: "/privacy",
+    name: "privacy",
+    component: () => import("../components/PrivacyPage.vue"),
+  },
+  {
     path: "/:puzzleCode(.*)",
     name: "play-shared",
     component: () => import("../components/PlayPage.vue"),

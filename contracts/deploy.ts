@@ -5,7 +5,13 @@ async function main(): Promise<void> {
   console.log("Deployment complete");
 }
 
-void main().catch((error: unknown) => {
-  console.error("Deployment failed", error);
-  process.exitCode = 1;
-});
+void main()
+  .then(() => {
+    // snarkjs keeps worker threads alive after deriving the verifier lsig;
+    // exit explicitly so the script does not hang.
+    process.exit(0);
+  })
+  .catch((error: unknown) => {
+    console.error("Deployment failed", error);
+    process.exit(1);
+  });
