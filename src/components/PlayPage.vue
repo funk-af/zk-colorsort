@@ -221,6 +221,7 @@
           Keep permanently with a wallet
         </button>
         <button
+          v-if="scoreComparison"
           class="small-button"
           :disabled="loadingDaily || sharingScore || !discordIdentity"
           @click="handleShareScore"
@@ -734,12 +735,13 @@ async function handleKeepPermanently() {
 }
 
 /**
- * Posts the best score to a Discord channel as a `/colorsort` interaction
- * message with a button that launches the Activity.
+ * Posts the on-chain recorded score to a Discord channel as a `/colorsort`
+ * interaction message with a button that launches the Activity. Only offered
+ * once the score is recorded, so what is shared matches the scoreboard.
  */
 async function handleShareScore() {
-  const score = bestScore.value;
-  if (score === null || sharingScore.value) {
+  const comparison = scoreComparison.value;
+  if (!comparison || sharingScore.value) {
     return;
   }
   sharingScore.value = true;
@@ -747,8 +749,8 @@ async function handleShareScore() {
     const outcome = await shareScore(
       formatShareScoreMessage({
         dateKey: playStore.dailyDateKey,
-        score,
-        comparison: scoreComparison.value,
+        score: comparison.userScore,
+        comparison,
       }),
     );
     if (outcome === "shared") {
