@@ -1,5 +1,8 @@
 <template>
-  <div class="score-histogram" aria-label="Histogram of recorded scores">
+  <div v-if="buckets.length === 0" class="score-histogram-empty">
+    <p class="hint">Nobody has recorded a score for this puzzle yet.</p>
+  </div>
+  <div v-else class="score-histogram" aria-label="Histogram of recorded scores">
     <div v-for="bucket in buckets" :key="bucket.score" class="histogram-column">
       <span class="histogram-count">{{ bucket.count }}</span>
       <div class="histogram-track">

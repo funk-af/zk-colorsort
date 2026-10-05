@@ -60,3 +60,43 @@ export async function exchangeDiscordCode(params: {
     scope: string;
   };
 }
+
+// Discord rejects a follow-up that arrives before it has processed the
+// interaction response, so the first attempt waits briefly and later ones back
+// off.
+const FOLLOW_UP_DELAYS_MS = [500, 1_500, 3_000];
+
+/**
+ * Posts a follow-up message for an interaction through its webhook. The
+ * interaction token is the only credential needed. Logs and gives up after a
+ * few attempts; a missing "playing" message is not worth failing over.
+ */
+export async function postInteractionFollowUp(
+  params: { applicationId: string; token: string; data: unknown },
+  sleep: (ms: number) => Promise<void> = (ms) =>
+    new Promise((resolve) => setTimeout(resolve, ms)),
+): Promise<void> {
+  const url = `${DISCORD_API}/webhooks/${encodeURIComponent(params.applicationId)}/${encodeURIComponent(params.token)}`;
+  let lastStatus = 0;
+  for (const delay of FOLLOW_UP_DELAYS_MS) {
+    await sleep(delay);
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(params.data),
+      });
+      if (response.ok) {
+        return;
+      }
+      lastStatus = response.status;
+      // Only a not-yet-acknowledged interaction (404) or rate limit is worth retrying.
+      if (response.status !== 404 && response.status !== 429) {
+        break;
+      }
+    } catch (error) {
+      console.error("Discord follow-up request failed", error);
+    }
+  }
+  console.error(`Discord follow-up was not posted (last status ${lastStatus})`);
+}

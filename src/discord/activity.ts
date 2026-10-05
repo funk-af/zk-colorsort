@@ -14,7 +14,11 @@
  */
 import { DiscordSDK, patchUrlMappings } from "@discord/embedded-app-sdk";
 import { discordUserKey } from "../algorand/scoreGroups";
-import { DISCORD_SHARE_COMMAND, playButtonRow } from "./share";
+import {
+  DISCORD_SCORE_COMMAND,
+  DISCORD_SCORE_USER_OPTION,
+  playButtonRow,
+} from "./share";
 
 export interface DiscordIdentity {
   userId: string;
@@ -112,29 +116,34 @@ export async function openExternalLink(url: string): Promise<boolean> {
 export type ShareScoreOutcome = "shared" | "cancelled";
 
 /**
- * Posts the score to a channel as an interaction message: it renders as the
- * user having run `/colorsort`, with our content and a "Play" button whose
- * click reaches `netlify/functions/discord-interactions.ts` and launches the
- * Activity for the clicker.
+ * Posts the score to a channel as an interaction message that renders as the
+ * user having run `/score` on themselves, so it reads the same as the slash
+ * command's reply: `content` should come from `formatUserScoreMessage`, and
+ * the "Play" button's click reaches `netlify/functions/discord-interactions.ts`
+ * and launches the Activity for the clicker.
  *
  * `shareInteraction` ships in the SDK but is not yet in Discord's public
  * reference, so if the client rejects it we fall back to `shareLink`, which
  * posts the same text with an Activity launch link instead of a button.
  */
-export async function shareScore(content: string): Promise<ShareScoreOutcome> {
+export async function shareScore(params: {
+  userId: string;
+  content: string;
+}): Promise<ShareScoreOutcome> {
   if (!sdkInstance) {
     throw new Error("Discord Activity is not connected");
   }
   try {
     const result = await sdkInstance.commands.shareInteraction({
-      command: DISCORD_SHARE_COMMAND,
-      content,
+      command: DISCORD_SCORE_COMMAND,
+      options: [{ name: DISCORD_SCORE_USER_OPTION, value: params.userId }],
+      content: params.content,
       components: [playButtonRow()],
     });
     return result.success ? "shared" : "cancelled";
   } catch (cause) {
     console.warn("shareInteraction unavailable, falling back to shareLink", cause);
-    const result = await sdkInstance.commands.shareLink({ message: content });
+    const result = await sdkInstance.commands.shareLink({ message: params.content });
     return result.success ? "shared" : "cancelled";
   }
 }

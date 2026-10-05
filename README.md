@@ -325,8 +325,9 @@ Discord developer portal:
 
 - **Share score to a channel** (Scores panel, Activity only) calls the SDK's
   `shareInteraction`: the message is posted as the player having run
-  `/colorsort`, with the score text from `src/discord/share.ts` and a
-  "Play today's puzzle" button. `shareInteraction` is in the SDK but not yet
+  `/score` on themselves, with the same text and "Play today's puzzle"
+  button as the command's reply (`formatUserScoreMessage` in
+  `src/discord/share.ts`). `shareInteraction` is in the SDK but not yet
   in Discord's public reference; if the client rejects it the app falls back
   to `shareLink`, which posts the same text with an Activity launch link.
 - **`/colorsort`** and the button are handled by
@@ -334,6 +335,12 @@ Discord developer portal:
   `/api/discord-interactions`). It verifies Discord's Ed25519 signature with
   `DISCORD_PUBLIC_KEY`, answers the PING check, and responds with
   `LAUNCH_ACTIVITY`, which opens the Activity for the user who invoked it.
+- **Launch** (the App Launcher's Entry Point command) is also answered by
+  the function: `LAUNCH_ACTIVITY` for the player, then a one-line
+  "@player is playing today's Color Sort puzzle." follow-up with the play
+  button, posted through the interaction webhook after the response via
+  `context.waitUntil`. This replaces the large Activity embed Discord posts
+  when it handles Launch itself.
 - **`/score [user]`** posts the invoking user's (or the picked user's)
   recorded score for today's daily puzzle to the channel, with the same
   "better than X%" line as the Activity and the play button. The lookup is
@@ -349,9 +356,9 @@ Discord developer portal:
   algod box listings, in `netlify/functions/lib/scoreboard.ts`. The read is
   capped at 2.2 s so the reply always lands inside Discord's 3-second
   deadline; a slow chain gets a private "try again" instead of Discord's
-  "did not respond". Deferred replies are not an option here: the free plan
-  has no background functions and the function runtime cannot keep working
-  after the response is sent.
+  "did not respond". Deferred replies are not used: `context.waitUntil`
+  could keep the function alive, but a fast synchronous answer avoids the
+  "thinking…" state entirely.
 
 Setup, once:
 
@@ -369,8 +376,10 @@ Setup, once:
 
    The script uses a per-command POST, which upserts by name. Do not bulk
    overwrite (PUT) commands: that also removes the Entry Point command Discord
-   created for the Activity, which stays on the "Discord launches Activity"
-   handler and needs no endpoint. Global commands can take up to an hour to
+   created for the Activity. The script then PATCHes that Entry Point command
+   to the app handler (`handler: 1`) so Launch goes through the interactions
+   endpoint; set it back to "Discord Launches Activity" in the portal to
+   restore Discord's own embed. Global commands can take up to an hour to
    show in clients.
 
 ### Terms of Service and Privacy Policy

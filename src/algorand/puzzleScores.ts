@@ -90,7 +90,8 @@ export interface SponsoredScoreStatus {
 
 export interface PuzzleScoreComparison {
   allScores: number[];
-  userScore: number;
+  /** The viewer's recorded score, or null when they have not submitted one. */
+  userScore: number | null;
   totalScores: number;
   otherPlayersCount: number;
   playersBeaten: number;
@@ -467,7 +468,9 @@ async function performScoreSave(
   if (!bytesEqual(normalizedWitness.puzzleCode, puzzleCode)) {
     throw new Error("Proof puzzle does not match submission puzzle");
   }
-  if (!signalsMatchIdentity(normalizedWitness.signals, addressToIdentity(sender))) {
+  if (
+    !signalsMatchIdentity(normalizedWitness.signals, addressToIdentity(sender))
+  ) {
     throw new Error("Proof sender does not match submission sender");
   }
 
@@ -638,19 +641,15 @@ export async function getPuzzleScoreComparisonOnChain({
     return null;
   }
 
+  // Without an identity the comparison still lists everyone's scores, it
+  // just has no user score to rank.
   const identity = userKey ? sponsoredIdentityLabel(userKey) : sender;
-  if (!identity) {
-    return null;
-  }
 
   const entries = await listPuzzleScoresFromAlgod(
     algodClient,
     appId,
     puzzleCode,
   );
-  if (entries.length === 0) {
-    return null;
-  }
 
   const allScores: number[] = [];
   let userScore: number | null = null;
@@ -662,13 +661,21 @@ export async function getPuzzleScoreComparisonOnChain({
     }
 
     allScores.push(numericScore);
-    if (entry.identity === identity) {
+    if (identity && entry.identity === identity) {
       userScore = numericScore;
     }
   }
 
-  if (userScore === null || allScores.length === 0) {
-    return null;
+  if (userScore === null) {
+    return {
+      allScores,
+      userScore: null,
+      totalScores: allScores.length,
+      otherPlayersCount: allScores.length,
+      playersBeaten: 0,
+      betterThanPercent: 0,
+      tiedPlayersCount: 0,
+    };
   }
 
   const otherPlayersCount = Math.max(allScores.length - 1, 0);

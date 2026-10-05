@@ -8,6 +8,7 @@ import {
   DISCORD_SHARE_COMMAND,
   type DiscordActionRow,
   compareScores,
+  formatPlayingMessage,
   formatScoreHistogramMessage,
   formatUserScoreMessage,
   playButtonRow,
@@ -28,6 +29,9 @@ export const InteractionCallbackType = {
   LAUNCH_ACTIVITY: 12,
 } as const;
 
+/** Application command type of the Activity's Entry Point ("Launch") command. */
+const COMMAND_TYPE_PRIMARY_ENTRY_POINT = 4;
+
 /** Application command option type for a user picker. */
 const OPTION_TYPE_USER = 6;
 
@@ -39,8 +43,13 @@ export interface DiscordInteractionUser {
 
 export interface DiscordInteraction {
   type: number;
+  application_id?: string;
+  /** Interaction token; authorizes follow-up messages for 15 minutes. */
+  token?: string;
   data?: {
     name?: string;
+    /** Application command type; 4 for the Entry Point command. */
+    type?: number;
     custom_id?: string;
     component_type?: number;
     options?: { name?: string; type?: number; value?: unknown }[];
@@ -88,9 +97,23 @@ export class ScoreboardTimeoutError extends Error {
   }
 }
 
-/** Chain access, injected so the router stays testable without a network. */
+export interface FollowUpMessage {
+  applicationId: string;
+  token: string;
+  data: MessageResponseData;
+}
+
+/**
+ * Chain and Discord access, injected so the router stays testable without a
+ * network.
+ */
 export interface InteractionDeps {
   loadDailyScoreboard(): Promise<DailyScoreboard>;
+  /**
+   * Posts a follow-up message once the interaction response has been sent.
+   * Fire and forget: the router does not wait for it.
+   */
+  sendFollowUp(message: FollowUpMessage): void;
 }
 
 // DER prefix for an Ed25519 SubjectPublicKeyInfo; the raw 32-byte key follows.
@@ -139,16 +162,20 @@ function ephemeral(content: string): InteractionResponse {
   };
 }
 
-/** A message everyone in the channel sees, with the play button attached. */
+/** Message data everyone in the channel sees, with the play button attached. */
+function publicMessageData(content: string): MessageResponseData {
+  return {
+    content,
+    flags: 0,
+    components: [playButtonRow()],
+    allowed_mentions: { parse: [] },
+  };
+}
+
 function channelMessage(content: string): InteractionResponse {
   return {
     type: InteractionCallbackType.CHANNEL_MESSAGE_WITH_SOURCE,
-    data: {
-      content,
-      flags: 0,
-      components: [playButtonRow()],
-      allowed_mentions: { parse: [] },
-    },
+    data: publicMessageData(content),
   };
 }
 
@@ -243,8 +270,29 @@ async function handleGraphCommand(
 }
 
 /**
+ * The App Launcher's "Launch" command, once its Entry Point handler is set to
+ * the app: launches the Activity and follows up with a one-line "playing"
+ * message instead of the large Activity embed Discord posts on its own.
+ */
+function handleEntryPoint(
+  interaction: DiscordInteraction,
+  deps: InteractionDeps,
+): InteractionResponse {
+  const userId = invokingUserId(interaction);
+  const { application_id: applicationId, token } = interaction;
+  if (userId && applicationId && token) {
+    deps.sendFollowUp({
+      applicationId,
+      token,
+      data: publicMessageData(formatPlayingMessage(userId)),
+    });
+  }
+  return { type: InteractionCallbackType.LAUNCH_ACTIVITY };
+}
+
+/**
  * Interaction router. `/colorsort` and the "play" button on posted messages
- * launch the Activity; `/score` and `/graph` post today's on-chain
+ * launch the Activity; so does "Launch", which also posts who is playing; `/score` and `/graph` post today's on-chain
  * results to the channel. Anything else gets a private explanation instead
  * of an error, so Discord never shows "interaction failed".
  */
@@ -256,6 +304,9 @@ export async function handleInteraction(
     case InteractionType.PING:
       return { type: InteractionCallbackType.PONG };
     case InteractionType.APPLICATION_COMMAND:
+      if (interaction.data?.type === COMMAND_TYPE_PRIMARY_ENTRY_POINT) {
+        return handleEntryPoint(interaction, deps);
+      }
       switch (interaction.data?.name) {
         case DISCORD_SHARE_COMMAND:
           return { type: InteractionCallbackType.LAUNCH_ACTIVITY };

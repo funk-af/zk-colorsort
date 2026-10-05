@@ -1,13 +1,16 @@
 /**
- * Shared constants and message text for the Discord integration: the score
- * shared from the Activity and the replies to the slash commands.
+ * Shared constants and message text for the Discord integration: the replies
+ * to the slash commands, which the Activity's score share reuses.
  * Vite-free so the Netlify interactions function can import it too.
  */
 
-/** Slash command that launches the Activity; also the command a shared score renders as. */
+/** Slash command that launches the Activity. */
 export const DISCORD_SHARE_COMMAND = "colorsort";
 
-/** Slash command that posts a player's score for today's daily puzzle. */
+/**
+ * Slash command that posts a player's score for today's daily puzzle; also
+ * the command a score shared from the Activity renders as.
+ */
 export const DISCORD_SCORE_COMMAND = "score";
 
 /** Name of the optional user option on the score command. */
@@ -107,30 +110,6 @@ function comparisonLine(comparison: ScoreComparison): string {
   return `Better than ${comparison.betterThanPercent}% of ${others}${tied}.`;
 }
 
-export interface ShareScoreInput {
-  /** Daily puzzle date key (YYYY-MM-DD), or null for a custom puzzle. */
-  dateKey: string | null;
-  /** Number of moves in the player's best solve. */
-  score: number;
-  /** On-chain comparison, when the score has been submitted. */
-  comparison?: ScoreComparison | null;
-}
-
-/**
- * Text posted as the shared interaction's content. Kept short so it reads
- * well in a channel; the launch button is attached separately.
- */
-export function formatShareScoreMessage(input: ShareScoreInput): string {
-  const lines = [
-    `**${puzzleTitle(input.dateKey)}** solved in **${movesText(input.score)}** 🧪`,
-  ];
-  const comparison = input.comparison;
-  if (comparison && comparison.userScore === input.score) {
-    lines.push(comparisonLine(comparison));
-  }
-  return lines.join("\n");
-}
-
 export interface UserScoreInput {
   /** Discord user id, rendered as a mention. */
   userId: string;
@@ -139,12 +118,20 @@ export interface UserScoreInput {
   comparison: ScoreComparison;
 }
 
-/** Reply to the score command: the player's recorded score for today. */
+/**
+ * The player's recorded score for today: the reply to the score command, and
+ * the content the Activity shares as that command.
+ */
 export function formatUserScoreMessage(input: UserScoreInput): string {
   return [
     `<@${input.userId}> solved **${puzzleTitle(input.dateKey)}** in **${movesText(input.score)}** 🧪`,
     comparisonLine(input.comparison),
   ].join("\n");
+}
+
+/** Posted when a player opens the Activity from the App Launcher. */
+export function formatPlayingMessage(userId: string): string {
+  return `<@${userId}> is playing today's Color Sort puzzle.`;
 }
 
 export interface HistogramBucket {

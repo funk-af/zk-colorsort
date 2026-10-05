@@ -178,9 +178,9 @@
       </div>
       <div v-if="showUploadScore">
         <p v-if="isActivity" class="hint">
-          Submitting publishes a one-way hash of your Discord ID and your
-          score on the public Algorand ledger. The entry is cleared after the
-          day ends, but the transaction stays in the ledger's history.
+          Submitting publishes a one-way hash of your Discord ID and your score
+          on the public Algorand ledger. The entry is cleared after the day
+          ends, but the transaction stays in the ledger's history.
         </p>
         <button
           :disabled="loadingDaily || uploadingScore || !proofReady"
@@ -191,14 +191,14 @@
               ? "Generating proof..."
               : uploadingScore
                 ? "Uploading..."
-                : scoreComparison
+                : recordedScore !== null
                   ? "Update Score"
                   : "Submit Score"
           }}
         </button>
       </div>
       <ScoreHistogram v-if="scoreComparison" :comparison="scoreComparison" />
-      <div v-if="scoreComparison && !isActivity" class="score-actions">
+      <div v-if="recordedScore !== null && !isActivity" class="score-actions">
         <button
           class="small-button"
           :disabled="loadingDaily || removingScore"
@@ -221,7 +221,7 @@
           Keep permanently with a wallet
         </button>
         <button
-          v-if="scoreComparison"
+          v-if="recordedScore !== null"
           class="small-button"
           :disabled="loadingDaily || sharingScore || !discordIdentity"
           @click="handleShareScore"
@@ -256,7 +256,7 @@ import {
   serializeWitness,
 } from "../algorand/scoreGroups";
 import { openExternalLink, shareScore } from "../discord/activity";
-import { formatShareScoreMessage } from "../discord/share";
+import { formatUserScoreMessage } from "../discord/share";
 import { encodePuzzle } from "../game/serialize";
 import { getTodayDateKey, parseDateKey } from "../game/daily";
 import { getBestScoreMoves } from "../storage/scores";
@@ -329,6 +329,8 @@ const proofGenerating = computed(() => playStore.proofGenerating);
 const uploadingScore = computed(() => playStore.uploadingScore);
 const scoreComparison = computed(() => playStore.scoreComparison);
 const loadingScoreComparison = computed(() => playStore.loadingScoreComparison);
+// The viewer's own on-chain score, or null when they have not submitted one.
+const recordedScore = computed(() => scoreComparison.value?.userScore ?? null);
 const isWalletConnected = computed(() => walletStore.isWalletConnected);
 const invertTubes = computed(() => settingsStore.invertTubes);
 const isActivity = computed(() => discordStore.isActivity);
@@ -357,14 +359,13 @@ const sharingScore = ref(false);
 
 // Lowest of the locally saved solve and the submitted on-chain score.
 const personalBest = computed<number | null>(() => {
-  const candidates = [bestScore.value, scoreComparison.value?.userScore].filter(
+  const candidates = [bestScore.value, recordedScore.value].filter(
     (score): score is number => typeof score === "number" && score > 0,
   );
   return candidates.length > 0 ? Math.min(...candidates) : null;
 });
 
-// Lowest score anyone has recorded on-chain; only known once the player has
-// submitted, because that is when the comparison is fetched.
+// Lowest score anyone has recorded on-chain.
 const globalBest = computed<number | null>(() => {
   const scores = scoreComparison.value?.allScores ?? [];
   return scores.length > 0 ? Math.min(...scores) : null;
@@ -385,26 +386,26 @@ const scorePanelHint = computed(() => {
       return "Only today's daily puzzle can be submitted from Discord.";
     }
     if (loadingScoreComparison.value) {
-      return "Loading how your recorded score compares...";
+      return "Loading recorded scores...";
     }
-    if (scoreComparison.value) {
+    if (scoreComparison.value?.userScore != null) {
       return formatScoreComparisonSummary(scoreComparison.value);
     }
     if (sponsoredUpdatesExhausted.value) {
       return "You have used today's free score updates.";
     }
-    return "Submit your score for free to see how it compares to others";
-  }
-  if (!isWalletConnected.value) {
-    return "Connect your Algorand wallet to submit your score and compare it to others";
+    return `${formatRecordedCount()} Submit your score for free to see how it compares.`;
   }
   if (loadingScoreComparison.value) {
-    return "Loading how your recorded score compares...";
+    return "Loading recorded scores...";
   }
-  if (scoreComparison.value) {
+  if (scoreComparison.value?.userScore != null) {
     return formatScoreComparisonSummary(scoreComparison.value);
   }
-  return "Submit your score to see how it compares to others";
+  if (!isWalletConnected.value) {
+    return `${formatRecordedCount()} Connect your Algorand wallet to submit yours.`;
+  }
+  return `${formatRecordedCount()} Submit your score to see how it compares.`;
 });
 const activeNetworkId = computed(() =>
   (activeNetwork.value ?? "").toLowerCase(),
@@ -425,6 +426,14 @@ const networkSwitchDisabled = computed(
 );
 
 // Handlers
+function formatRecordedCount(): string {
+  const total = scoreComparison.value?.totalScores ?? 0;
+  if (total === 0) {
+    return "No scores recorded yet.";
+  }
+  return `${total} ${total === 1 ? "score" : "scores"} recorded.`;
+}
+
 function formatScoreComparisonSummary(
   comparison: PuzzleScoreComparison,
 ): string {
@@ -735,24 +744,36 @@ async function handleKeepPermanently() {
 }
 
 /**
- * Posts the on-chain recorded score to a Discord channel as a `/colorsort`
- * interaction message with a button that launches the Activity. Only offered
- * once the score is recorded, so what is shared matches the scoreboard.
+ * Posts the on-chain recorded score to a Discord channel as a `/score`
+ * interaction message, worded exactly like the command's reply, with a button
+ * that launches the Activity. Only offered once the score is recorded, so
+ * what is shared matches the scoreboard.
  */
 async function handleShareScore() {
   const comparison = scoreComparison.value;
-  if (!comparison || sharingScore.value) {
+  const userScore = comparison?.userScore ?? null;
+  const userId = discordIdentity.value?.userId;
+  const dateKey = playStore.dailyDateKey;
+  if (
+    !comparison ||
+    userScore === null ||
+    !userId ||
+    !dateKey ||
+    sharingScore.value
+  ) {
     return;
   }
   sharingScore.value = true;
   try {
-    const outcome = await shareScore(
-      formatShareScoreMessage({
-        dateKey: playStore.dailyDateKey,
-        score: comparison.userScore,
-        comparison,
+    const outcome = await shareScore({
+      userId,
+      content: formatUserScoreMessage({
+        userId,
+        dateKey,
+        score: userScore,
+        comparison: { ...comparison, userScore },
       }),
-    );
+    });
     if (outcome === "shared") {
       playStore.setStatus("Score shared", 3000);
     }
@@ -902,25 +923,21 @@ async function refreshPrecomputedProof() {
   }
 }
 
-async function refreshSponsoredScoreState(requestId: number) {
+/**
+ * Decides whether the Discord player can submit (or improve) a sponsored
+ * score. Returns false once the request has been superseded.
+ */
+async function refreshSponsoredUploadState(requestId: number) {
   const identity = discordIdentity.value;
   const currentPuzzle = playStore.startPuzzle;
   const networkId = activeNetwork.value || "mainnet";
   const candidateScore = playStore.bestScore ?? 0;
 
-  if (
-    !identity ||
-    !currentPuzzle ||
-    playStore.loadingDaily ||
-    !isTodaysDaily.value
-  ) {
+  if (!identity || !currentPuzzle || !isTodaysDaily.value) {
     playStore.setShowUploadScore(false);
-    playStore.setScoreComparison(null);
-    playStore.setLoadingScoreComparison(false);
     return;
   }
 
-  playStore.setLoadingScoreComparison(true);
   try {
     const status = await getSponsoredScoreStatusOnChain({
       networkId,
@@ -938,58 +955,24 @@ async function refreshSponsoredScoreState(requestId: number) {
     playStore.setShowUploadScore(
       candidateScore > 0 && status.status === "needs-upload" && !capReached,
     );
-
-    if (!status.existing) {
-      playStore.setScoreComparison(null);
-      return;
-    }
-
-    const comparison = await getPuzzleScoreComparisonOnChain({
-      networkId,
-      algodClient: algodClient.value,
-      userKey: identity.userKey,
-      puzzle: currentPuzzle,
-    });
-    if (requestId !== scoreLookupRequestId) {
-      return;
-    }
-    playStore.setScoreComparison(comparison);
   } catch {
     if (requestId !== scoreLookupRequestId) {
       return;
     }
     playStore.setShowUploadScore(candidateScore > 0);
-    playStore.setScoreComparison(null);
-  } finally {
-    if (requestId === scoreLookupRequestId) {
-      playStore.setLoadingScoreComparison(false);
-    }
   }
 }
 
-async function refreshOnChainScoreState() {
-  const requestId = scoreLookupRequestId + 1;
-  scoreLookupRequestId = requestId;
-
-  if (isActivity.value) {
-    await refreshSponsoredScoreState(requestId);
-    return;
-  }
-
+/** Decides whether the connected wallet can submit (or improve) a score. */
+async function refreshWalletUploadState(requestId: number) {
   const sender = activeAddress.value;
   const currentPuzzle = playStore.startPuzzle;
   const networkId = activeNetwork.value || "testnet";
-
-  if (!sender || !currentPuzzle || playStore.loadingDaily) {
-    playStore.setShowUploadScore(false);
-    playStore.setScoreComparison(null);
-    playStore.setLoadingScoreComparison(false);
-    return;
-  }
-
   const candidateScore = playStore.bestScore ?? 0;
-  if (candidateScore <= 0) {
+
+  if (!sender || !currentPuzzle || candidateScore <= 0) {
     playStore.setShowUploadScore(false);
+    return;
   }
 
   try {
@@ -1005,39 +988,47 @@ async function refreshOnChainScoreState() {
       return;
     }
 
-    playStore.setShowUploadScore(
-      candidateScore > 0 && uploadStatus === "needs-upload",
-    );
+    playStore.setShowUploadScore(uploadStatus === "needs-upload");
   } catch {
     if (requestId !== scoreLookupRequestId) {
       return;
     }
-    playStore.setShowUploadScore(candidateScore > 0);
+    playStore.setShowUploadScore(true);
+  }
+}
+
+async function refreshOnChainScoreState() {
+  const requestId = scoreLookupRequestId + 1;
+  scoreLookupRequestId = requestId;
+
+  const currentPuzzle = playStore.startPuzzle;
+  if (!currentPuzzle || playStore.loadingDaily) {
+    playStore.setShowUploadScore(false);
+    playStore.setScoreComparison(null);
+    playStore.setLoadingScoreComparison(false);
+    return;
   }
 
+  const networkId =
+    activeNetwork.value || (isActivity.value ? "mainnet" : "testnet");
+  // Everyone can see the recorded scores; the viewer's own entry is only
+  // highlighted when we know who they are.
+  const sender = isActivity.value
+    ? undefined
+    : (activeAddress.value ?? undefined);
+  const userKey = isActivity.value ? discordIdentity.value?.userKey : undefined;
+
   playStore.setLoadingScoreComparison(true);
+  const uploadState = isActivity.value
+    ? refreshSponsoredUploadState(requestId)
+    : refreshWalletUploadState(requestId);
+
   try {
-    const status = await getScoreUploadStatusOnChain({
-      networkId,
-      algodClient: algodClient.value,
-      sender,
-      puzzle: currentPuzzle,
-      score: 0,
-    });
-
-    if (requestId !== scoreLookupRequestId) {
-      return;
-    }
-
-    if (status !== "recorded") {
-      playStore.setScoreComparison(null);
-      return;
-    }
-
     const comparison = await getPuzzleScoreComparisonOnChain({
       networkId,
       algodClient: algodClient.value,
       sender,
+      userKey,
       puzzle: currentPuzzle,
     });
 
@@ -1056,6 +1047,8 @@ async function refreshOnChainScoreState() {
       playStore.setLoadingScoreComparison(false);
     }
   }
+
+  await uploadState;
 }
 
 function loadFromRouteState() {

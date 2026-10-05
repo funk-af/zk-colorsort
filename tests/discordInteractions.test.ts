@@ -1,12 +1,14 @@
 import { generateKeyPairSync, sign } from "node:crypto";
 import { describe, expect, it, vi } from "vitest";
 import handler from "../netlify/functions/discord-interactions";
+import { postInteractionFollowUp } from "../netlify/functions/lib/discord";
 import {
   InteractionCallbackType,
   ScoreboardTimeoutError,
   handleInteraction,
   verifyDiscordSignature,
   type DailyScoreboard,
+  type FollowUpMessage,
   type InteractionDeps,
 } from "../netlify/functions/lib/interactions";
 import { discordUserKey, sponsoredIdentityLabel } from "../src/algorand/identity";
@@ -44,13 +46,19 @@ async function boardWith(...entries: { userId?: string; address?: string; score:
   return { dateKey: DATE_KEY, scores };
 }
 
-function depsFor(board: DailyScoreboard | Error): InteractionDeps {
+function depsFor(
+  board: DailyScoreboard | Error,
+  followUps: FollowUpMessage[] = [],
+): InteractionDeps {
   return {
     loadDailyScoreboard: async () => {
       if (board instanceof Error) {
         throw board;
       }
       return board;
+    },
+    sendFollowUp: (message) => {
+      followUps.push(message);
     },
   };
 }
@@ -177,6 +185,81 @@ describe("handleInteraction", () => {
         noDeps,
       ),
     ).toEqual({ type: InteractionCallbackType.LAUNCH_ACTIVITY });
+  });
+
+  it("launches the Activity for Launch and posts a short playing message", async () => {
+    const followUps: FollowUpMessage[] = [];
+    const response = await handleInteraction(
+      {
+        type: 2,
+        application_id: "111111111111111111",
+        token: "interaction-token",
+        data: { name: "launch", type: 4 },
+        member: { user: { id: USER_ID } },
+      },
+      depsFor(new Error("scoreboard should not be loaded"), followUps),
+    );
+    expect(response).toEqual({ type: InteractionCallbackType.LAUNCH_ACTIVITY });
+    expect(followUps).toEqual([
+      {
+        applicationId: "111111111111111111",
+        token: "interaction-token",
+        data: {
+          content: `<@${USER_ID}> is playing today's Color Sort puzzle.`,
+          flags: 0,
+          components: [
+            {
+              type: 1,
+              components: [
+                {
+                  type: 2,
+                  style: 1,
+                  label: "Play today's puzzle",
+                  custom_id: DISCORD_PLAY_BUTTON_ID,
+                },
+              ],
+            },
+          ],
+          allowed_mentions: { parse: [] },
+        },
+      },
+    ]);
+  });
+
+  it("still launches from Launch when no follow-up can be sent", async () => {
+    const followUps: FollowUpMessage[] = [];
+    const response = await handleInteraction(
+      { type: 2, data: { name: "launch", type: 4 }, member: { user: { id: USER_ID } } },
+      depsFor(new Error("unused"), followUps),
+    );
+    expect(response).toEqual({ type: InteractionCallbackType.LAUNCH_ACTIVITY });
+    expect(followUps).toEqual([]);
+  });
+
+  it("does not post a playing message for /colorsort or the play button", async () => {
+    const followUps: FollowUpMessage[] = [];
+    const deps = depsFor(new Error("unused"), followUps);
+    await handleInteraction(
+      {
+        type: 2,
+        application_id: "111111111111111111",
+        token: "t",
+        data: { name: DISCORD_SHARE_COMMAND, type: 1 },
+        member: { user: { id: USER_ID } },
+      },
+      deps,
+    );
+    await handleInteraction(
+      {
+        type: 3,
+        application_id: "111111111111111111",
+        token: "t",
+        data: { custom_id: DISCORD_PLAY_BUTTON_ID, component_type: 2 },
+        member: { user: { id: USER_ID } },
+      },
+      deps,
+    );
+    expect(followUps).toEqual([]);
   });
 
   it("replies privately to anything else", async () => {
@@ -345,10 +428,73 @@ describe("discord-interactions handler", () => {
     expect(body.data.content).toContain("18 │ ████████████████████ 1");
   });
 
+  it("keeps the Launch follow-up alive with waitUntil", async () => {
+    process.env.DISCORD_PUBLIC_KEY = publicKeyHex;
+    const fetchMock = vi.fn(async () => new Response("{}", { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
+    vi.useFakeTimers();
+    try {
+      const pending: Promise<unknown>[] = [];
+      const response = await handler(
+        signedRequest({
+          type: 2,
+          application_id: "111111111111111111",
+          token: "interaction-token",
+          data: { name: "launch", type: 4 },
+          member: { user: { id: USER_ID } },
+        }),
+        { waitUntil: (promise: Promise<unknown>) => pending.push(promise) } as never,
+      );
+      expect(await response.json()).toEqual({ type: 12 });
+      expect(pending).toHaveLength(1);
+      await vi.runAllTimersAsync();
+      await Promise.all(pending);
+      expect(fetchMock).toHaveBeenCalledWith(
+        "https://discord.com/api/v10/webhooks/111111111111111111/interaction-token",
+        expect.objectContaining({ method: "POST" }),
+      );
+    } finally {
+      vi.useRealTimers();
+      vi.unstubAllGlobals();
+    }
+  });
+
   it("rejects non-POST requests", async () => {
     const response = await handler(
       new Request("https://example.test/api/discord-interactions"),
     );
     expect(response.status).toBe(405);
+  });
+});
+
+describe("postInteractionFollowUp", () => {
+  const params = { applicationId: "111111111111111111", token: "tok", data: { content: "hi" } };
+  const noSleep = async () => {};
+
+  it("retries while Discord has not seen the interaction response yet", async () => {
+    const statuses = [404, 200];
+    const fetchMock = vi.fn(
+      async () => new Response("{}", { status: statuses.shift() ?? 500 }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+    try {
+      await postInteractionFollowUp(params, noSleep);
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it("gives up on other errors without throwing", async () => {
+    const fetchMock = vi.fn(async () => new Response("{}", { status: 400 }));
+    vi.stubGlobal("fetch", fetchMock);
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      await expect(postInteractionFollowUp(params, noSleep)).resolves.toBeUndefined();
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+    } finally {
+      errorSpy.mockRestore();
+      vi.unstubAllGlobals();
+    }
   });
 });

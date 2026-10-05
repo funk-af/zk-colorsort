@@ -1,6 +1,8 @@
 /**
  * Registers the `/colorsort`, `/score`, and `/graph` slash commands for
- * the Discord application.
+ * the Discord application, and points the Activity's "Launch" Entry Point
+ * command at the app's interactions endpoint so it can post a short
+ * "playing" message instead of Discord's Activity embed.
  *
  *   pnpm run discord:register-commands
  *
@@ -36,6 +38,9 @@ function requireEnv(name: string): string {
 }
 
 const CHAT_INPUT = 1;
+const PRIMARY_ENTRY_POINT = 4;
+/** Entry Point handler: the app answers the interaction itself. */
+const APP_HANDLER = 1;
 const OPTION_TYPE_USER = 6;
 
 // integration_types / contexts are omitted so the commands inherit the
@@ -91,12 +96,53 @@ async function registerCommand(
   console.log(`Registered /${created.name} (command id ${created.id})`);
 }
 
+/**
+ * Switches the existing Entry Point command to APP_HANDLER. Discord creates
+ * that command when Activities are enabled; it is patched, not recreated.
+ */
+async function useAppHandlerForEntryPoint(applicationId: string, botToken: string) {
+  const base = `https://discord.com/api/v10/applications/${applicationId}/commands`;
+  const headers = {
+    authorization: `Bot ${botToken}`,
+    "content-type": "application/json",
+  };
+  const listResponse = await fetch(base, { headers });
+  const listBody = await listResponse.text();
+  if (!listResponse.ok) {
+    throw new Error(`Discord returned ${listResponse.status} listing commands: ${listBody}`);
+  }
+  const entryPoint = (
+    JSON.parse(listBody) as { id: string; name: string; type: number; handler?: number }[]
+  ).find((command) => command.type === PRIMARY_ENTRY_POINT);
+  if (!entryPoint) {
+    console.warn("No Entry Point command found; enable Activities for the app first.");
+    return;
+  }
+  if (entryPoint.handler === APP_HANDLER) {
+    console.log(`Entry Point /${entryPoint.name} already uses the app handler`);
+    return;
+  }
+  const patchResponse = await fetch(`${base}/${entryPoint.id}`, {
+    method: "PATCH",
+    headers,
+    body: JSON.stringify({ handler: APP_HANDLER }),
+  });
+  const patchBody = await patchResponse.text();
+  if (!patchResponse.ok) {
+    throw new Error(
+      `Discord returned ${patchResponse.status} for Entry Point /${entryPoint.name}: ${patchBody}`,
+    );
+  }
+  console.log(`Entry Point /${entryPoint.name} now uses the app handler`);
+}
+
 async function main() {
   const applicationId = requireEnv("DISCORD_CLIENT_ID");
   const botToken = requireEnv("DISCORD_BOT_TOKEN");
   for (const command of commands) {
     await registerCommand(applicationId, botToken, command);
   }
+  await useAppHandlerForEntryPoint(applicationId, botToken);
 }
 
 main().catch((error) => {
